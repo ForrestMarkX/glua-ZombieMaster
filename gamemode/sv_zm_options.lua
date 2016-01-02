@@ -13,7 +13,7 @@ CreateConVar("zm_trap_triggerrange", "96", FCVAR_NONE, "The range trap trigger p
 CreateConVar("zm_spawndelay", "0.75", FCVAR_NOTIFY, "Delay between creation of zombies at zombiespawn.")
 CreateConVar("zm_incometime", "10", FCVAR_NOTIFY, "Amount of time in seconds the Zombie Master gains resources.")
 CreateConVar("zm_resourcegainperplayerdeathmin", "50", FCVAR_NOTIFY, "Min amount of resources the Zombie Master gains per player death.")
-CreateConVar("zm_resourcegainperplayerdeathmin", "100", FCVAR_NOTIFY, "Max amount of resources the Zombie Master gains per player death.")
+CreateConVar("zm_resourcegainperplayerdeathmax", "100", FCVAR_NOTIFY, "Max amount of resources the Zombie Master gains per player death.")
 
 local function ZM_Power_PhysExplode_SV(ply, command, arguments)
 	if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) then
