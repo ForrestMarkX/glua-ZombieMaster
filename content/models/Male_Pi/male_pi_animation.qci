@@ -1,0 +1,18 @@
+
+$Sequence "ragdoll" {
+	"male_pi_anims\ragdoll.smd"
+	activity "ACT_DIERAGDOLL" 1
+	fadein 0.2
+	fadeout 0.2
+	fps 30
+}
+
+$IncludeModel "humans/male_shared.mdl"
+$IncludeModel "humans/male_ss.mdl"
+$IncludeModel "humans/male_gestures.mdl"
+$IncludeModel "humans/male_postures.mdl"
+
+$IKChain "rhand" "ValveBiped.Bip01_R_Hand" knee 0.707 0.707 0
+$IKChain "lhand" "ValveBiped.Bip01_L_Hand" knee 0.707 0.707 0
+$IKChain "rfoot" "ValveBiped.Bip01_R_Foot" knee 0.707 -0.707 0
+$IKChain "lfoot" "ValveBiped.Bip01_L_Foot" knee 0.707 -0.707 0

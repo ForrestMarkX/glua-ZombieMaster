@@ -1,0 +1,15 @@
+"zombiemaster"
+{
+	"base"		"base"
+	"title"		"Zombie Master"
+	"maps"		"^zm_"
+	"menusystem"	"1"
+
+	"author_name"		"Forrest 'ForrestMarkX' Keller"
+	"author_email"		"forrestmarkx@outlook.com"
+	"author_url"		"N/A"
+
+	"settings"
+	{
+	}
+}

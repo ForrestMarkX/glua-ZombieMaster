@@ -1,0 +1,25 @@
+
+$LOD 7
+{
+	replacemodel "male_pi_reference.smd" "male_pi_reference_lod1.smd"
+}
+$LOD 14
+{
+	replacemodel "male_pi_reference.smd" "male_pi_reference_lod2.smd"
+}
+$LOD 24
+{
+	replacemodel "male_pi_reference.smd" "male_pi_reference_lod3.smd"
+}
+$LOD 35
+{
+	replacemodel "male_pi_reference.smd" "male_pi_reference_lod4.smd"
+}
+$LOD 60
+{
+	replacemodel "male_pi_reference.smd" "male_pi_reference_lod5.smd"
+}
+$ShadowLOD
+{
+	replacemodel "male_pi_reference.smd" "male_pi_reference_lod6.smd"
+}
