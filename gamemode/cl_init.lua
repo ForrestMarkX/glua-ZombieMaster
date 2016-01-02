@@ -66,7 +66,6 @@ end
 function GM:InitPostEntity()
 	self.HUDShouldDraw = self._HUDShouldDraw
 	self.HUDPaint = self._HUDPaint
-	self.CreateMove = self._CreateMove
 	self.PostPlayerDraw = self._PostPlayerDraw
 	self.PrePlayerDraw = self._PrePlayerDraw
 end
@@ -326,57 +325,6 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 	end
 end
 
-function GM:_CreateMove( cmd )
-	if MySelf:Team() == TEAM_ZOMBIEMASTER then
-		local x, y = gui.MousePos()
-		if x ~= 0 or y ~= 0 then
-			if x < 3 then
-				mouseonedge = true
-				mouseonedgex = true
-				mouseonedgey = false
-			elseif x > ScrW() - 3 then
-				mouseonedge = true
-				mouseonedgex = true
-				mouseonedgey = false
-			elseif y < 3 then
-				mouseonedge = true
-				mouseonedgex = false
-				mouseonedgey = true
-			elseif y > ScrH() - 3 then
-				mouseonedge = true
-				mouseonedgex = false
-				mouseonedgey = true
-			elseif mouseonedge then
-				mouseonedge = false
-				mouseonedgex = false
-				mouseonedgey = false
-			end
-			
-			if mouseonedge then
-				local mouse_vect = gui.ScreenToVector(x, y)
-				
-				if not keepoldz then
-					old_mouse_vect = mouse_vect
-				end
-				
-				if mouseonedgex then
-					mouse_vect.z = old_mouse_vect.z
-					keepoldz = true
-				elseif mouseonedgey then
-					mouse_vect.x = 0
-					keepoldz = false
-				end
-				
-				local oldang = cmd:GetViewAngles()
-				local newang = (mouse_vect - EyePos()):Angle()
-				oldang.pitch = math.ApproachAngle(oldang.pitch, newang.pitch, FrameTime() * math.max(45, math.abs(math.AngleDifference(oldang.pitch, newang.pitch)) ^ 1.05))
-				oldang.yaw = math.ApproachAngle(oldang.yaw, newang.yaw, FrameTime() * math.max(45, math.abs(math.AngleDifference(oldang.yaw, newang.yaw)) ^ 1.05))
-				cmd:SetViewAngles(oldang)
-			end
-		end
-	end
-end
-
 function GM:PlayerBindPress( ply, bind, pressed )
 	if string.find(bind, "+menu") then
 		if ply:IsSurvivor() then
@@ -441,6 +389,7 @@ function GM:SetDragging(b)
 	holdTime = CurTime()
 end
 
+local SCROLL_THRESHOLD = 8
 function GM:Think()
 	if input.IsMouseDown(MOUSE_LEFT) and holdTime < CurTime() and not isDragging and MySelf:IsZM() then
 		holdTime = CurTime()
@@ -451,6 +400,34 @@ function GM:Think()
 	
 	if isDragging and not input.IsMouseDown(MOUSE_LEFT) then
 		isDragging = false
+	end
+	
+	if not isDragging and MySelf:IsZM() and vgui.CursorVisible() then
+		local mousex, mousey = gui.MousePos()	
+		if mousex <= SCROLL_THRESHOLD then
+			RunConsoleCommand("+left")
+			timer.Simple(0, function() RunConsoleCommand("-left") end)
+		elseif mousex >= (ScrW() - SCROLL_THRESHOLD) then
+			RunConsoleCommand("+right")
+			timer.Simple(0, function() RunConsoleCommand("-right") end)
+		else
+			RunConsoleCommand("-right")
+			timer.Simple(0, function() RunConsoleCommand("-left") end)
+		end
+		
+		-- +lookup and +lookdown seem to do nothing
+		--[[
+		if mousey <= SCROLL_THRESHOLD then
+			RunConsoleCommand("+lookup")
+			timer.Simple(0, function() RunConsoleCommand("-lookdown") end)
+		elseif mousey >= (ScrH() - SCROLL_THRESHOLD) then
+			RunConsoleCommand("+lookdown")
+			timer.Simple(0, function() RunConsoleCommand("-lookup") end)
+		else
+			RunConsoleCommand("-lookup")
+			timer.Simple(0, function() RunConsoleCommand("-lookdown") end)
+		end
+		--]]
 	end
 end
 
