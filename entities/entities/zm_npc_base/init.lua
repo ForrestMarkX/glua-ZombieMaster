@@ -100,7 +100,7 @@ function ENT:Death(spawnRagdoll, killer)
 
 	if not self.computedDeath then
 		if IsValid(killer) and killer:IsPlayer() then
-			killer:AddFrags()
+			killer:AddFrags(1)
 		end
 
 		local owner = self:GetOwner()

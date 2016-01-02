@@ -319,7 +319,6 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			
 			zm_rightclicked = true
 			
-			print(tostring(zm_ring_pos))
 			RunConsoleCommand("zm_command_npcgo", tostring(zm_ring_pos))
 		end
 	end
@@ -328,12 +327,16 @@ end
 function GM:PlayerBindPress( ply, bind, pressed )
 	if string.find(bind, "+menu") then
 		if ply:IsSurvivor() then
-			RunConsoleCommand("zm_dropweapon")
+			if not timer.Exists("dropweapon") then
+				timer.Create("dropweapon", 0.1, 1 function() RunConsoleCommand("zm_dropweapon") timer.Remove("dropweapon") end)
+			end
 		end
 		return true
 	elseif string.find(bind, "+zoom") then
 		if ply:IsSurvivor() then
-			RunConsoleCommand("zm_dropammo")
+			if not timer.Exists("dropammo") then
+				timer.Create("dropammo", 0.1, 1 function() RunConsoleCommand("zm_dropammo") timer.Remove("dropammo") end)
+			end
 		end
 		return true
 	elseif string.find(bind, "impulse 100") then

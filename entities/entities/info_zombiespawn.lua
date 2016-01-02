@@ -84,8 +84,12 @@ if SERVER then
 						
 						timer.Simple(0.5, function()
 							if IsValid(self) and self:GetRallyEntity() then
-								entity:SetLastPosition(self:GetRallyEntity():GetPos())
-								entity:SetSchedule(SCHED_FORCED_GO_RUN)
+								local rallyent = self:GetRallyEntity()
+								
+								if IsValid(rallyent) then
+									entity:SetLastPosition(rallyent:GetPos())
+									entity:SetSchedule(SCHED_FORCED_GO_RUN)
+								end
 							end
 						end)
 

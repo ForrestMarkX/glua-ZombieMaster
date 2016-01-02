@@ -33,7 +33,7 @@ function ENT:Think()
 end
 
 function ENT:Explosion()
- 	util.BlastDamageEx( self, self:GetOwner(), self:GetPos(), 100, 150, DMG_BURN )
+ 	util.BlastDamageEx( self, self:GetOwner(), self:GetPos(), 100, 20, DMG_BURN )
 	local effectdata = EffectData()
 		effectdata:SetOrigin( self:GetPos() )
 	util.Effect( "HelicopterMegaBomb", effectdata )	 -- Big flame	
@@ -73,7 +73,11 @@ function ENT:Explosion()
 			end
 		end
 		
-		v:Ignite(60, 100)
+		if string.find(v:GetClass(), "info_") then
+			return
+		end
+		
+		v:Ignite(30, 100)
 	end
 end
 

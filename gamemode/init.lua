@@ -134,14 +134,14 @@ function GM:PlayerConnect(name, ip)
 end
 
 function GM:OnNPCKilled(npc, attacker, inflictor)
-	local numragdolls = #ents.FindByClass("prop_ragdoll")
+	local numragdolls = #ents.FindByClass("env_shooter")
 	
 	if numragdolls > GetConVar("zm_max_ragdolls"):GetInt() then
-		for _, ragdoll in pairs(ents.FindByClass("prop_ragdoll")) do
+		for _, ragdoll in pairs(ents.FindByClass("env_shooter")) do
 			if IsValid(ragdoll) then ragdoll:Remove() end
 		end
 	else
-		for _, ragdoll in pairs(ents.FindByClass("prop_ragdoll")) do
+		for _, ragdoll in pairs(ents.FindByClass("env_shooter")) do
 			timer.Simple(5, function() if IsValid(ragdoll) then ragdoll:Remove() end end)
 		end
 	end
@@ -481,9 +481,12 @@ function GM:InitialSpawnRound(ply)
 					
 	ply:SetCanWalk(false)
 	ply:SetCanZoom(false)
-	--ply:SetNoCollideWithTeammates(true)
 	ply:AllowFlashlight(true)
-	--ply:SetCustomCollisionCheck(true)
+	
+	if GetConVar("zm_nocollideplayers"):GetBool() then
+		ply:SetNoCollideWithTeammates(true)
+		ply:SetCustomCollisionCheck(true)
+	end
 	
 	ply:Give("weapon_zm_fists")
 end
@@ -497,6 +500,8 @@ function GM:PlayerReadyRound(pl)
 	table.RemoveByValue(self.UnReadyPlayers, pl)
 	
 	pl:SendLua("GAMEMODE:MakePreferredMenu()")
+	pl:ConCommand("-right")
+	pl:ConCommand("-left")
 	
 	if self:GetRoundActive() and CurTime() < 10 then
 		gamemode.Call("InitialSpawnRound", pl)

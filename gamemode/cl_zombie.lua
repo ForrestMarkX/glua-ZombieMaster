@@ -282,7 +282,7 @@ function PANEL:Populate()
 		local zombieFlags = self:GetZombieflags()
 		local allowed = CanSpawnZombie(zombieFlags)
 		
-		if allowed and not allowed[data.flag] then
+		if allowed and type(allowed) == "table" and not allowed[data.flag] then
 			buttonSingle:SetDisabled(true)
 			buttonFive:SetDisabled(true)
 		end
