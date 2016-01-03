@@ -328,14 +328,14 @@ function GM:PlayerBindPress( ply, bind, pressed )
 	if string.find(bind, "+menu") then
 		if ply:IsSurvivor() then
 			if not timer.Exists("dropweapon") then
-				timer.Create("dropweapon", 0.1, 1, function() RunConsoleCommand("zm_dropweapon") timer.Remove("dropweapon") end)
+				timer.Create("dropweapon", 0.35, 1, function() RunConsoleCommand("zm_dropweapon") timer.Remove("dropweapon") end)
 			end
 		end
 		return true
 	elseif string.find(bind, "+zoom") then
 		if ply:IsSurvivor() then
 			if not timer.Exists("dropammo") then
-				timer.Create("dropammo", 0.1, 1, function() RunConsoleCommand("zm_dropammo") timer.Remove("dropammo") end)
+				timer.Create("dropammo", 0.35, 1, function() RunConsoleCommand("zm_dropammo") timer.Remove("dropammo") end)
 			end
 		end
 		return true

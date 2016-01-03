@@ -4,6 +4,7 @@
 	"title"		"Zombie Master"
 	"maps"		"^zm_"
 	"menusystem"	"1"
+	"workshopid"	"591300663"
 
 	"author_name"		"Forrest 'ForrestMarkX' Keller"
 	"author_email"		"forrestmarkx@outlook.com"
