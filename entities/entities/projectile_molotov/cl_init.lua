@@ -1,4 +1,5 @@
-ENT.Spawnable			= false
-ENT.AdminSpawnable		= false
+include("shared.lua")
 
-include('shared.lua')
+function ENT:Draw()
+	self:DrawModel()
+end

@@ -54,20 +54,15 @@ if SERVER then
 						local tr = util.TraceLine(trace)
 
 						if tr.Fraction >= 1 then
-							local entity = ents.Create(data.type)
-							entity:SetPos(spawnPoint + Vector(0, 0, 3))
-							entity:Spawn()
-							entity:SetOwner(data.ply)
-							entity.popCost = data.popCost
+							local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
 							
 							timer.Simple(0.5, function()
-								if IsValid(self) and self:GetRallyEntity() then
-									entity:SetLastPosition(self:GetRallyEntity():GetPos())
-									entity:SetSchedule(SCHED_FORCED_GO_RUN)
+								local rally = self:GetRallyEntity()
+								if IsValid(self) and IsValid(rally) then
+									zombie:SetLastPosition(rally:GetPos())
+									zombie:SetSchedule(SCHED_FORCED_GO_RUN)
 								end
 							end)
-						
-							ComputeZM(data.ply, resources, population, data.cost, data.popCost)
 						
 							net.Start("zm_remove_queue")
 								net.WriteInt(self:EntIndex(), 32)
@@ -76,24 +71,15 @@ if SERVER then
 							table.remove(self.query, 1)
 						end
 					else
-						local entity = ents.Create(data.type)
-						entity:SetPos(spawnPoint + Vector(0, 0, 3))
-						entity:Spawn()
-						entity:SetOwner(data.ply)
-						entity.popCost = data.popCost
+						local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), tr.HitNormal, data.cost)
 						
 						timer.Simple(0.5, function()
-							if IsValid(self) and self:GetRallyEntity() then
-								local rallyent = self:GetRallyEntity()
-								
-								if IsValid(rallyent) then
-									entity:SetLastPosition(rallyent:GetPos())
-									entity:SetSchedule(SCHED_FORCED_GO_RUN)
-								end
+							local rally = self:GetRallyEntity()
+							if IsValid(self) and IsValid(rally) then
+								zombie:SetLastPosition(rally:GetPos())
+								zombie:SetSchedule(SCHED_FORCED_GO_RUN)
 							end
 						end)
-
-						ComputeZM(data.ply, resources, population, data.cost, data.popCost)
 					
 						net.Start("zm_remove_queue")
 							net.WriteInt(self:EntIndex(), 32)
@@ -141,30 +127,20 @@ if SERVER then
 	end
 	
 	function ENT:GetSuitableVector()
-		local vector = self:GetPos()
-		local random = math.random(1, 4)
+		local vector = Vector(0, 0, 0)
+		local angle = self:GetAngles()
+		local vForward = angle:Forward()
+		local vRight = angle:Right()
+		local vUp = angle:Up()
 		
-		if random == 1 then
-			vector = vector + (self:GetAngles():Forward() * 64)
-		elseif random == 2 then
-			vector = vector + (self:GetAngles():Forward() * -64)
-		elseif random == 3 then
-			vector = vector + (self:GetAngles():Right() * 64)
-		elseif random == 4 then
-			vector = vector + (self:GetAngles():Right() * -64)
-		end
+		local xDeviation = math.random(-128, 128)
+		local yDeviation = math.random(-128, 128)
+
+		vector = self:GetPos() + (vForward * 64)
+		vector.x = vector.x + xDeviation
+		vector.y = vector.y + yDeviation
 		
-		local trace = {}
-		trace.start = vector
-		trace.endpos = trace.start - Vector(0, 0, 999999)
-		trace.mask 	 = MASK_NPCSOLID
-		trace.filter = {self}
-		
-		local tr = util.TraceLine(trace)
-		
-		if tr.HitPos then
-			return tr.HitPos
-		end
+		return vector
 	end
 
 	local nodePoints = {}
@@ -204,11 +180,61 @@ if SERVER then
 			end
 		end
 		
-		if not vSpawnPoint then
+		if vSpawnPoint:IsZero() then
 			vSpawnPoint = self:GetSuitableVector()
 		end
 
 		return vSpawnPoint, isNode
+	end
+	
+	function ENT:InputToggle()
+		if self:GetActive() then
+			self:SetActive(false)
+			self:AddSolidFlags( FSOLID_NOT_SOLID )
+			self:AddEffects( EF_NODRAW )
+			
+			if nodePoints then
+				for _, node in pairs(nodePoints) do
+					node:AddEffects(EF_NODRAW)
+				end
+			end
+		else
+			self:SetActive(true)
+			self:RemoveSolidFlags( FSOLID_NOT_SOLID )
+			self:RemoveEffects( EF_NODRAW )
+			
+			if nodePoints then
+				for _, node in pairs(nodePoints) do
+					node:RemoveEffects(EF_NODRAW)
+				end
+			end
+		end
+	end
+
+	function ENT:InputHide()
+		if self:GetActive() then
+			self:SetActive(false)
+			self:AddSolidFlags( FSOLID_NOT_SOLID )
+			self:AddEffects( EF_NODRAW )
+			
+			if nodePoints then
+				for _, node in pairs(nodePoints) do
+					node:AddEffects(EF_NODRAW)
+				end
+			end
+		end
+	end
+
+	function ENT:InputUnhide()
+		self:SetActive(true)
+		self:RemoveSolidFlags( FSOLID_NOT_SOLID )
+		self:RemoveEffects( EF_NODRAW )
+		
+		if nodePoints then
+			for _, node in pairs(nodePoints) do
+				node:RemoveEffects(EF_NODRAW)
+			end
+		end
 	end
 	
 	function ENT:AddQuery(ply, type, amount)

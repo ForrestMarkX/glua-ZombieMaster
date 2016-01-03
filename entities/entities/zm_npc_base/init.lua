@@ -235,7 +235,6 @@ function ENT:Think()
 						physics:SetVelocity(velocity)
 					end
 				elseif class == "func_breakable" then
-				print(entity)
 					entity:Fire("Break", "", 0.1)
 				end
 				

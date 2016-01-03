@@ -12,7 +12,7 @@ CreateConVar("zm_nocollideplayers","0", FCVAR_NOTIFY, "Should players not collid
 CreateConVar("zm_banshee_limit", "-1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Sets maximum number of banshees per survivor that the ZM is allowed to have active at once. Set to 0 or lower to remove the cap. Disabled by default since new population system was introduced that in practice includes a banshee limit.")
 CreateConVar("zm_trap_triggerrange", "96", FCVAR_NONE, "The range trap trigger points have.")
 CreateConVar("zm_spawndelay", "0.75", FCVAR_NOTIFY, "Delay between creation of zombies at zombiespawn.")
-CreateConVar("zm_incometime", "10", FCVAR_NOTIFY, "Amount of time in seconds the Zombie Master gains resources.")
+CreateConVar("zm_incometime", "5", FCVAR_NOTIFY, "Amount of time in seconds the Zombie Master gains resources.")
 CreateConVar("zm_resourcegainperplayerdeathmin", "50", FCVAR_NOTIFY, "Min amount of resources the Zombie Master gains per player death.")
 CreateConVar("zm_resourcegainperplayerdeathmax", "100", FCVAR_NOTIFY, "Max amount of resources the Zombie Master gains per player death.")
 
@@ -35,8 +35,6 @@ local function ZM_Power_PhysExplode_SV(ply, command, arguments)
 		ply:PrintMessage(HUD_PRINTTALK, "Insufficient resources.\n")
 		return
 	end
-
-	ply:PrintMessage(HUD_PRINTTALK, "Explosion created")
 	
 	ply:SetZMPoints(ply:GetZMPoints() - GetConVar("zm_physexp_cost"):GetInt())
 
@@ -91,7 +89,6 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 		return
 	end
 
-	local vecSpot = Vector(0,0,0)
 	local vecHeadTarget = location
 
 	vecHeadTarget.z = vecHeadTarget.z + 64
@@ -109,30 +106,12 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 		end
 	end
 	
-	for _, pl in pairs(player.GetAll()) do
+	local visible = false
+	for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
 		if IsValid(pl) then
-			vecSpot = pl:GetPos()
-			
-			local tr = util.TraceLine( {
-				start = location,
-				endpos = vecSpot,
-				filter = player.GetAll(),
-				mask = MASK_OPAQUE
-			} )
-
-			local visible = false
-			if tr.fraction == 1.0 and pl:Team() == TEAM_HUMAN then
-				visible = true
-			end
-
-			local tr = util.TraceLine( {
-				start = vecHeadTarget,
-				endpos = vecSpot,
-				filter = player.GetAll(),
-				mask = MASK_OPAQUE
-			} )
-
-			if tr.fraction == 1.0 and pl:Team() == TEAM_HUMAN then
+			local pos = pl:GetPos()
+			local nearest = vecHeadTarget
+			if WorldVisible(pos, nearest) then
 				visible = true
 			end
 			
@@ -143,10 +122,8 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 		end
 	end
 	
-	local pZombie = GAMEMODE:SpawnZombie("npc_zombie", location, ply:EyeAngles(), cost)
+	local pZombie = gamemode.Call("SpawnZombie", ply, "npc_zombie", location, ply:EyeAngles(), GetConVar("zm_spotcreate_cost"):GetInt())
 	if IsValid(pZombie) then
-		pZombie:DropToFloor()
-		ply:SetZMPoints(ply:GetZMPoints() - GetConVar("zm_spotcreate_cost"):GetInt())
 		ply:PrintMessage(HUD_PRINTTALK, "Hidden zombie spawned.")
 	end
 end

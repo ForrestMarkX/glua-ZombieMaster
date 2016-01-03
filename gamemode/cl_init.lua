@@ -562,11 +562,6 @@ net.Receive("zm_centernotify", function(length)
 	GAMEMODE:CenterNotify(unpack(tab))
 end)
 
-net.Receive("zm_topnotify", function(length)
-	local tab = net.ReadTable()
-	GAMEMODE:TopNotify(unpack(tab))
-end)
-
 net.Receive("zm_mapinfo", function(length)
 	GAMEMODE.MapInfo = net.ReadString()
 end)

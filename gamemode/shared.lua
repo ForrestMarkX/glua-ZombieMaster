@@ -139,6 +139,30 @@ function GM:FindUseEntity(pl, ent)
 	return ent
 end
 
+function GM:IsSpecialPerson(pl, image)
+	local img, tooltip
+	local steamid = pl:SteamID()
+
+	if steamid == "STEAM_0:1:3307510" then
+		img = "VGUI/steam/games/icon_sourcesdk"
+		tooltip = "JetBoom\nCreator of Zombie Survival!"
+	elseif pl:IsAdmin() then
+		img = "icon16/shield.png"
+		tooltip = "Admin"
+	end
+
+	if img then
+		if CLIENT then
+			image:SetImage(img)
+			image:SetTooltip(tooltip)
+		end
+
+		return true
+	end
+
+	return false
+end
+
 function GM:SetRoundActive(active)
     SetGlobalBool("roundactive", active)
 end

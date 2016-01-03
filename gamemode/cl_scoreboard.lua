@@ -297,7 +297,7 @@ function PANEL:Refresh()
 	self.m_ScoreLabel:SetText(pl:Frags())
 	self.m_DeathLabel:SetText(pl:Deaths())
 	
-	if pl:Team() ~= TEAM_SURVIVOR then
+	if not pl:IsSurvivor() then
 		self.m_ScoreLabel:SetVisible(false)
 		self.m_DeathLabel:SetVisible(false)
 	else

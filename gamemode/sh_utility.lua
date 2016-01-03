@@ -1,5 +1,9 @@
 -- Original code from Zombie Survival by Jetboom
 
+function WorldVisible(posa, posb)
+	return not util.TraceLine({start = posa, endpos = posb, mask = MASK_SOLID_BRUSHONLY}).Hit
+end
+
 function TrueVisibleFilters(posa, posb, ...)
 	local filt = ents.FindByClass("projectile_*")
 	filt = table.Add(filt, player.GetAll())
@@ -64,4 +68,13 @@ function AccessorFuncDT(tab, membername, type, id)
 	tab["Get"..membername] = function(me)
 		return getter(me, id)
 	end
+end
+
+function util.Blood(pos, amount, dir, force, noprediction)
+	local effectdata = EffectData()
+		effectdata:SetOrigin(pos)
+		effectdata:SetMagnitude(amount)
+		effectdata:SetNormal(dir)
+		effectdata:SetScale(math.max(128, force))
+	util.Effect("bloodstream", effectdata, nil, noprediction)
 end

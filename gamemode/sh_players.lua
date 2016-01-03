@@ -348,16 +348,19 @@ if SERVER then
 		end
 	end
 	
-	function meta:CenterNotify(...)
-		net.Start("zs_centernotify")
-			net.WriteTable({...})
-		net.Send(self)
-	end
-	
-	function meta:TopNotify(...)
-		net.Start("zm_topnotify")
-			net.WriteTable({...})
-		net.Send(self)
+	function meta:Gib()
+		local pos = self:LocalToWorld(self:OBBCenter())
+
+		local effectdata = EffectData()
+			effectdata:SetEntity(self)
+			effectdata:SetOrigin(pos)
+		util.Effect("gib_player", effectdata, true, true)
+
+		self.Gibbed = CurTime()
+
+		timer.Simple(0, function()
+			GAMEMODE.CreateGibs(GAMEMODE, pos, self:LocalToWorld(self:OBBMaxs()).z - pos.z)
+		end)
 	end
 	
 	function meta:UnSpectateAndSpawn()

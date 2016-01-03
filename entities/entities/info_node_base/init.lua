@@ -10,7 +10,7 @@ function ENT:KeyValue( key, value )
 	elseif key == "trapcost" then
 		self:SetTrapCost(value)
 	elseif key == "active" then
-		self:SetActive(value)
+		self:SetActive(tobool(value))
 		
 		if not self:GetActive() then
 			self:AddSolidFlags( FSOLID_NOT_SOLID )

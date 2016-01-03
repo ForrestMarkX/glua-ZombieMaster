@@ -110,18 +110,6 @@ function GM:ZombieMasterHUD(scale)
 	end
 end
 
-function GM:CenterNotify(...)
-	if self.CenterNotificationHUD and self.CenterNotificationHUD:Valid() then
-		return self.CenterNotificationHUD:AddNotification(...)
-	end
-end
-
-function GM:TopNotify(...)
-	if self.TopNotificationHUD and self.TopNotificationHUD:Valid() then
-		return self.TopNotificationHUD:AddNotification(...)
-	end
-end
-
 function GM:ShowHelp()
 	gui.EnableScreenClicker(true)
 	
