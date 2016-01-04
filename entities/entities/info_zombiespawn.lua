@@ -30,16 +30,11 @@ function ENT:Initialize()
 end
 
 if SERVER then
-	local function ComputeZM(ply, resources, population, cost, popCost)
-		ply:TakeZMPoints(cost)
-		gamemode.Call("SetCurZombiePop", GAMEMODE:GetCurZombiePop() + popCost)
-	end
-	
 	function ENT:Think()
 		if #self.query > 0 then
 			local data = self.query[1]
 			
-			if data then
+			if data and IsValid(data.ply) then
 				local resources, population = data.ply:GetZMPoints(), GAMEMODE:GetCurZombiePop()
 
 				if population + data.popCost < GAMEMODE:GetMaxZombiePop() and data.ply:CanAfford(data.cost) then
