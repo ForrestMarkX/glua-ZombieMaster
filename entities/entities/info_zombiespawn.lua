@@ -66,7 +66,7 @@ if SERVER then
 							table.remove(self.query, 1)
 						end
 					else
-						local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), tr.HitNormal, data.cost)
+						local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
 						
 						timer.Simple(0.5, function()
 							local rally = self:GetRallyEntity()
@@ -235,10 +235,10 @@ if SERVER then
 	function ENT:AddQuery(ply, type, amount)
 		local data = GAMEMODE:GetZombieData(type)
 
-		if data and #self.query < 14 then
+		if data and #self.query < 18 then
 			if amount > 1 then
 				for i = 1, amount do
-					if #self.query == 14 then
+					if #self.query == 18 then
 						ply:PrintMessage(HUD_PRINTTALK, "Queue is full!")
 					else
 						table.insert(self.query, {type = type, cost = data.cost, ply = ply, popCost = data.popCost})
