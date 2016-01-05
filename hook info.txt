@@ -2,6 +2,9 @@
 Hook. Used to setup zombie tables for the spawn menu
 GM:BuildZombieDataTable()
 
+Hook. Called by scoreboard to draw a special icon for a player
+GM:IsSpecialPerson(Player ply, Panel image)
+
 =CLIENT=
 Hook. Sets if the player is placing a shockwave explosion
 GM:SetPlacingShockwave(bool b)
@@ -29,9 +32,6 @@ GM:SpawnTrapMenu()
 
 Hook. Called when you click a person's name in the scoreboard.
 GM:ClickedPlayerButton(Player ply, Panel panel)
-
-Hook. Called by scoreboard to draw a special icon for a player
-GM:IsSpecialPerson(Player ply, Panel image)
 
 Hook. Gets the current zombie squads for the Zombie Master
 GM:GetCurrentZombieGroups()
@@ -66,3 +66,6 @@ GM:GetPopulationCost(string entName)
 
 Hook. Sets the current zombie population
 GM:SetCurZombiePop(int amount)
+
+Hook. Used to spawn a zombie at the origin and angle
+GM:SpawnZombie(player pZM, string entname, vector origin, angles angles, int cost)

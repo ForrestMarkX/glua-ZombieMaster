@@ -144,8 +144,14 @@ function GM:IsSpecialPerson(pl, image)
 	local steamid = pl:SteamID()
 
 	if steamid == "STEAM_0:1:3307510" then
-		img = "VGUI/steam/games/icon_sourcesdk"
-		tooltip = "JetBoom\nCreator of Zombie Survival!"
+		img = "icon16/heart.png"
+		tooltip = "JetBoom\nContributor!"
+	elseif steamid == "STEAM_0:0:8232794" then
+		img = "icon16/heart.png"
+		tooltip = "Chewgum\nContributor!"
+	elseif steamid == "STEAM_0:0:18000855" then
+		img = "icon16/heart.png"
+		tooltip = "Mka0207\nContributor!"
 	elseif pl:IsAdmin() then
 		img = "icon16/shield.png"
 		tooltip = "Admin"
