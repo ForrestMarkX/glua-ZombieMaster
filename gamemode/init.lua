@@ -221,8 +221,10 @@ function GM:PlayerSpawn(ply)
 end
 
 function GM:IncreaseResources(pZM)
+	if not IsValid(pZM) then return end
+	
 	local players = #team.GetPlayers(TEAM_SURVIVOR)
-	local resources = self:GetZMPoints()
+	local resources = pZM:GetZMPoints()
 	local increase = GetConVar("zm_maxresource_increase"):GetInt()
 	
 	increase = increase * math.Clamp(players, 1, 5)
@@ -670,7 +672,7 @@ function GM:ZombieMasterVolunteers()
 			
 			pl:SetZMPoints(425)
 			pl:SetZMPointIncome(GetConVar("zm_maxresource_increase"):GetInt())
-			gamemode.Call("IncreaseResources", ply)
+			gamemode.Call("IncreaseResources", pl)
 			
 			income_time = CurTime() + GetConVar("zm_incometime"):GetInt()
 			
