@@ -368,6 +368,8 @@ function PANEL:Init()
 	
 	self.button1.buttons = {
 		{image = "VGUI/miniselectall", func = function() RunConsoleCommand("zm_selectall_zombies") end, tooltip = "Select all: Select all your zombies."},
+		{image = "VGUI/minishield", func = function() RunConsoleCommand("zm_switch_to_defense") end, tooltip = "Defend: Order selected units to defend their current location."},
+		{image = "VGUI/minicrosshair", func = function() RunConsoleCommand("zm_switch_to_offense") end, tooltip = "Attack: Order selected units to attack any humans they see."}
 	}
 	
 	self.button1.Paint = function(self)

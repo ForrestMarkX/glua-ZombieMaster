@@ -436,3 +436,27 @@ concommand.Add("zm_selectgroup", function(ply, command, arguments)
 		ply:PrintMessage(HUD_PRINTTALK, "Selecting group...")
 	end
 end)
+
+concommand.Add("zm_switch_to_defense", function(ply, command, arguments)
+	if ply:IsZM() then
+		for _, entity in pairs(ents.FindByClass("npc_*")) do
+			if IsValid(entity) and entity:GetNWBool("selected", false) and entity:IsNPC() then
+				entity:SetSchedule(SCHED_AMBUSH)
+				entity.isMoving = false
+			end
+		end
+		ply:PrintMessage(HUD_PRINTTALK, "Selected zombies are now in defensive mode")
+	end
+end)
+
+concommand.Add("zm_switch_to_offense", function(ply, command, arguments)
+	if ply:IsZM() then
+		for _, entity in pairs(ents.FindByClass("npc_*")) do
+			if IsValid(entity) and entity:GetNWBool("selected", false) and entity:IsNPC() then
+				entity:SetSchedule(SCHED_ALERT_WALK)
+				entity.isMoving = true
+			end
+		end
+		ply:PrintMessage(HUD_PRINTTALK, "Selected zombies are now in offensive mode")
+	end
+end)
