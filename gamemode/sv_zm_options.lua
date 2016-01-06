@@ -426,7 +426,7 @@ end)
 
 concommand.Add("zm_selectgroup", function(ply, command, arguments)
 	if ply:IsZM() then
-		local selection = GAMEMODE.groups[GAMEMODE.selectedgroup]
+		local selection = GAMEMODE.groups[GAMEMODE.selectedgroup] or {}
 		for i, npc in pairs(selection) do
 			if IsValid(npc) and npc:IsNPC() then
 				npc:SetNWBool("selected", true)
