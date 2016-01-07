@@ -42,18 +42,6 @@ if file.Exists(GM.FolderName.."/gamemode/maps/"..game.GetMap()..".lua", "LUA") t
 	include("maps/"..game.GetMap()..".lua")
 end
 
-function BroadcastLua(code)
-	for _, pl in pairs(player.GetAll()) do
-		pl:SendLua(code)
-	end
-end
-
-player.GetByUniqueID = player.GetByUniqueID or function(uid)
-	for _, pl in pairs(player.GetAll()) do
-		if pl:UniqueID() == uid then return pl end
-	end
-end
-
 function GM:InitPostEntity()
 	gamemode.Call("InitPostEntityMap")
 	RunConsoleCommand("mapcyclefile", "mapcycle_zombiemaster.txt")
