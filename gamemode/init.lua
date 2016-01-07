@@ -292,7 +292,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	end
 	
 	ply:PlayDeathSound()
-	timer.Simple(5, function() ply:ChangeTeam(TEAM_SPECTATOR) end)
+	timer.Simple(0.1, function() ply:ChangeTeam(TEAM_SPECTATOR) end)
 	
 	if team.NumPlayers(TEAM_SURVIVOR) == 1 and ply:Team() == TEAM_SURVIVOR then
 		LastHumanDied = true
