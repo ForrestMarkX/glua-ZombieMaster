@@ -102,8 +102,9 @@ end
 function GM:CanPlayerSuicide(ply)
 	if ply:Team() == TEAM_ZOMBIEMASTER then	
 		gamemode.Call("TeamVictorious", true, "The Zombie Master has submitted.\n")
-		return false
 	end
+	
+	return ply:Team() == TEAM_SURVIVOR
 end
 
 function GM:PlayerInitialSpawn(pl)
@@ -293,7 +294,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	ply:PlayDeathSound()
 	timer.Simple(5, function() ply:ChangeTeam(TEAM_SPECTATOR) end)
 	
-	if team.NumPlayers(TEAM_SURVIVOR) == 1 then
+	if team.NumPlayers(TEAM_SURVIVOR) == 1 and ply:Team() == TEAM_SURVIVOR then
 		LastHumanDied = true
 	end
 	
@@ -844,11 +845,11 @@ function GM:PlayerStepSoundTime(pl, iType, bWalking)
 end
 
 function GM:PlayerCanPickupWeapon(pl, ent)
-	if pl:Team() == TEAM_ZOMBIEMASTER then
-		return false
-	end
-	
-	return true
+	return pl:Team() == TEAM_SURVIVOR
+end
+
+function GM:PlayerCanPickupItem(pl, item)
+	return pl:Team() == TEAM_SURVIVOR
 end
 
 function GM:SetCurZombiePop(amount)
