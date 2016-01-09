@@ -30,6 +30,18 @@ function ENT:Initialize()
 end
 
 if SERVER then
+	function ENT:SetRallyEntity(entity)
+		if self.rallyEntity then
+			self.rallyEntity:Remove()
+		end
+		
+		self.rallyEntity = entity
+	end
+	
+	function ENT:GetRallyEntity()
+		return self.rallyEntity
+	end
+	
 	function ENT:Think()
 		if #self.query > 0 then
 			local data = self.query[1]
@@ -52,10 +64,12 @@ if SERVER then
 							local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
 							
 							timer.Simple(0.5, function()
-								local rally = self:GetRallyEntity()
-								if IsValid(self) and IsValid(rally) then
-									zombie:SetLastPosition(rally:GetPos())
-									zombie:SetSchedule(SCHED_FORCED_GO_RUN)
+								if IsValid(self) then
+									local rally = self:GetRallyEntity()
+									if IsValid(rally) then
+										zombie:SetLastPosition(rally:GetPos())
+										zombie:SetSchedule(SCHED_FORCED_GO_RUN)
+									end
 								end
 							end)
 						
@@ -69,10 +83,12 @@ if SERVER then
 						local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
 						
 						timer.Simple(0.5, function()
-							local rally = self:GetRallyEntity()
-							if IsValid(self) and IsValid(rally) then
-								zombie:SetLastPosition(rally:GetPos())
-								zombie:SetSchedule(SCHED_FORCED_GO_RUN)
+							if IsValid(self) then
+								local rally = self:GetRallyEntity()
+								if IsValid(rally) then
+									zombie:SetLastPosition(rally:GetPos())
+									zombie:SetSchedule(SCHED_FORCED_GO_RUN)
+								end
 							end
 						end)
 					
@@ -88,18 +104,6 @@ if SERVER then
 		
 		self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat())
 		return true
-	end
-	
-	function ENT:SetRallyEntity(entity)
-		if self.rallyEntity then
-			self.rallyEntity:Remove()
-		end
-		
-		self.rallyEntity = entity
-	end
-	
-	function ENT:GetRallyEntity()
-		return self.rallyEntity
 	end
 	
 	function ENT:KeyValue( key, value )
@@ -123,17 +127,20 @@ if SERVER then
 	
 	function ENT:GetSuitableVector()
 		local vector = Vector(0, 0, 0)
-		local angle = self:GetAngles()
-		local vForward = angle:Forward()
-		local vRight = angle:Right()
-		local vUp = angle:Up()
 		
-		local xDeviation = math.random(-128, 128)
-		local yDeviation = math.random(-128, 128)
+		repeat
+			local angle = self:GetAngles()
+			local vForward = angle:Forward()
+			local vRight = angle:Right()
+			local vUp = angle:Up()
+			
+			local xDeviation = math.random(-128, 128)
+			local yDeviation = math.random(-128, 128)
 
-		vector = self:GetPos() + (vForward * 64)
-		vector.x = vector.x + xDeviation
-		vector.y = vector.y + yDeviation
+			vector = self:GetPos() + (vForward * 64)
+			vector.x = vector.x + xDeviation
+			vector.y = vector.y + yDeviation
+		until util.IsInWorld(vector)
 		
 		return vector
 	end
@@ -190,7 +197,7 @@ if SERVER then
 			
 			if nodePoints then
 				for _, node in pairs(nodePoints) do
-					node:AddEffects(EF_NODRAW)
+					if IsValid(node) then node:AddEffects(EF_NODRAW) end
 				end
 			end
 		else
@@ -200,7 +207,7 @@ if SERVER then
 			
 			if nodePoints then
 				for _, node in pairs(nodePoints) do
-					node:RemoveEffects(EF_NODRAW)
+					if IsValid(node) then node:RemoveEffects(EF_NODRAW) end
 				end
 			end
 		end

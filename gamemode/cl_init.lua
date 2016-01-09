@@ -379,7 +379,7 @@ function GM:CreateVGUI()
 	self.powerMenu = vgui.Create("zm_powerpanel")
 	
 	timer.Simple(0.25, function()
-		if not self.powerMenu then
+		if not IsValid(self.powerMenu) then
 			self.powerMenu = vgui.Create("zm_powerpanel")
 		else
 			self.powerMenu:SetVisible(true)
@@ -507,7 +507,7 @@ function GM:PostDrawOpaqueRenderables()
 end
 
 function GM:RenderScreenspaceEffects()
-	if MySelf:Team() == TEAM_SPECTATOR then
+	if MySelf:IsSpectator() then
 		render.SetMaterial( Material( "zm_overlay.png", "smooth unlitgeneric nocull" ) )
 		render.DrawScreenQuad()
 	elseif MySelf:IsZM() then

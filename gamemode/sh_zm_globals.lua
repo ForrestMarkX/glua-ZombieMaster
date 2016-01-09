@@ -32,6 +32,17 @@ CARRY_DRAG_VOLUME = 120
 CARRY_SPEEDLOSS_PERKG = 1.3
 CARRY_SPEEDLOSS_MINSPEED = 88
 
+GM.HumanGibs = {
+	Model("models/gibs/HGIBS.mdl"),
+	Model("models/gibs/HGIBS_spine.mdl"),
+
+	Model("models/gibs/HGIBS_rib.mdl"),
+	Model("models/gibs/HGIBS_scapula.mdl"),
+	Model("models/gibs/antlion_gib_medium_2.mdl"),
+	Model("models/gibs/Antlion_gib_Large_1.mdl"),
+	Model("models/gibs/Strider_Gib4.mdl")
+}
+
 GM.RandomPlayerModels = {}
 for name, mdl in pairs(player_manager.AllValidModels()) do
 	table.insert(GM.RandomPlayerModels, name)

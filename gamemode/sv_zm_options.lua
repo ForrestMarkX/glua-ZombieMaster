@@ -411,16 +411,18 @@ end)
 concommand.Add("zm_setselectedgroup", function(ply, command, arguments)
 	if ply:IsZM() then
 		local groupnum = string.Replace(arguments[1], "Group ", "")
-		for i, group in pairs(groups) do
-			if groupnum == i then
-				GAMEMODE.selectedgroup = i
-				break
+		if groups then
+			for i, group in pairs(groups) do
+				if groupnum == i then
+					GAMEMODE.selectedgroup = i
+					break
+				end
 			end
+			
+			net.Start("zm_sendselectedgroup")
+				net.WriteUInt(GAMEMODE.selectedgroup, 8)
+			net.Send(ply)
 		end
-		
-		net.Start("zm_sendselectedgroup")
-			net.WriteUInt(GAMEMODE.selectedgroup, 8)
-		net.Send(ply)
 	end
 end)
 

@@ -84,6 +84,54 @@ function GM:PlayerSpawnAsSpectator( pl )
 end
 
 function GM:PlayerDeathThink(pl)
+	if pl:IsSpectator() then
+		if pl:GetObserverMode() == OBS_MODE_ROAMING then 
+			if pl:KeyPressed(IN_ATTACK) then
+				pl.SpectatedPlayerKey = (pl.SpectatedPlayerKey or 0) + 1
+				local players = {}
+
+				for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+					if v:Alive() and v ~= pl then
+						table.insert(players, v)
+					end
+				end
+				
+				if pl.SpectatedPlayerKey > #players then
+					pl.SpectatedPlayerKey = 0
+					return
+				end
+
+				pl:StripWeapons()
+				local specplayer = players[pl.SpectatedPlayerKey]
+
+				if specplayer then
+					pl:SetPos(specplayer:GetPos())
+				end
+			elseif pl:KeyPressed(IN_ATTACK2) then
+				pl.SpectatedPlayerKey = (pl.SpectatedPlayerKey or 0) - 1
+
+				local players = {}
+
+				for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+					if v:Alive() and v ~= pl then
+						table.insert(players, v)
+					end
+				end
+				
+				if pl.SpectatedPlayerKey < 0 then
+					pl.SpectatedPlayerKey = #players
+					return
+				end
+
+				pl:StripWeapons()
+				local specplayer = players[pl.SpectatedPlayerKey]
+
+				if specplayer then
+					pl:SetPos(specplayer:GetPos())
+				end
+			end
+		end
+	end
 	return false
 end
 
@@ -280,7 +328,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	end
 	
 	ply:PlayDeathSound()
-	timer.Simple(0.1, function() ply:ChangeTeam(TEAM_SPECTATOR) end)
+	timer.Simple(5, function() ply:ChangeTeam(TEAM_SPECTATOR) end)
 	
 	if team.NumPlayers(TEAM_SURVIVOR) == 1 and ply:Team() == TEAM_SURVIVOR then
 		LastHumanDied = true
@@ -772,23 +820,19 @@ function GM:KeyPress(pl, key)
 end
 
 function GM:PlayerUse(pl, ent)
-    if not pl:Alive() or pl:Team() == TEAM_ZOMBIEMASTER then return false end
-	
+	if not pl:Alive() or pl:IsZM() or pl:IsSpectator() then return false end
+
 	local entclass = ent:GetClass()
 	if entclass == "prop_door_rotating" then
 		if CurTime() < (ent.m_AntiDoorSpam or 0) then -- Prop doors can be glitched shut by mashing the use button.
 			return false
 		end
 		ent.m_AntiDoorSpam = CurTime() + 0.85
+	elseif pl:IsSurvivor() and not pl:IsCarrying() and pl:KeyPressed(IN_USE) then
+		self:TryHumanPickup(pl, ent)
 	end
 
-    if pl:IsHolding() and pl:GetHolding() ~= ent then return false end
-	
-    if pl:Team() == TEAM_SURVIVOR and not pl:IsCarrying() and pl:KeyPressed(IN_USE) then
-        self:TryHumanPickup(pl, ent)
-    end
-
-    return true
+	return true
 end
 
 function GM:PlayerSwitchFlashlight(pl, newstate)
@@ -858,8 +902,13 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 	local pZombie = ents.Create(entname)
 
 	if IsValid(pZombie) then
-		pZombie:SetPos(origin)
-		pZombie:DropToFloor()
+		local pos = origin + Vector(0, 0, 5)
+		pZombie:SetPos(pos)
+		
+		if not pZombie:IsOnGround() then
+			pZombie:DropToFloor()
+		end
+		
 		pZombie:SetOwner(pZM)
 
 		angles.x = 0.0

@@ -20,7 +20,7 @@ function ENT:Initialize()
 	
 	if SERVER then
 		timer.Simple(1, function()
-			if self:GetTrapCost() == 0 then
+			if self.GetTrapCost and self:GetTrapCost() == 0 then
 				self:SetTrapCost(self:GetCost() + 100)
 			end
 		end)

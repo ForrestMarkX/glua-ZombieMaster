@@ -137,7 +137,7 @@ function PANEL:Refresh()
 	if self.PlayerPanels == nil then self.PlayerPanels = {} end
 
 	for pl, panel in pairs(self.PlayerPanels) do
-		if not panel:Valid() or pl:IsValid() and pl:IsSpectator() then
+		if not panel:Valid() or pl:IsValid() then
 			self:RemovePlayerPanel(panel)
 		end
 	end
