@@ -286,7 +286,7 @@ function GM:PlayerShouldTakeDamage(pl, attacker)
 
 	if attacker:IsPlayer() and attacker ~= pl and not attacker.AllowTeamDamage and not pl.AllowTeamDamage and attacker:Team() == pl:Team() then return false end
 
-	return true
+	return pl:IsSurvivor()
 end
 
 function GM:PlayerNoClip(ply, desiredState)
@@ -902,13 +902,10 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 	local pZombie = ents.Create(entname)
 
 	if IsValid(pZombie) then
-		local pos = origin + Vector(0, 0, 5)
-		pZombie:SetPos(pos)
+		pZombie:SetPos(origin)
+		pZombie:DropToFloor()
 		
-		if not pZombie:IsOnGround() then
-			pZombie:DropToFloor()
-		end
-		
+		pZombie:SetPos(pZombie:GetPos() + Vector(0, 0, 5))
 		pZombie:SetOwner(pZM)
 
 		angles.x = 0.0

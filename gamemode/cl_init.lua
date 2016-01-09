@@ -392,6 +392,27 @@ function GM:SetDragging(b)
 	holdTime = CurTime()
 end
 
+function GM:IsMenuOpen()
+	if IsValid(self.objmenu) and self.objmenu:IsVisible() then
+		return true
+	end
+	
+	local menus = gamemode.Call("GetZombieMenus")
+	if menus then
+		for _, menu in pairs(menus) do
+			if IsValid(menu) and menu:IsVisible() then
+				return true
+			end
+		end
+	end
+	
+	if self.trapMenu and self.trapMenu:IsVisible() then
+		return true
+	end
+	
+	return false
+end
+
 local SCROLL_THRESHOLD = 8
 function GM:Think()
 	if input.IsMouseDown(MOUSE_LEFT) and holdTime < CurTime() and not isDragging and MySelf:IsZM() then
@@ -406,16 +427,19 @@ function GM:Think()
 	end
 	
 	if not isDragging and MySelf:IsZM() and vgui.CursorVisible() then
-		local mousex, mousey = gui.MousePos()	
-		if mousex <= SCROLL_THRESHOLD then
-			RunConsoleCommand("+left")
-			timer.Simple(0, function() RunConsoleCommand("-left") end)
-		elseif mousex >= (ScrW() - SCROLL_THRESHOLD) then
-			RunConsoleCommand("+right")
-			timer.Simple(0, function() RunConsoleCommand("-right") end)
-		else
-			RunConsoleCommand("-right")
-			timer.Simple(0, function() RunConsoleCommand("-left") end)
+		local menuopen = gamemode.Call("IsMenuOpen")
+		if not menuopen then
+			local mousex, mousey = gui.MousePos()	
+			if mousex <= SCROLL_THRESHOLD then
+				RunConsoleCommand("+left")
+				timer.Simple(0, function() RunConsoleCommand("-left") end)
+			elseif mousex >= (ScrW() - SCROLL_THRESHOLD) then
+				RunConsoleCommand("+right")
+				timer.Simple(0, function() RunConsoleCommand("-right") end)
+			else
+				RunConsoleCommand("-right")
+				timer.Simple(0, function() RunConsoleCommand("-left") end)
+			end
 		end
 		
 		-- +lookup and +lookdown seem to do nothing
@@ -538,6 +562,8 @@ function GM:RestartRound()
 	
 	GAMEMODE.ZombieGroups = nil
 	GAMEMODE.SelectedZombieGroups = nil
+	
+	gamemode.Call("ResetZombieMenus")
 	
 	placingShockWave = false
 	placingZombie = false

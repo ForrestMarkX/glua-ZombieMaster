@@ -119,7 +119,7 @@ function PANEL:CreatePlayerPanel(pl)
 	local curpan = self:GetPlayerPanel(pl)
 	if curpan and curpan:Valid() then return curpan end
 
-	local panel = vgui.Create("ZSPlayerPanel", pl:Team() == TEAM_ZOMBIEMASTER and self.ZombieList or self._LastTeam == TEAM_SURVIVOR and ScoreBoard.HumanList or ScoreBoard.SpectatorList)
+	local panel = vgui.Create("ZSPlayerPanel", pl:IsZM() and self.ZombieList or pl:IsSurvivor() and ScoreBoard.HumanList or ScoreBoard.SpectatorList)
 	panel:SetPlayer(pl)
 	panel:Dock(TOP)
 	panel:DockMargin(8, 2, 8, 2)
@@ -136,8 +136,8 @@ function PANEL:Refresh()
 
 	if self.PlayerPanels == nil then self.PlayerPanels = {} end
 
-	for pl, panel in pairs(self.PlayerPanels) do
-		if not panel:Valid() or pl:IsValid() then
+	for ply, panel in pairs(self.PlayerPanels) do
+		if not panel:Valid() then
 			self:RemovePlayerPanel(panel)
 		end
 	end

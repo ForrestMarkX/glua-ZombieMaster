@@ -39,6 +39,15 @@ GM:GetCurrentZombieGroups()
 Hook. Gets the current selected zombie squad
 GM:GetCurrentZombieGroup()
 
+Hook. Used to get all zombie spawn panels
+GM:GetZombieMenus()
+
+Hook. Used to remove all spawn panels
+GM:ResetZombieMenus()
+
+Hook. Checks if any menu is open and if so does not scroll your screen
+GM:IsMenuOpen()
+
 =SERVER=
 Hook. Called after the gamemode loads and sets map entites
 GM:InitPostEntityMap()

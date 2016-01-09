@@ -7,7 +7,7 @@ function ENT:Initialize()
 	self.m_Health = 25
 
 	if not self.DieTime then
-		self.DieTime = CurTime() + GAMEMODE.GibLifeTime
+		self.DieTime = CurTime() + 25
 	end
 
 	local modelid

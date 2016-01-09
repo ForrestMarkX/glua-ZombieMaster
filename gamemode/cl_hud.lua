@@ -125,12 +125,6 @@ function GM:ShowHelp()
 	frame:SetKeyboardInputEnabled(false)
 	frame:SetMouseInputEnabled(true)
 	frame:Center()
-	frame.Close = function(self)
-		if not MySelf:IsZM() then
-			gui.EnableScreenClicker(false)
-		end
-		self:Remove()
-	end
 	
 	local pan = vgui.Create("DPanel", frame)
 	pan:SetPos(100, 55)
@@ -162,7 +156,12 @@ function GM:ShowHelp()
 	but:AlignBottom(21)
 	but:AlignRight(30)
 	but:SetTextColor(color_white)
-	but.DoClick = function() frame:SetVisible(false) end
+	but.DoClick = function()
+		if not MySelf:IsZM() then
+			gui.EnableScreenClicker(false)
+		end
+		frame:SetVisible(false)
+	end
 	but.Paint = function(self, w, h) 
 		draw.OutlinedBox(0, 0, w, h, 2, Color(46, 46, 46))
 		if self:IsHovered() then
@@ -428,7 +427,7 @@ function GM:SpawnTrapMenu(class, ent)
 		
 		self.trapMenu = trapPanel
 	elseif class == "info_zombiespawn" and ent:GetActive() then
-		local data = GAMEMODE:GetZombieMenus()
+		local data = gamemode.Call("GetZombieMenus")
 		local menu = data[ent]
 		
 		if not IsValid(menu) then
