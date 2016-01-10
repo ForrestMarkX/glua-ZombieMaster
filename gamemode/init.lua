@@ -328,7 +328,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	end
 	
 	ply:PlayDeathSound()
-	timer.Simple(5, function() ply:ChangeTeam(TEAM_SPECTATOR) end)
+	timer.Simple(0.1, function() ply:ChangeTeam(TEAM_SPECTATOR) end)
 	
 	if team.NumPlayers(TEAM_SURVIVOR) == 1 and ply:Team() == TEAM_SURVIVOR then
 		LastHumanDied = true
@@ -453,11 +453,11 @@ function GM:RestartGame()
 	timer.Simple(0.25, function() self:DoRestartGame() end)
 end
 
-function GM:OnPlayerChangedTeam( ply, oldTeam, newTeam )
+function GM:OnPlayerChangedTeam(ply, oldTeam, newTeam)
 	if newTeam == TEAM_SPECTATOR then
-		local Pos = ply:EyePos()
-		ply:Spawn()
-		ply:SetPos( Pos )
+		ply:SetPos(ply:EyePos())
+		ply:Spectate(OBS_MODE_ROAMING)
+		ply:SetMoveType(MOVETYPE_NOCLIP)
 	elseif newTeam == TEAM_ZOMBIEMASTER then
 		timer.Simple(0.1, function() ply:SendLua("GAMEMODE:CreateVGUI()") end)
 	end
