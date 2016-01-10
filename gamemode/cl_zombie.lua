@@ -78,7 +78,7 @@ AccessorFunc(PANEL, "m_iFlags", 	"Zombieflags", 	FORCE_NUMBER)
 AccessorFunc(PANEL, "m_iCurrent", 	"Current", 		FORCE_NUMBER)
 
 function PANEL:Paint(w, h)
-	draw.RoundedBox(0, 0, 0, w, h, Color(60, 0, 0, 100))
+	draw.RoundedBox(0, 0, 0, w, h, Color(60, 0, 0, 200))
 end
 
 local function PaintButton(self, w, h)
@@ -411,7 +411,7 @@ function PANEL:Init()
 				
 				self.toolpan.Paint = function(self, w, h)
 					draw.RoundedBox(8, 0, 0, w, h, Color(89, 0, 0))
-					draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(59, 0, 0))
+					draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
 				end
 				
 				self.toollab = vgui.Create("DLabel", self.toolpan)

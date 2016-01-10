@@ -45,7 +45,7 @@ function SWEP:DrawWorldModel()
 	self:Anim_DrawWorldModel()
 end
 
-local colBG = Color(135, 0, 0, 90)
+local colBG = Color(60, 0, 0, 200)
 local colRed = Color(220, 0, 0, 230)
 local colYellow = Color(220, 220, 0, 230)
 local colWhite = Color(220, 220, 220, 230)
@@ -70,7 +70,7 @@ function SWEP:DrawHUD()
 	local spare = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
 	local maxclip = self.Primary.ClipSize
 
-	draw.RoundedBox(16, x, y, wid, hei, colBG)
+	draw.RoundedBox(16, x + 2, y + 2, wid , hei, colBG)
 
 	local displayspare = maxclip > 0 and self.Primary.DefaultClip ~= 99999
 	if displayspare or not self.DontDrawSpare then

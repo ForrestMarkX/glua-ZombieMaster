@@ -8,7 +8,7 @@ ENT.CleanupPriority = 1
 
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetSolid(SOLID_VPHYSICS)
+	self:SetSolid(SOLID_BBOX)
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 
 	self:SetTrigger(true)
@@ -72,6 +72,7 @@ function ENT:Touch(ent)
 					wepclass:SetClip1(self:GetClip1())
 					wepclass:SetClip2(self:GetClip2())
 				end
+				activator:SendLua("surface.PlaySound('items/ammo_pickup.wav')")
 				self:RemoveNextFrame()
 			end
 		end

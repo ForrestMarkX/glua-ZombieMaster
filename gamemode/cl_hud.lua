@@ -35,9 +35,9 @@ end
 
 function GM:HumanHUD(screenscale)	
 	local wid, hei = 225 * screenscale, 72 * screenscale
-	local x, y = ScrW() - wid - screenscale * 1620, ScrH() - hei - screenscale * 32
+	local x, y = ScrW() - wid - screenscale * (ScrW() - (ScrW() * 0.18)), ScrH() - hei - screenscale * 32
 	
-	draw.RoundedBox(16, x, y, wid, hei, Color(135, 0, 0, 90))
+	draw.RoundedBox(16, x + 2, y + 2, wid, hei, Color(60, 0, 0, 200))
 	
 	local health = MySelf:Health()
 	local healthCol = health <= 10 and Color(185, 0, 0, 255) or health <= 30 and Color(150, 50, 0) or health <= 60 and Color(255, 200, 0) or color_white
@@ -120,14 +120,14 @@ function GM:ShowHelp()
 	
 	local frame = vgui.Create("DEXRoundedFrame")
 	frame:SetWide(ScrW() * 0.75)
-	frame:SetTall(math.min(ScrW(), 900))
+	frame:SetTall(math.min(ScrH() - (ScrH() * 0.1), 900))
 	frame:SetTitle(" ")
 	frame:SetKeyboardInputEnabled(false)
 	frame:SetMouseInputEnabled(true)
 	frame:Center()
 	
 	local pan = vgui.Create("DPanel", frame)
-	pan:SetPos(100, 55)
+	pan:SetPos(frame:GetWide() * 0.08, frame:GetTall() * 0.08)
 	pan:SetSize(frame:GetWide() * 0.85, frame:GetTall() * 0.85)
 	pan.Paint = function(self, w, h) 
 		draw.RoundedBox(8, 0, 0, w, h, Color(24, 24, 24))
@@ -151,10 +151,10 @@ function GM:ShowHelp()
 	local but = vgui.Create("DButton", frame)
 	but:SetFont("ZSHUDFontSmaller")
 	but:SetText("Okay")
-	but:SetTall(44)
-	but:SetWide(200)
-	but:AlignBottom(21)
-	but:AlignRight(30)
+	but:SetTall(frame:GetTall() * 0.05)
+	but:SetWide(frame:GetWide() * 0.13)
+	but:AlignBottom(frame:GetTall() * 0.012)
+	but:AlignRight(frame:GetWide() * 0.062)
 	but:SetTextColor(color_white)
 	but.DoClick = function()
 		if not MySelf:IsZM() then
@@ -165,7 +165,7 @@ function GM:ShowHelp()
 	but.Paint = function(self, w, h) 
 		draw.OutlinedBox(0, 0, w, h, 2, Color(46, 46, 46))
 		if self:IsHovered() then
-			hoverColor = Color(95, 0, 0, 255)
+			hoverColor = Color(40, 0, 0, 200)
 		else
 			hoverColor = Color(30, 30, 30, 80)
 		end
@@ -196,7 +196,7 @@ function GM:MakePreferredMenu()
 		self:Remove()
 	end
 	frame.Paint = function(self)
-		draw.RoundedBox(8, 0, 0, self:GetWide(), self:GetTall(), Color(59, 0, 0, 180))
+		draw.RoundedBox(8, 0, 0, self:GetWide(), self:GetTall(), Color(60, 0, 0, 200))
 	end
 	
 	local label = vgui.Create("DLabel", frame)
@@ -225,7 +225,7 @@ function GM:MakePreferredMenu()
 			col2 = Color(95, 0, 0)
 		else
 			col = Color(89, 0, 0)
-			col2 = Color(59, 0, 0)
+			col2 = Color(52, 0, 0)
 		end
 		draw.RoundedBox(0, 0, 0, w, h, col)
 		draw.RoundedBox(0, 2, 2, w - 4, h - 4, col2)
@@ -249,7 +249,7 @@ function GM:MakePreferredMenu()
 			col2 = Color(95, 0, 0)
 		else
 			col = Color(89, 0, 0)
-			col2 = Color(59, 0, 0)
+			col2 = Color(52, 0, 0)
 		end
 		draw.RoundedBox(0, 0, 0, w, h, col)
 		draw.RoundedBox(0, 2, 2, w - 4, h - 4, col2)
@@ -265,17 +265,17 @@ function GM:MakePreferredMenu()
 end
 
 local boxColor = Color(115, 0, 0)
-local surfaceColor = Color(52, 0, 0, 240)
+local surfaceColor = Color(52, 0, 0, 250)
 local function trapMenuPaint(self, w, h)
 	if not self.bActive then
 		boxColor = Color(58, 0, 0)
-		surfaceColor = Color(26, 0, 0, 240)
+		surfaceColor = Color(26, 0, 0, 250)
 	elseif self:IsHovered() then
 		boxColor = Color(173, 0, 0)
-		surfaceColor = Color(78, 0, 0, 240)
+		surfaceColor = Color(78, 0, 0, 250)
 	else
 		boxColor = Color(115, 0, 0)
-		surfaceColor = Color(52, 0, 0, 240)
+		surfaceColor = Color(52, 0, 0, 250)
 	end
 	
 	draw.OutlinedBox(0, 0, w, h, 2, boxColor)
@@ -302,7 +302,7 @@ function GM:SpawnTrapMenu(class, ent)
 		trapPanel:SetMouseInputEnabled(true)
 		trapPanel:AlignTop(10)
 		trapPanel:AlignLeft(20)
-		trapPanel:SetColor(Color(40, 0, 0, 210))
+		trapPanel:SetColor(Color(60, 0, 0, 200))
 		trapPanel.PerformLayout = function(self)
 			self.lblTitle:SetWide(self:GetWide() - 25)
 			self.lblTitle:SetPos(12, 8)

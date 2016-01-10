@@ -228,7 +228,7 @@ if SERVER then
 			
 			if nodePoints then
 				for _, node in pairs(nodePoints) do
-					node:AddEffects(EF_NODRAW)
+					if IsValid(node) then  node:AddEffects(EF_NODRAW) end
 				end
 			end
 		end
@@ -241,7 +241,7 @@ if SERVER then
 		
 		if nodePoints then
 			for _, node in pairs(nodePoints) do
-				node:RemoveEffects(EF_NODRAW)
+				if IsValid(node) then node:RemoveEffects(EF_NODRAW) end
 			end
 		end
 	end

@@ -7,7 +7,7 @@ ENT.CleanupPriority = 2
 
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetSolid(SOLID_VPHYSICS)
+	self:SetSolid(SOLID_BBOX)
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	
 	self:SetTrigger(true)

@@ -73,7 +73,7 @@ function GM:AddNetworkStrings()
 	util.AddNetworkString("zm_sendselectedgroup")
 end
 
-function GM:PlayerSpawnAsSpectator( pl )
+function GM:PlayerSpawnAsSpectator(pl)
 	pl:StripWeapons()
 	pl:ChangeTeam(TEAM_SPECTATOR)
 	pl:Spectate(OBS_MODE_ROAMING)
@@ -136,7 +136,7 @@ function GM:PlayerDeathThink(pl)
 end
 
 function GM:CanPlayerSuicide(ply)
-	if ply:Team() == TEAM_ZOMBIEMASTER then	
+	if ply:Team() == TEAM_ZOMBIEMASTER and not self:GetRoundEnd() then	
 		gamemode.Call("TeamVictorious", true, "The Zombie Master has submitted.\n")
 	end
 	
@@ -144,6 +144,8 @@ function GM:CanPlayerSuicide(ply)
 end
 
 function GM:PlayerInitialSpawn(pl)
+	pl:SetTeam(TEAM_UNASSIGNED)
+	
 	if self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and not NotifiedRestart then
 		PrintMessage(HUD_PRINTTALK, "The round is restarting...\n" )
 		timer.Simple(2, function() gamemode.Call("PreRestartRound") end)
@@ -153,9 +155,6 @@ function GM:PlayerInitialSpawn(pl)
 	
 	pl.NextPainSound = 0
 	pl.IsReady = false
-	timer.Simple(0.1, function()
-		gamemode.Call("PlayerSpawnAsSpectator", pl)
-	end)
 	
 	if self.ReadyTimer == 0 and not zm_timer_started then
 		zm_timer_started = true
@@ -207,6 +206,11 @@ VoiceSetTranslate["models/player/moe_glados_p.mdl"] = "female"
 VoiceSetTranslate["models/grim.mdl"] = "combine"
 VoiceSetTranslate["models/jason278-players/gabe_3.mdl"] = "monk"
 function GM:PlayerSpawn(ply)
+	if ply:IsSpectator() or ply:Team() == TEAM_UNASSIGNED then
+		gamemode.Call("PlayerSpawnAsSpectator", ply)
+		return
+	end
+	
 	if ply:Team() == TEAM_SURVIVOR then
 		ply:StripWeapons()
 		ply:SetColor(color_white)
@@ -255,6 +259,8 @@ function GM:PlayerSpawn(ply)
 	end
 	
 	ply:SetNoTarget(not ply:IsSurvivor())
+	
+	hook.Call("PlayerLoadout", GAMEMODE, ply)
 end
 
 function GM:IncreaseResources(pZM)
@@ -549,8 +555,6 @@ function GM:InitialSpawnRound(ply)
 		ply:SetNoCollideWithTeammates(true)
 		ply:SetCustomCollisionCheck(true)
 	end
-	
-	ply:Give("weapon_zm_fists")
 end
 
 function GM:PlayerReady(pl)
@@ -562,8 +566,6 @@ function GM:PlayerReadyRound(pl)
 	table.RemoveByValue(self.UnReadyPlayers, pl)
 	
 	pl:SendLua("GAMEMODE:MakePreferredMenu()")
-	pl:ConCommand("-right")
-	pl:ConCommand("-left")
 	
 	if self:GetRoundActive() and CurTime() < 10 then
 		gamemode.Call("InitialSpawnRound", pl)
@@ -629,6 +631,20 @@ function GM:PlayerPostThink(ply)
 			income_time = CurTime() + GetConVar("zm_incometime"):GetInt()
 		end
 	end
+end
+
+function GM:PlayerLoadout(ply)
+	if ply:IsSurvivor() then
+		ply:Give("weapon_zm_fists")
+		ply:SelectWeapon("weapon_zm_fists")
+		
+		local wep = ply:GetActiveWeapon()
+		if IsValid(wep) then
+			wep:SetHoldType("fist")
+		end
+	end
+	
+	return true
 end
 
 local NextTick = 0
@@ -836,11 +852,6 @@ function GM:PlayerUse(pl, ent)
 end
 
 function GM:PlayerSwitchFlashlight(pl, newstate)
-	if pl:Team() == TEAM_ZOMBIEMASTER then
-		pl:SendLua("RunConsoleCommand('zm_power_nightvision')")
-		return false
-	end
-
 	return pl:IsSurvivor()
 end
 
@@ -923,18 +934,6 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 	
 	return NULL
 end
-
-net.Receive("zm_trigger", function(length)
-	local ent = net.ReadEntity()
-	local activator = net.ReadEntity()
-	local type = net.ReadString()
-	
-	if type == "trap" then
-		ent:Trigger(activator)
-	elseif type == "spawn" then
-		ent:CreateUnit("npc_zombie")
-	end
-end)
 
 function GM:AddResources()
 	resource.AddWorkshop("591300663")
