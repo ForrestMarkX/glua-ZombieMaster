@@ -88,7 +88,7 @@ function ENT:SpawnRagdoll(force)
 		ragdoll:SetKeyValue("nogibshadows", "1")
 		ragdoll:SetKeyValue("disablereceiveshadows", "1")
 		ragdoll:Spawn()
-		ragdoll:SetVelocity(force or 0)
+		ragdoll:SetVelocity(force or Vector(0, 0, 0))
 		ragdoll:Fire("Shoot", "", 0)
 		ragdoll:Fire("Kill", "", 1)
 	end
