@@ -24,7 +24,8 @@ AddCSLuaFile("cl_targetid.lua")
 AddCSLuaFile("vgui/dpingmeter.lua")
 AddCSLuaFile("vgui/dteamcounter.lua")
 AddCSLuaFile("vgui/dteamheading.lua")
-AddCSLuaFile("vgui/dzmhud.lua")
+AddCSLuaFile("vgui/dzombiepanel.lua")
+AddCSLuaFile("vgui/dpowerpanel.lua")
 
 AddCSLuaFile("vgui/dexnotificationslist.lua")
 AddCSLuaFile("vgui/dexroundedframe.lua")
@@ -84,54 +85,6 @@ function GM:PlayerSpawnAsSpectator(pl)
 end
 
 function GM:PlayerDeathThink(pl)
-	if pl:IsSpectator() then
-		if pl:GetObserverMode() == OBS_MODE_ROAMING then 
-			if pl:KeyPressed(IN_ATTACK) then
-				pl.SpectatedPlayerKey = (pl.SpectatedPlayerKey or 0) + 1
-				local players = {}
-
-				for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
-					if v:Alive() and v ~= pl then
-						table.insert(players, v)
-					end
-				end
-				
-				if pl.SpectatedPlayerKey > #players then
-					pl.SpectatedPlayerKey = 0
-					return
-				end
-
-				pl:StripWeapons()
-				local specplayer = players[pl.SpectatedPlayerKey]
-
-				if specplayer then
-					pl:SetPos(specplayer:GetPos())
-				end
-			elseif pl:KeyPressed(IN_ATTACK2) then
-				pl.SpectatedPlayerKey = (pl.SpectatedPlayerKey or 0) - 1
-
-				local players = {}
-
-				for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
-					if v:Alive() and v ~= pl then
-						table.insert(players, v)
-					end
-				end
-				
-				if pl.SpectatedPlayerKey < 0 then
-					pl.SpectatedPlayerKey = #players
-					return
-				end
-
-				pl:StripWeapons()
-				local specplayer = players[pl.SpectatedPlayerKey]
-
-				if specplayer then
-					pl:SetPos(specplayer:GetPos())
-				end
-			end
-		end
-	end
 	return false
 end
 
@@ -285,18 +238,8 @@ function GM:PlayerSetHandsModel( ply, ent )
 	end
 end
 
-function GM:PlayerShouldTakeDamage(pl, attacker)
-	if attacker.PBAttacker and attacker.PBAttacker:IsValid() and CurTime() < attacker.NPBAttacker then -- Protection against prop_physbox team killing. physboxes don't respond to SetPhysicsAttacker()
-		attacker = attacker.PBAttacker
-	end
-
-	if attacker:IsPlayer() and attacker ~= pl and not attacker.AllowTeamDamage and not pl.AllowTeamDamage and attacker:Team() == pl:Team() then return false end
-
-	return pl:IsSurvivor()
-end
-
 function GM:PlayerNoClip(ply, desiredState)
-	return ply:IsSuperAdmin()
+	return ply:IsSuperAdmin() or ply:IsZM() or ply:IsSpectator()
 end
 
 local LastHumanDied = false	
@@ -334,20 +277,19 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	end
 	
 	ply:PlayDeathSound()
-	timer.Simple(0.1, function() ply:ChangeTeam(TEAM_SPECTATOR) end)
 	
-	if team.NumPlayers(TEAM_SURVIVOR) == 1 and ply:Team() == TEAM_SURVIVOR then
-		LastHumanDied = true
-	end
-	
-	if not self:GetRoundEnd() then
-		if LastHumanDied then
-			gamemode.Call("TeamVictorious", false, "Undeath has prevailed!\n")
+	timer.Simple(0.1, function() 
+		ply:ChangeTeam(TEAM_SPECTATOR) 
+		
+		if not self:GetRoundEnd() and self:GetRoundActive() then
+			if team.NumPlayers(TEAM_SURVIVOR) == 0 then
+				gamemode.Call("TeamVictorious", false, "Undeath has prevailed!\n")
+			end
 		end
-	end
+	end)
 end
 
-function GM:PostPlayerDeath( ply )
+function GM:PostPlayerDeath(ply)
 	ply:Spectate(OBS_MODE_ROAMING)
 end
 
@@ -462,10 +404,17 @@ end
 function GM:OnPlayerChangedTeam(ply, oldTeam, newTeam)
 	if newTeam == TEAM_SPECTATOR then
 		ply:SetPos(ply:EyePos())
-		ply:Spectate(OBS_MODE_ROAMING)
-		ply:SetMoveType(MOVETYPE_NOCLIP)
 	elseif newTeam == TEAM_ZOMBIEMASTER then
 		timer.Simple(0.1, function() ply:SendLua("GAMEMODE:CreateVGUI()") end)
+	end
+	
+	if newteam ~= TEAM_SURVIVOR then
+		ply:Spectate(OBS_MODE_ROAMING)
+		ply:SetMoveType(MOVETYPE_NOCLIP)
+		ply:GodEnable()
+	else
+		ply:SetMoveType(MOVETYPE_WALK)
+		ply:GodDisable()
 	end
 end
 
@@ -624,11 +573,105 @@ function GM:GetRoundStartTime()
 end
 
 local income_time = 0
-function GM:PlayerPostThink(ply)
+function GM:PlayerPostThink(pl)
 	if income_time ~= 0 and income_time <= CurTime() then
-		if ply:IsZM() then
-			ply:AddZMPoints(ply:GetZMPointIncome())
+		if pl:IsZM() then
+			pl:AddZMPoints(pl:GetZMPointIncome())
 			income_time = CurTime() + GetConVar("zm_incometime"):GetInt()
+		end
+	end
+	
+	if pl:IsSpectator() then
+		if pl:GetObserverMode() == OBS_MODE_ROAMING then 
+			if pl:KeyPressed(IN_ATTACK) then
+				pl.SpectatedPlayerKey = (pl.SpectatedPlayerKey or 0) + 1
+				local players = {}
+
+				for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+					if v:Alive() and v ~= pl then
+						table.insert(players, v)
+					end
+				end
+				
+				if pl.SpectatedPlayerKey > #players then
+					pl.SpectatedPlayerKey = 0
+					return
+				end
+
+				pl:StripWeapons()
+				local specplayer = players[pl.SpectatedPlayerKey]
+
+				if specplayer then
+					pl:SetPos(specplayer:GetPos())
+				end
+			elseif pl:KeyPressed(IN_ATTACK2) then
+				pl.SpectatedPlayerKey = (pl.SpectatedPlayerKey or 0) - 1
+
+				local players = {}
+
+				for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+					if v:Alive() and v ~= pl then
+						table.insert(players, v)
+					end
+				end
+				
+				if pl.SpectatedPlayerKey < 0 then
+					pl.SpectatedPlayerKey = #players
+					return
+				end
+
+				pl:StripWeapons()
+				local specplayer = players[pl.SpectatedPlayerKey]
+
+				if specplayer then
+					pl:SetPos(specplayer:GetPos())
+				end
+			end
+		end
+	elseif pl:IsZM() then
+		if pl:KeyPressed(IN_RELOAD) then
+			pl.SpectatedPlayerKey = (pl.SpectatedPlayerKey or 0) + 1
+			local players = {}
+
+			for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+				if v:Alive() and v ~= pl then
+					table.insert(players, v)
+				end
+			end
+			
+			if pl.SpectatedPlayerKey > #players then
+				pl.SpectatedPlayerKey = 0
+				return
+			end
+
+			pl:StripWeapons()
+			local specplayer = players[pl.SpectatedPlayerKey]
+
+			if specplayer then
+				pl:SetPos(specplayer:GetPos())
+			end
+		elseif pl:KeyPressed(IN_USE) then
+			pl.SpectatedPlayerKey = (pl.SpectatedPlayerKey or 0) - 1
+
+			local players = {}
+
+			for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+				if v:Alive() and v ~= pl then
+					table.insert(players, v)
+				end
+			end
+			
+			if pl.SpectatedPlayerKey < 0 then
+				pl.SpectatedPlayerKey = #players
+				return
+			end
+
+			pl:StripWeapons()
+			local specplayer = players[pl.SpectatedPlayerKey]
+
+			if specplayer then
+				pl:SetPos(specplayer:GetPos())
+			end
 		end
 	end
 end

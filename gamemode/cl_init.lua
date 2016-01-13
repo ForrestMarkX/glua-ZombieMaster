@@ -12,7 +12,8 @@ include("cl_zombie.lua")
 include("vgui/dpingmeter.lua")
 include("vgui/dteamcounter.lua")
 include("vgui/dteamheading.lua")
-include("vgui/dzmhud.lua")
+include("vgui/dzombiepanel.lua")
+include("vgui/dpowerpanel.lua")
 
 include("vgui/dexnotificationslist.lua")
 include("vgui/dexroundedframe.lua")
@@ -174,10 +175,6 @@ function GM:CreateFonts()
 	
 	surface.CreateLegacyFont("Consolas", 20, 700, true, false, "zm_hud_font", false, true)
 	surface.CreateLegacyFont("Consolas", 16, 700, true, false, "zm_hud_font2", false, true)
-end
-
-function GM:PlayerShouldTakeDamage(pl, attacker)
-	return pl == attacker or not attacker:IsPlayer() or pl:Team() ~= attacker:Team() or pl.AllowTeamDamage or attacker.AllowTeamDamage
 end
 
 local colBlur = Color(0, 0, 0)

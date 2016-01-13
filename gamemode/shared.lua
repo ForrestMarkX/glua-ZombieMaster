@@ -127,6 +127,16 @@ function GM:OnPlayerHitGround(pl, inwater, hitfloater, speed)
     return true
 end
 
+function GM:PlayerShouldTakeDamage(pl, attacker)
+	if attacker.PBAttacker and attacker.PBAttacker:IsValid() and CurTime() < attacker.NPBAttacker then -- Protection against prop_physbox team killing. physboxes don't respond to SetPhysicsAttacker()
+		attacker = attacker.PBAttacker
+	end
+
+	if attacker:IsPlayer() and attacker ~= pl and not attacker.AllowTeamDamage and not pl.AllowTeamDamage and attacker:Team() == pl:Team() then return false end
+
+	return pl:IsSurvivor()
+end
+
 function GM:PlayerTraceAttack(pl, dmginfo, dir, trace)
 end
 
@@ -234,8 +244,8 @@ function GM:BuildZombieDataTable()
 	shambler.description = "Weak and slow, but packs a punch and smashes barricades."
 	shambler.icon = "VGUI/zombies/info_shambler"
 	shambler.flag = 1
-	shambler.cost = self:GetResourceCost(shambler.class)
-	shambler.popCost = self:GetPopulationCost(shambler.class)
+	shambler.cost = gamemode.Call("GetResourceCost", shambler.class)
+	shambler.popCost = gamemode.Call("GetPopulationCost", shambler.class)
 
 	self:AddZombieType(shambler)
 
@@ -246,8 +256,8 @@ function GM:BuildZombieDataTable()
 	banshee.description = "A fast zombie, it's faster than the rest. But it can't take that much damage."
 	banshee.icon = "VGUI/zombies/info_banshee"
 	banshee.flag = 2
-	banshee.cost = self:GetResourceCost(banshee.class)
-	banshee.popCost = self:GetPopulationCost(banshee.class)
+	banshee.cost = gamemode.Call("GetResourceCost", banshee.class)
+	banshee.popCost = gamemode.Call("GetPopulationCost", banshee.class)
 
 	self:AddZombieType(banshee)
 
@@ -258,8 +268,8 @@ function GM:BuildZombieDataTable()
 	hulk.description = "Big. Strong. Hulks smash humans to bits."
 	hulk.icon = "VGUI/zombies/info_hulk"
 	hulk.flag = 4
-	hulk.cost = self:GetResourceCost(hulk.class)
-	hulk.popCost = self:GetPopulationCost(hulk.class)
+	hulk.cost = gamemode.Call("GetResourceCost", hulk.class)
+	hulk.popCost = gamemode.Call("GetPopulationCost", hulk.class)
 
 	self:AddZombieType(hulk)
 
@@ -270,8 +280,8 @@ function GM:BuildZombieDataTable()
 	drifter.description = "Spits disorienting acid over a short distance."
 	drifter.icon = "VGUI/zombies/info_drifter"
 	drifter.flag = 8
-	drifter.cost = self:GetResourceCost(drifter.class)
-	drifter.popCost = self:GetPopulationCost(drifter.class)
+	drifter.cost = gamemode.Call("GetResourceCost", drifter.class)
+	drifter.popCost = gamemode.Call("GetPopulationCost", drifter.class)
 
 	self:AddZombieType(drifter)
 
@@ -282,8 +292,8 @@ function GM:BuildZombieDataTable()
 	immolator.description = "Burns itself and everything around it in combat."
 	immolator.icon = "VGUI/zombies/info_immolator"
 	immolator.flag = 16
-	immolator.cost = self:GetResourceCost(immolator.class)
-	immolator.popCost = self:GetPopulationCost(immolator.class)
+	immolator.cost = gamemode.Call("GetResourceCost", immolator.class)
+	immolator.popCost = gamemode.Call("GetPopulationCost", immolator.class)
 
 	self:AddZombieType(immolator)
 end
