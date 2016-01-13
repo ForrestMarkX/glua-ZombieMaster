@@ -70,9 +70,8 @@ function ENT:PlayVoiceSound(sounds)
 	return output
 end
 
-function ENT:SpawnRagdoll(dmginfo)
+function ENT:SpawnRagdoll(force)
 	local position, angles, model = self:GetPos(), self:GetAngles(), self:GetModel()
-	local force = dmginfo:GetDamageForce()
 	
 	if model then
 		local ragdoll = ents.Create("env_shooter")
@@ -89,13 +88,13 @@ function ENT:SpawnRagdoll(dmginfo)
 		ragdoll:SetKeyValue("nogibshadows", "1")
 		ragdoll:SetKeyValue("disablereceiveshadows", "1")
 		ragdoll:Spawn()
-		ragdoll:SetVelocity(force)
+		ragdoll:SetVelocity(force or 0)
 		ragdoll:Fire("Shoot", "", 0)
 		ragdoll:Fire("Kill", "", 1)
 	end
 end
 
-function ENT:Death(spawnRagdoll, killer, dmginfo)
+function ENT:Death(killer, force)
 	if not self.computedDeath then
 		if IsValid(killer) and killer:IsPlayer() then
 			killer:AddFrags(1)
@@ -118,12 +117,13 @@ function ENT:Death(spawnRagdoll, killer, dmginfo)
 	self:PlayVoiceSound(self.deathSounds)
 	
 	self:SetSchedule(SCHED_FALL_TO_GROUND)
-	self:SpawnRagdoll(dmginfo)
+	self:SpawnRagdoll(force)
 	self:Remove()
 end
 
 function ENT:OnTakeDamage(dmginfo)
 	local damage = dmginfo:GetDamage()
+	local force = dmginfo:GetDamageForce()
 	local position = dmginfo:GetDamagePosition()
 	
 	if not position then
@@ -139,8 +139,7 @@ function ENT:OnTakeDamage(dmginfo)
 
 	if self:Health() <= 0 then
 		local killer = dmginfo:GetAttacker()
-		
-		self:Death(true, killer, dmginfo)
+		self:Death(killer, force)
 	end
 	
 	self:PlayVoiceSound(self.painSounds)

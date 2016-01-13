@@ -206,7 +206,7 @@ function PANEL:Populate()
 		buttonFive:MoveRightOf(buttonSingle, 5)
 		
 		local zombieFlags = self:GetZombieflags()
-		local allowed = CanSpawnZombie(zombieFlags)
+		local allowed = gamemode.Call("CanSpawnZombie", zombieFlags)
 		
 		if allowed and type(allowed) == "table" and not allowed[data.flag] then
 			buttonSingle:SetDisabled(true)
