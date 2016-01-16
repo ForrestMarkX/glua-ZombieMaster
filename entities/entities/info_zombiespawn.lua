@@ -246,28 +246,32 @@ if SERVER then
 		end
 	end
 	
-	function ENT:AddQuery(ply, type, amount)
-		local data = GAMEMODE:GetZombieData(type)
+	function ENT:AddQuery(ply, zombietype, amount)
+		local data = GAMEMODE:GetZombieData(zombietype)
 
 		if data and #self.query < 18 then
-			if amount > 1 then
+			local zombieFlags = self:GetZombieFlags() or 0
+			local allowed = gamemode.Call("CanSpawnZombie", zombieFlags)
+			if allowed and type(allowed) == "table" and not allowed[data.flag] then return end
+			
+			if amount > 1 and amount < 19 then
 				for i = 1, amount do
 					if #self.query == 18 then
 						ply:PrintMessage(HUD_PRINTTALK, "Queue is full!")
 					else
-						table.insert(self.query, {type = type, cost = data.cost, ply = ply, popCost = data.popCost})
+						table.insert(self.query, {type = zombietype, cost = data.cost, ply = ply, popCost = data.popCost})
 					
 						net.Start("zm_queue")
-							net.WriteString(type)
+							net.WriteString(zombietype)
 							net.WriteInt(self:EntIndex(), 32)
 						net.Send(ply)
 					end
 				end
 			else
-				table.insert(self.query, {type = type, cost = data.cost, ply = ply, popCost = data.popCost})
+				table.insert(self.query, {type = zombietype, cost = data.cost, ply = ply, popCost = data.popCost})
 			
 				net.Start("zm_queue")
-					net.WriteString(type)
+					net.WriteString(zombietype)
 					net.WriteInt(self:EntIndex(), 32)
 				net.Send(ply)
 			end
