@@ -43,11 +43,11 @@ function GM:Initialize()
 end
 
 function GM:GetPopulationCost(type)
-	if type == "npc_fastzombie" then
+	if type == "npc_zm_fastzombie" then
 		return GetConVar("zm_popcost_banshee"):GetInt()
-	elseif type == "npc_zombie" then
+	elseif type == "npc_zm_zombie" then
 		return GetConVar("zm_popcost_shambler"):GetInt()
-	elseif type == "npc_poisonzombie" then
+	elseif type == "npc_zm_poisonzombie" then
 		return GetConVar("zm_popcost_hulk"):GetInt()
 	elseif type == "npc_burnzombie" then
 		return GetConVar("zm_popcost_immolator"):GetInt()
@@ -59,11 +59,11 @@ function GM:GetPopulationCost(type)
 end
 
 function GM:GetResourceCost(type)
-	if type == "npc_fastzombie" then
+	if type == "npc_zm_fastzombie" then
 		return GetConVar("zm_cost_banshee"):GetInt()
-	elseif type == "npc_zombie" then
+	elseif type == "npc_zm_zombie" then
 		return GetConVar("zm_cost_shambler"):GetInt()
-	elseif type == "npc_poisonzombie" then
+	elseif type == "npc_zm_poisonzombie" then
 		return GetConVar("zm_cost_hulk"):GetInt()
 	elseif type == "npc_burnzombie" then
 		return GetConVar("zm_cost_immolator"):GetInt()
@@ -299,7 +299,7 @@ end
 function GM:BuildZombieDataTable()
 	-- Shambler.
 	local shambler = {}
-	shambler.class = "npc_zombie"
+	shambler.class = "npc_zm_zombie"
 	shambler.name = "Shambler"
 	shambler.description = "Weak and slow, but packs a punch and smashes barricades."
 	shambler.icon = "VGUI/zombies/info_shambler"
@@ -310,8 +310,8 @@ function GM:BuildZombieDataTable()
 	self:AddZombieType(shambler)
 
 	-- Banshee.
-	local banshee = {};
-	banshee.class = "npc_fastzombie"
+	local banshee = {}
+	banshee.class = "npc_zm_fastzombie"
 	banshee.name = "Banshee"
 	banshee.description = "A fast zombie, it's faster than the rest. But it can't take that much damage."
 	banshee.icon = "VGUI/zombies/info_banshee"
@@ -322,8 +322,8 @@ function GM:BuildZombieDataTable()
 	self:AddZombieType(banshee)
 
 	-- Hulk.
-	local hulk = {};
-	hulk.class = "npc_poisonzombie"
+	local hulk = {}
+	hulk.class = "npc_zm_poisonzombie"
 	hulk.name = "Hulk"
 	hulk.description = "Big. Strong. Hulks smash humans to bits."
 	hulk.icon = "VGUI/zombies/info_hulk"
@@ -334,7 +334,7 @@ function GM:BuildZombieDataTable()
 	self:AddZombieType(hulk)
 
 	-- Drifter.
-	local drifter = {};
+	local drifter = {}
 	drifter.class = "npc_dragzombie"
 	drifter.name = "Drifter"
 	drifter.description = "Spits disorienting acid over a short distance."

@@ -56,6 +56,34 @@ function GM:InitPostEntityMap()
 	gamemode.Call("SetupSpawnPoints")
 end
 
+local replaceClass = {
+	["npc_zombie"] = "npc_zm_zombie",
+	["npc_fastzombie"] = "npc_zm_fastzombie",
+	["npc_poisonzombie"] = "npc_zm_poisonzombie"
+}
+function GM:OnEntityCreated(ent)
+	for class, replacment in pairs(replaceClass) do
+		if string.lower(ent:GetClass()) == class then
+			local zombie = ents.Create(replacment)
+			if IsValid(zombie) then
+				zombie:SetPos(ent:GetPos())
+				zombie:SetAngles(ent:GetAngles())
+				
+				for key, value in pairs(ent:GetKeyValues()) do
+					if string.sub(string.lower(key), 1, 2) == "on" then
+						zombie:StoreOutput(key, value)
+					else
+						zombie:SetKeyValue(key, value)
+					end
+				end
+				
+				zombie:Spawn()
+				ent:Remove()
+			end
+		end
+	end
+end
+
 function GM:SetupSpawnPoints()
 	local z_spawn = ents.FindByClass( "info_player_zombiemaster" )
 	local h_spawn = ents.FindByClass( "info_player_deathmatch" )

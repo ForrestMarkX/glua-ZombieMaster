@@ -21,8 +21,14 @@ function ENT:Initialize()
 	
 	self:UpdateEnemy(self:FindEnemy())
 	self:SetSchedule(SCHED_IDLE_STAND)
+	self:SetRenderMode(RENDERMODE_TRANSALPHA)
+	self:SetColor(Color(255, 255, 255, 0))
 	
-	self:SetAutomaticFrameAdvance(true)
+	self.startVal = 0
+	self.endVal = 255
+	self.fadeSpeed = 1500
+	self.fadeAlpha = 0
+	self.acolor = Color(255, 255, 255)
 
 	self.damage = 10
 	self.nextAttack = 0.8
@@ -74,6 +80,22 @@ function ENT:Think()
 	if self.nextIdle < CurTime() then
 		self:PlayVoiceSound(self.tauntSounds)
 		self.nextIdle = CurTime() + math.random(15, 25)
+	end
+	
+	if self.fadeAlpha < 255 then
+		self.fadeAlpha = self.fadeAlpha + self.fadeSpeed * FrameTime()
+		self.fadeAlpha = math.Clamp(self.fadeAlpha, self.startVal, self.endVal)
+		
+		if self:GetRenderMode() == RENDERMODE_NORMAL then
+			self:SetRenderMode(RENDERMODE_TRANSALPHA)
+		end
+		
+		self.acolor.a = self.fadeAlpha
+		
+		self:SetColor(self.acolor)
+	elseif self:GetRenderMode() == RENDERMODE_TRANSALPHA then
+		self:SetRenderMode(RENDERMODE_NORMAL)
+		self:SetColor(Color(255, 255, 255, 255))
 	end
 	
 	if not self.attack and self.nextDoorFind + 4 < CurTime() then
