@@ -956,10 +956,7 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 	local pZombie = ents.Create(entname)
 
 	if IsValid(pZombie) then
-		pZombie:SetPos(origin)
-		pZombie:DropToFloor()
-		
-		pZombie:SetPos(pZombie:GetPos() + Vector(0, 0, 5))
+		pZombie:SetPos(origin + Vector(0, 0, 5))
 		pZombie:SetOwner(pZM)
 
 		angles.x = 0.0

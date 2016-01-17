@@ -332,10 +332,6 @@ concommand.Add("zm_spawnzombie", function(ply, command, arguments)
 		local amount = tonumber(arguments[3])
 	
 		if IsValid(ent) then
-			local zombieFlags = ent:GetZombieFlags() or 0
-			local allowed = gamemode.Call("CanSpawnZombie", zombieFlags)
-			if allowed and type(allowed) == "table" and not allowed[data.flag] then return end
-		
 			ent:AddQuery(ply, zombietype, amount)
 		end
 	end
