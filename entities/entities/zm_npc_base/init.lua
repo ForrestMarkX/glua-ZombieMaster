@@ -32,12 +32,6 @@ ENT.moveSounds = {
 	"npc/zombie/foot3.wav"
 }
 
-ENT.startVal = 0
-ENT.endVal = 255
-ENT.fadeSpeed = 2300
-ENT.fadeAlpha = 0
-ENT.acolor = Color(255, 255, 255)
-
 function ENT:Initialize()
 	self:SetModel("models/zombie/zm_classic.mdl")
 	
@@ -55,14 +49,6 @@ function ENT:Initialize()
 
 	self:UpdateEnemy(self:FindEnemy())
 	self:SetSchedule(SCHED_IDLE_STAND)
-	self:SetRenderMode(RENDERMODE_TRANSALPHA)
-	self:SetColor(Color(255, 255, 255, 0))
-	
-	self.startVal = 0
-	self.endVal = 255
-	self.fadeSpeed = 1500
-	self.fadeAlpha = 0
-	self.acolor = Color(255, 255, 255)
 end
 
 function ENT:PlayVoiceSound(sounds)
@@ -176,22 +162,6 @@ function ENT:Think()
 	if self.nextIdle < CurTime() then
 		self:PlayVoiceSound(self.tauntSounds)
 		self.nextIdle = CurTime() + math.random(15, 25)
-	end
-	
-	if self.fadeAlpha < 255 then
-		self.fadeAlpha = self.fadeAlpha + self.fadeSpeed * FrameTime()
-		self.fadeAlpha = math.Clamp(self.fadeAlpha, self.startVal, self.endVal)
-		
-		if self:GetRenderMode() == RENDERMODE_NORMAL then
-			self:SetRenderMode(RENDERMODE_TRANSALPHA)
-		end
-		
-		self.acolor.a = self.fadeAlpha
-		
-		self:SetColor(self.acolor)
-	elseif self:GetRenderMode() == RENDERMODE_TRANSALPHA then
-		self:SetRenderMode(RENDERMODE_NORMAL)
-		self:SetColor(Color(255, 255, 255, 255))
 	end
 	
 	if not self.attack and self.nextPhysics and self.nextPhysics < CurTime() then

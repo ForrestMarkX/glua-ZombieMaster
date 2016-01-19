@@ -20,14 +20,6 @@ function ENT:Initialize()
 	
 	self:UpdateEnemy(self:FindEnemy())
 	self:SetSchedule(SCHED_IDLE_STAND)
-	self:SetRenderMode(RENDERMODE_TRANSALPHA)
-	self:SetColor(Color(255, 255, 255, 0))
-	
-	self.startVal = 0
-	self.endVal = 255
-	self.fadeSpeed = 1500
-	self.fadeAlpha = 0
-	self.acolor = Color(255, 255, 255)
 
 	self.damage = 8
 
