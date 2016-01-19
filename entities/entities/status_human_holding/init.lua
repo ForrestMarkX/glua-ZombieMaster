@@ -115,7 +115,7 @@ function ENT:Think()
 	local nearestpoint = object:NearestPoint(shootpos)
 
 	local objectphys = object:GetPhysicsObject()
-	if object:GetMoveType() ~= MOVETYPE_VPHYSICS or not objectphys:IsValid() or owner:GetGroundEntity() == object then
+	if object:GetMoveType() ~= MOVETYPE_VPHYSICS or not objectphys:IsValid() or owner:GetGroundEntity() == object or not objectphys:IsMotionEnabled() then
 		self:Remove()
 		return
 	end

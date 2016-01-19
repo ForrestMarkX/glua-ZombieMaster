@@ -45,6 +45,8 @@ function ENT:Initialize()
 	self:SetMaxYawSpeed(5000)
 	self:SetHealth(100)
 	
+	self:SetDamageForce(0)
+	
 	self:DropToFloor()
 
 	self:UpdateEnemy(self:FindEnemy())
@@ -117,8 +119,12 @@ function ENT:OnTakeDamage(dmginfo)
 	self:SetHealth(math.Clamp(self:Health() - damage, 0, 100))
 
 	if self:Health() <= 0 then
-		local killer = dmginfo:GetAttacker()
-		self:Death(killer)
+		local killer = dmginfo:GetAttacker()	
+		if killer:IsPlayer() and killer:IsSurvivor() then
+			self:SetDamageForce((self:NearestPoint(killer:EyePos()) - killer:EyePos():GetNormalized()) * math.Clamp(damage * 3, 40, 300))
+		end
+		
+		timer.Simple(0, function() self:Death(killer) end)
 	end
 	
 	if damage > 0 then

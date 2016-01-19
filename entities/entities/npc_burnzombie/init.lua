@@ -35,22 +35,6 @@ function ENT:Think()
 		self.nextIdle = CurTime() + math.random(15, 25)
 	end
 	
-	if self.fadeAlpha < 255 then
-		self.fadeAlpha = self.fadeAlpha + self.fadeSpeed * FrameTime()
-		self.fadeAlpha = math.Clamp(self.fadeAlpha, self.startVal, self.endVal)
-		
-		if self:GetRenderMode() == RENDERMODE_NORMAL then
-			self:SetRenderMode(RENDERMODE_TRANSALPHA)
-		end
-		
-		self.acolor.a = self.fadeAlpha
-		
-		self:SetColor(self.acolor)
-	elseif self:GetRenderMode() == RENDERMODE_TRANSALPHA then
-		self:SetRenderMode(RENDERMODE_NORMAL)
-		self:SetColor(Color(255, 255, 255, 255))
-	end
-	
 	local enemy = self:GetEnemy()
 	
  	if IsValid(enemy) and not self.onFire and enemy:GetPos():Distance(self:GetPos()) < 250 then

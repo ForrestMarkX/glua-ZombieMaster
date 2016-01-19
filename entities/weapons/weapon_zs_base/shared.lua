@@ -166,7 +166,7 @@ end
 SWEP.BulletCallback = GenericBulletCallback
 function SWEP:ShootBullets(dmg, numbul, cone)
 	local owner = self.Owner
-	--owner:MuzzleFlash()
+
 	self:SendWeaponAnimation()
 	owner:DoAttackEvent()
 

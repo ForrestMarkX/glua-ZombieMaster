@@ -485,6 +485,20 @@ function GM:IsMenuOpen()
 	return false
 end
 
+function GM:CreateClientsideRagdoll(ent, ragdoll)
+	if IsValid(ent) and ent:IsNPC() then
+		local force = ent:GetDamageForce()
+		if force and not force:IsZero() then
+			local phys = ragdoll:GetPhysicsObject()
+			if IsValid(phys) then
+				phys:ApplyForceCenter(force)
+			else
+				ragdoll:SetVelocity(force)
+			end
+		end
+	end
+end
+
 --local SCROLL_THRESHOLD = 8
 function GM:Think()
 	if input.IsMouseDown(MOUSE_LEFT) and holdTime < CurTime() and not isDragging and MySelf:IsZM() then
