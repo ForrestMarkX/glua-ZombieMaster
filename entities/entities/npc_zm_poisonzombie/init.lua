@@ -39,6 +39,6 @@ function ENT:Initialize()
 	}
 	
 	self.tauntSounds = {
-		"NPC_PoisonZombie.Moan1"
+		"NPC_PoisonZombie.Alert"
 	}
 end
