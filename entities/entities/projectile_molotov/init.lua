@@ -17,12 +17,40 @@ function ENT:Initialize()
 	fireTrail:SetParent(self)
 	fireTrail:Spawn()
 	fireTrail:Activate()
-end;
+end
 
 function ENT:PhysicsCollide(data, physObject)
-	self:EmitSound("ambient/fire/ignite.wav")
-	self:EmitSound("physics/glass/glass_cup_break" .. math.random(1, 2) .. ".wav")
+	local contents = util.PointContents(self:GetPos())
+	if bit.band(contents, MASK_WATER) ~= 0 then
+		self:Remove()
+		return
+	end
+	
+	util.BlastDamageEx(self, self.Owner, self:GetPos(), 128, 40, DMG_BURN)
+	
+	local effectdata = EffectData()
+		effectdata:SetOrigin(self:GetPos())
+	util.Effect("HelicopterMegaBomb", effectdata)
+	
+	self:EmitSound("Grenade_Molotov.Detonate")
+	self:EmitSound("Grenade_Molotov.Detonate2")
 
+    for _, v in pairs(ents.FindInSphere(self.Entity:GetPos(), 128)) do
+        if v:IsWorld() or v:IsWeapon() or not IsValid(v) then return end
+		if IsValid(ent) and ent:IsPlayer() and ent ~= self.Owner then return end
+        
+        if string.find(v:GetClass(), "prop_") then
+            local phys = v:GetPhysicsObject()
+            if string.find(phys:GetMaterial(), "metal") then
+                return
+            end
+        end
+        
+        if string.find(v:GetClass(), "info_") then return end
+        
+		v:Ignite(100)
+    end
+	
 	for i = 1, 10 do
 		local fire = ents.Create("env_fire")
 		fire:SetPos(self:GetPos() +Vector(math.random(-80, 80), math.random(-80, 80), 0))
@@ -34,8 +62,20 @@ function ENT:PhysicsCollide(data, physObject)
 		fire:SetKeyValue("firetype", "0" )
 		fire:SetKeyValue("spawnflags", "132")
 		fire:Spawn()
+		fire.Team = TEAM_SURVIVOR
 		fire:Fire("StartFire", "", 0)
 	end
+	
+	for i=1, 8 do
+		local sparks = ents.Create( "env_spark" )
+		sparks:SetPos( self:GetPos() + Vector( math.random( -40, 40 ), math.random( -40, 40 ), math.random( -40, 40 ) ) )
+		sparks:SetKeyValue( "MaxDelay", "0" )
+ 		sparks:SetKeyValue( "Magnitude", "2" )
+		sparks:SetKeyValue( "TrailLength", "3" )
+		sparks:SetKeyValue( "spawnflags", "0" )
+		sparks:Spawn()
+		sparks:Fire( "SparkOnce", "", 0 )
+	end	
 	
 	self:Remove()
 end

@@ -82,31 +82,13 @@ function ENT:PlayVoiceSound(sounds)
 	return output
 end
 
-function ENT:SpawnRagdoll(force)
-	local position, angles, model = self:GetPos(), self:GetAngles(), self:GetModel()
-	
-	if model then
-		local ragdoll = ents.Create("env_shooter")
-		ragdoll:SetPos(position)
-		ragdoll:SetAngles(angles)
-		ragdoll:SetKeyValue("m_iGibs", "1")
-		ragdoll:SetKeyValue("shootsounds", "3")
-		ragdoll:SetKeyValue("gibangles", angles.p .. " " .. angles.y .. " " .. angles.r)
-		ragdoll:SetKeyValue("shootmodel", model) 
-		ragdoll:SetKeyValue("simulation", "2" )
-		ragdoll:SetKeyValue("gibanglevelocity", math.random(-50, 50) .. " " .. math.random(-150, 150) .. " " .. math.random(-150, 150))
-		ragdoll:SetKeyValue("m_flGibLife", "0.2")
-		ragdoll:SetKeyValue("spawnflags", "4")
-		ragdoll:SetKeyValue("nogibshadows", "1")
-		ragdoll:SetKeyValue("disablereceiveshadows", "1")
-		ragdoll:Spawn()
-		ragdoll:SetVelocity(force or Vector(0, 0, 0))
-		ragdoll:Fire("Shoot", "", 0)
-		ragdoll:Fire("Kill", "", 1)
-	end
+function ENT:SpawnRagdoll()
+	net.Start("zm_spawnclientragdoll")
+		net.WriteEntity(self)
+	net.Broadcast()
 end
 
-function ENT:Death(killer, force)
+function ENT:Death(killer)
 	if not self.computedDeath then
 		if IsValid(killer) and killer:IsPlayer() then
 			killer:AddFrags(1)
@@ -129,13 +111,12 @@ function ENT:Death(killer, force)
 	self:PlayVoiceSound(self.deathSounds)
 	
 	self:SetSchedule(SCHED_FALL_TO_GROUND)
-	self:SpawnRagdoll(force, killer)
+	self:SpawnRagdoll()
 	self:Remove()
 end
 
 function ENT:OnTakeDamage(dmginfo)
 	local damage = dmginfo:GetDamage()
-	local force = dmginfo:GetDamageForce()
 	local position = dmginfo:GetDamagePosition()
 	
 	if not position then
@@ -151,10 +132,12 @@ function ENT:OnTakeDamage(dmginfo)
 
 	if self:Health() <= 0 then
 		local killer = dmginfo:GetAttacker()
-		self:Death(killer, force)
+		self:Death(killer)
 	end
 	
-	self:PlayVoiceSound(self.painSounds)
+	if damage > 0 then
+		self:PlayVoiceSound(self.painSounds)
+	end
 
 	return true
 end

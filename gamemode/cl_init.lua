@@ -137,6 +137,28 @@ function GM:SetPlacingTrapEntity(b)
 	placingTrap = b
 end
 
+function GM:OnPlayerChat( player, strText, bTeamOnly, bPlayerIsDead )
+	local tab = {}
+
+	if ( bTeamOnly ) then
+		table.insert( tab, Color( 30, 160, 40 ) )
+		table.insert( tab, "(TEAM) " )
+	end
+
+	if ( IsValid( player ) ) then
+		table.insert( tab, player )
+	else
+		table.insert( tab, "Console" )
+	end
+
+	table.insert( tab, Color( 255, 255, 255 ) )
+	table.insert( tab, ": " .. strText )
+
+	chat.AddText( unpack(tab) )
+
+	return true
+end
+
 function surface.CreateLegacyFont(font, size, weight, antialias, additive, name, shadow, outline, blursize)
 	surface.CreateFont(name, {font = font, size = size, weight = weight, antialias = antialias, additive = additive, shadow = shadow, outline = outline, blursize = blursize})
 end
@@ -648,4 +670,17 @@ end)
 
 net.Receive("zm_sendselectedgroup", function(length)
 	GAMEMODE.SelectedZombieGroups = net.ReadUInt(8)
+end)
+
+net.Receive("zm_spawnclientragdoll", function(length)
+	local ent = net.ReadEntity()
+	if IsValid(ent) then
+		ent:BecomeRagdollOnClient()
+		
+		timer.Simple(0.1, function()
+			if not timer.Exists("removeRagdolls") then
+				timer.Create("removeRagdolls", 30, 0, function() game.RemoveRagdolls() end)
+			end
+		end)
+	end
 end)

@@ -17,7 +17,6 @@ function ENT:Initialize()
 	self:SetHealth(100)
 	
 	self:ClearSchedule()
-	--self:DropToFloor()
 	
 	self:UpdateEnemy(self:FindEnemy())
 	self:SetSchedule(SCHED_IDLE_STAND)

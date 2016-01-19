@@ -17,7 +17,6 @@ function ENT:Initialize()
 	self:SetHealth(100)
 	
 	self:ClearSchedule()
-	--self:DropToFloor()
 	
 	self:UpdateEnemy(self:FindEnemy())
 	self:SetSchedule(SCHED_IDLE_STAND)
@@ -114,9 +113,22 @@ function ENT:OnRemove()
 		fire:SetKeyValue("StartDisabled", "0")
 		fire:SetKeyValue("firetype", "0" )
 		fire:SetKeyValue("spawnflags", "132")
+		fire.OwnerClass = self:GetClass()
 		fire:Spawn()
 		fire:Fire("StartFire", "", 0)
 	end
+end
+
+function ENT:OnTakeDamage(dmginfo)
+	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
+	local atkowner = attacker.OwnerClass
+	if attacker:GetClass() == "env_fire" and atkowner and atkowner == self:GetClass() then
+		dmginfo:SetDamage(0)
+		dmginfo:ScaleDamage(0)
+		return
+	end
+	
+	self.BaseClass.OnTakeDamage(self, dmginfo)
 end
 
 function ENT:SelectSchedule()

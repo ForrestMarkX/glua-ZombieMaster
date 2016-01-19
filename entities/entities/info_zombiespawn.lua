@@ -126,30 +126,22 @@ if SERVER then
 	end
 	
 	function ENT:GetSuitableVector()
-		local vector = self:GetPos()
-		local random = math.random(1, 4)
+		local vector = Vector(0, 0, 0)
+		repeat
+			local angle = self:GetAngles()
+			local vForward = angle:Forward()
+			local vRight = angle:Right()
+			local vUp = angle:Up()
+			
+			local xDeviation = math.random(-128, 128)
+			local yDeviation = math.random(-128, 128)
+
+			vector = self:GetPos() + (vForward * 64)
+			vector.x = vector.x + xDeviation
+			vector.y = vector.y + yDeviation
+		until util.IsInWorld(vector)
 		
-		if random == 1 then
-			vector = vector + (self:GetAngles():Forward() * 64)
-		elseif random == 2 then
-			vector = vector + (self:GetAngles():Forward() * -64)
-		elseif random == 3 then
-			vector = vector + (self:GetAngles():Right() * 64)
-		elseif random == 4 then
-			vector = vector + (self:GetAngles():Right() * -64)
-		end
-		
-		local trace = {}
-		trace.start = vector
-		trace.endpos = trace.start - Vector(0, 0, 999999)
-		trace.mask 	 = MASK_NPCSOLID
-		trace.filter = {self}
-		
-		local tr = util.TraceLine(trace)
-		
-		if tr.HitPos then
-			return tr.HitPos
-		end
+		return vector
 	end
 
 	local nodePoints = {}

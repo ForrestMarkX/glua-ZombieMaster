@@ -56,30 +56,30 @@ function GM:InitPostEntityMap()
 	gamemode.Call("SetupSpawnPoints")
 end
 
-local replaceClass = {
-	["npc_zombie"] = "npc_zm_zombie",
-	["npc_fastzombie"] = "npc_zm_fastzombie",
-	["npc_poisonzombie"] = "npc_zm_poisonzombie"
-}
-function GM:OnEntityCreated(ent)
-	for class, replacment in pairs(replaceClass) do
-		if string.lower(ent:GetClass()) == class then
-			local zombie = ents.Create(replacment)
-			if IsValid(zombie) then
-				zombie:SetPos(ent:GetPos())
-				zombie:SetAngles(ent:GetAngles())
-				
-				for key, value in pairs(ent:GetKeyValues()) do
-					if string.sub(string.lower(key), 1, 2) == "on" then
-						zombie:StoreOutput(key, value)
-					else
-						zombie:SetKeyValue(key, value)
-					end
+function GM:OnEntityCreated(entity)
+	if IsValid(entity) and entity.GetClass then
+		local replace = nil
+		local class = entity:GetClass()
+		
+		if class == "npc_fastzombie" then
+			replace = "npc_zm_fastzombie"
+		elseif class == "npc_zombie" then
+			replace = "npc_zm_zombie"
+		elseif class == "npc_poisonzombie" then
+			replace = "npc_zm_poisonzombie"
+		end
+
+		if replace then
+			timer.Simple(0.07, function()
+				if IsValid(entity) then
+					local new = ents.Create(replace)
+					new:SetPos(entity:GetPos())
+					new:SetAngles(entity:GetAngles())
+					new:Spawn()
+					
+					entity:Remove()
 				end
-				
-				zombie:Spawn()
-				ent:Remove()
-			end
+			end)
 		end
 	end
 end
@@ -100,6 +100,7 @@ function GM:AddNetworkStrings()
 	util.AddNetworkString("zm_remove_queue")
 	util.AddNetworkString("zm_sendcurrentgroups")
 	util.AddNetworkString("zm_sendselectedgroup")
+	util.AddNetworkString("zm_spawnclientragdoll")
 end
 
 function GM:PlayerSpawnAsSpectator(pl)
@@ -110,6 +111,11 @@ function GM:PlayerSpawnAsSpectator(pl)
 	pl:SetMoveType(MOVETYPE_NOCLIP)
 	pl:SendLua("RunConsoleCommand('-left')")
 	pl:SendLua("RunConsoleCommand('-right')")
+	
+	pl:Extinguish()
+	
+	pl:SetHull(Vector(-0.1, -0.1, 0), Vector(0.1, 0.1, 18.1))
+	pl:SetHullDuck(Vector(-0.1, -0.1, 0), Vector(0.1, 0.1, 18.1))
 end
 
 function GM:PlayerDeathThink(pl)
@@ -126,6 +132,10 @@ end
 
 function GM:PlayerInitialSpawn(pl)
 	pl:SetTeam(TEAM_UNASSIGNED)
+	pl:StripWeapons()
+	pl:Spectate(OBS_MODE_ROAMING)
+	pl:SetNoTarget(true)
+	pl:SetMoveType(MOVETYPE_NOCLIP)
 	
 	if self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and not NotifiedRestart then
 		PrintMessage(HUD_PRINTTALK, "The round is restarting...\n" )
@@ -152,20 +162,6 @@ end
 
 function GM:PlayerConnect(name, ip)
 	table.insert(self.ConnectingPlayers, name)
-end
-
-function GM:OnNPCKilled(npc, attacker, inflictor)
-	local numragdolls = #ents.FindByClass("env_shooter")
-	
-	if numragdolls > GetConVar("zm_max_ragdolls"):GetInt() then
-		for _, ragdoll in pairs(ents.FindByClass("env_shooter")) do
-			if IsValid(ragdoll) then ragdoll:Remove() end
-		end
-	else
-		for _, ragdoll in pairs(ents.FindByClass("env_shooter")) do
-			timer.Simple(5, function() if IsValid(ragdoll) then ragdoll:Remove() end end)
-		end
-	end
 end
 
 local VoiceSetTranslate = {}
@@ -202,9 +198,8 @@ function GM:PlayerSpawn(ply)
 		
 		ply:ShouldDropWeapon(false)
 		
-		ply:SetMaxHealth( 100, true )  
-		ply:SetWalkSpeed( 170 )  
-		ply:SetRunSpeed( 170 )
+		ply:SetMaxHealth(100, true)  
+		gamemode.Call("SetPlayerSpeed", ply, 190, 190)
 		
 		local desiredname = ply:GetInfo("cl_playermodel")
 		local modelname = player_manager.TranslatePlayerModel(#desiredname == 0 and self.RandomPlayerModels[math.random(#self.RandomPlayerModels)] or desiredname)
@@ -307,7 +302,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	ply:PlayDeathSound()
 	
 	timer.Simple(0.1, function() 
-		ply:ChangeTeam(TEAM_SPECTATOR) 
+		gamemode.Call("PlayerSpawnAsSpectator", ply)
 		
 		if not self:GetRoundEnd() and self:GetRoundActive() then
 			if team.NumPlayers(TEAM_SURVIVOR) == 0 then
@@ -523,7 +518,8 @@ function GM:InitialSpawnRound(ply)
 	if ply:KeyDown(IN_WALK) then
 		ply:ConCommand("-walk")
 	end
-					
+		
+	ply:ResetHull()
 	ply:SetCanWalk(false)
 	ply:SetCanZoom(false)
 	ply:AllowFlashlight(true)
@@ -743,6 +739,13 @@ function GM:Think()
 	if NextTick <= time then
 		NextTick = time + 1
 		
+		local players = player.GetAll()
+		if #players > 20 then
+			for _, ply in pairs(players) do
+				if not ply:GetNoCollideWithTeammates() then ply:SetNoCollideWithTeammates(true) end
+			end
+		end
+		
 		local humans = team.GetPlayers(TEAM_SURVIVOR)
 		for _, pl in pairs(humans) do
 			if pl:Alive() then
@@ -772,17 +775,25 @@ function GM:ZombieMasterVolunteers()
 	if not GetConVar("zm_debug_nozombiemaster"):GetBool() then
 		if team.NumPlayers(TEAM_ZOMBIEMASTER) == 1 then return end
 		
-		local PreferZM = {}
+		local iHighest = -1
 		local ZMList = {}
 		for _, pl in pairs(player.GetAll()) do
-			if pl:GetInfoNum("zm_preference", 0) == 1 then
-				table.insert(PreferZM, pl)
-			else
+			if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority > iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
+				iHighest = pl.m_iZMPriority
+			end
+			
+			if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority == iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
 				table.insert(ZMList, pl)
 			end
 		end
 		
-		local pl = PreferZM[math.random(#PreferZM)] or ZMList[math.random(#ZMList)]
+		local pl = nil
+		if #ZMList > 0 then
+			pl = ZMList[math.random(#ZMList)]
+		else
+			local players = player.GetAll()
+			pl = players[math.random(#players)]
+		end
 		
 		if IsValid(pl) then
 			pl:KillSilent()
@@ -791,6 +802,8 @@ function GM:ZombieMasterVolunteers()
 			pl:ChangeTeam(TEAM_ZOMBIEMASTER)
 			pl:Spectate(OBS_MODE_ROAMING)
 			pl:SetMoveType(MOVETYPE_NOCLIP)
+			
+			pl.m_iZMPriority = 0
 			
 			PrintMessage(HUD_PRINTTALK, pl:Name().." has become the Zombie Master")
 			
@@ -819,6 +832,13 @@ function GM:ZombieMasterVolunteers()
 
 	for _, ent in pairs(ents.FindByClass("prop_ammo")) do
 		ent:Remove()
+	end
+	
+	for _, ply in pairs(player.GetAll()) do
+		if IsValid(ply) then
+			if ply:IsSpectator() then continue end
+			ply.m_iZMPriority = ply.m_iZMPriority + 10
+		end
 	end
 	
 	game.CleanUpMap(false)
@@ -873,25 +893,24 @@ function GM:LoadNextMap()
 end
 
 function GM:TryHumanPickup(pl, entity)
-    if entity:IsValid() and not entity.m_NoPickup then
-        local entclass = string.sub(entity:GetClass(), 1, 12)
-        if (entclass == "prop_physics" or entclass == "func_physbox" or entity.HumanHoldable and entity:HumanHoldable(pl)) and pl:Team() == TEAM_SURVIVOR and pl:Alive() and entity:GetMoveType() == MOVETYPE_VPHYSICS and entity:GetPhysicsObject():IsValid() and entity:GetPhysicsObject():GetMass() <= CARRY_DRAG_MASS and entity:GetPhysicsObject():IsMoveable() and entity:OBBMins():Length() + entity:OBBMaxs():Length() <= CARRY_DRAG_VOLUME then
-            local holder, status = entity:GetHolder()
-            if not holder and not pl:IsHolding() and CurTime() >= (pl.NextHold or 0)
-            and pl:GetShootPos():Distance(entity:NearestPoint(pl:GetShootPos())) <= 64 and pl:GetGroundEntity() ~= entity then
-                local newstatus = ents.Create("status_human_holding")
-                if newstatus:IsValid() then
-                    pl.NextHold = CurTime() + 0.25
-                    pl.NextUnHold = CurTime() + 0.05
-                    newstatus:SetPos(pl:GetShootPos())
-                    newstatus:SetOwner(pl)
-                    newstatus:SetParent(pl)
-                    newstatus:SetObject(entity)
-                    newstatus:Spawn()
-                end
-            end
-        end
-    end
+	if entity:IsValid() and not entity.m_NoPickup then
+		local entclass = entity:GetClass()
+		if (string.sub(entclass, 1, 12) == "prop_physics" or entclass == "func_physbox" or entity.HumanHoldable and entity:HumanHoldable(pl)) and pl:IsSurvivor() and pl:Alive() and entity:GetMoveType() == MOVETYPE_VPHYSICS and entity:GetPhysicsObject():IsValid() and entity:GetPhysicsObject():GetMass() <= CARRY_DRAG_MASS and entity:GetPhysicsObject():IsMoveable() and entity:OBBMins():Length() + entity:OBBMaxs():Length() <= CARRY_DRAG_VOLUME then
+			local holder, status = entity:GetHolder()
+			if not holder and not pl:IsHolding() and (pl.NextHold or 0) <= CurTime() and pl:GetShootPos():Distance(entity:NearestPoint(pl:GetShootPos())) <= 64 and pl:GetGroundEntity() ~= entity then
+				local newstatus = ents.Create("status_human_holding")
+				if newstatus:IsValid() then
+					pl.NextHold = CurTime() + 0.25
+					pl.NextUnHold = CurTime() + 0.05
+					newstatus:SetPos(pl:GetShootPos())
+					newstatus:SetOwner(pl)
+					newstatus:SetParent(pl)
+					newstatus:SetObject(entity)
+					newstatus:Spawn()
+				end
+			end
+		end
+	end
 end
 
 function GM:KeyPress(pl, key)
@@ -906,6 +925,14 @@ function GM:KeyPress(pl, key)
 	end
 end
 
+function GM:AllowPlayerPickup(pl, ent)
+	return false
+end
+
+function GM:PlayerCanHearPlayersVoice(listener, talker)
+	return true, false
+end
+
 function GM:PlayerUse(pl, ent)
 	if not pl:Alive() or pl:IsZM() or pl:IsSpectator() then return false end
 
@@ -917,7 +944,7 @@ function GM:PlayerUse(pl, ent)
 		ent.m_AntiDoorSpam = CurTime() + 0.85
 	elseif pl:IsSurvivor() and not pl:IsCarrying() and pl:KeyPressed(IN_USE) then
 		self:TryHumanPickup(pl, ent)
-	end
+	end 
 
 	return true
 end
@@ -984,9 +1011,12 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 	local pZombie = ents.Create(entname)
 
 	if IsValid(pZombie) then
-		pZombie:SetPos(origin + Vector(0, 0, 5))
+		pZombie:SetPos(origin)
 		pZombie:SetOwner(pZM)
-
+		pZombie:DropToFloor()
+		
+		pZombie:SetPos(pZombie:GetPos() + Vector(0, 0, 5))
+		
 		angles.x = 0.0
 		angles.z = 0.0
 		pZombie:SetAngles(angles)

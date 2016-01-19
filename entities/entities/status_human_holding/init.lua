@@ -27,7 +27,7 @@ function ENT:Initialize()
 				ent:Input("onpickedup", owner, object, "")
 			end
 		end
-
+		
 		local objectphys = object:GetPhysicsObject()
 		if objectphys:IsValid() then
 			objectphys:AddGameFlag(FVPHYSICS_NO_IMPACT_DMG)
@@ -38,10 +38,12 @@ function ENT:Initialize()
 			if objectphys:GetMass() < CARRY_DRAG_MASS and (object:OBBMins():Length() + object:OBBMaxs():Length() < CARRY_DRAG_VOLUME or object.NoVolumeCarryCheck) then
 				objectphys:AddGameFlag(FVPHYSICS_PLAYER_HELD)
 				object._OriginalMass = objectphys:GetMass()
+				object._OriginalCG = object:GetCollisionGroup()
 
 				objectphys:EnableGravity(false)
 				objectphys:SetMass(2)
 
+				object:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 				object:SetOwner(owner)
 			end
 		end
@@ -74,6 +76,11 @@ function ENT:OnRemove()
 			if object._OriginalMass then
 				objectphys:SetMass(object._OriginalMass)
 				object._OriginalMass = nil
+			end
+			
+			if object._OriginalCG then
+				object:SetCollisionGroup(object._OriginalCG == COLLISION_GROUP_INTERACTIVE and COLLISION_GROUP_NONE or object._OriginalCG)
+				object._OriginalCG = nil
 			end
 
 			object:SetOwner(NULL)

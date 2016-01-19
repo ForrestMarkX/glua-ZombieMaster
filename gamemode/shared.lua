@@ -191,6 +191,15 @@ function GM:PlayerShouldTakeDamage(pl, attacker)
 	if attacker.PBAttacker and attacker.PBAttacker:IsValid() and CurTime() < attacker.NPBAttacker then -- Protection against prop_physbox team killing. physboxes don't respond to SetPhysicsAttacker()
 		attacker = attacker.PBAttacker
 	end
+	
+	if IsValid(attacker) then
+		local attowner = attacker.Team
+		if IsValid(attowner) then
+			if attacker:GetClass() == "env_fire" and attowner and pl:Team() == attowner then
+				return false
+			end
+		end
+	end
 
 	if attacker:IsPlayer() and attacker ~= pl and not attacker.AllowTeamDamage and not pl.AllowTeamDamage and attacker:Team() == pl:Team() then return false end
 
