@@ -5,7 +5,7 @@ GM:BuildZombieDataTable()
 Hook. Called by scoreboard to draw a special icon for a player
 GM:IsSpecialPerson(Player ply, Panel image)
 
-Hook. Used by the zombie spawner to determine what zombie types can be spawned from it
+Hook. Used to determine if the spawn node can spawn the zombie class
 GM:CanSpawnZombie(int flags)
 
 =CLIENT=

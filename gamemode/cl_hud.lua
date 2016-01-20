@@ -110,13 +110,329 @@ function GM:ZombieMasterHUD(scale)
 	end
 end
 
+function MakepHelp()
+	local frame = vgui.Create( "DFrame" )
+	frame:SetSize(ScrW() * 0.6, ScrH() * 0.6)
+	frame:SetTitle("Help")
+	frame:SetVisible(true)
+	frame:SetDraggable(true)
+	frame.btnMaxim:SetVisible(false)
+	frame.btnMinim:SetVisible(false)
+	frame:Center()
+	frame.Paint = function(self, w, h)
+		draw.RoundedBox(8, 0, 0, w, h, Color(130, 0, 0))
+		draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
+	end
+	
+	local html = vgui.Create("DHTML" , frame)
+	html:Dock(FILL)
+	html:SetHTML([[
+		<html>
+		<head>
+		<title>ZM MOTD</title>
+		<style type="text/css">
+		body	{
+			background:#1B0503;
+			margin-left:10px;
+			margin-top:10px;
+			text-align: center;
+		}
+		h	{
+			font-family: Arial Black, Arial, Impact, serif;
+		}
+		#centering {
+			font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+			color: #FFFFFF;
+			width: 80%;
+			background-color: #550000;
+			margin-left: auto;
+			margin-right: auto;
+			padding: 20px;
+		}
+		</style>
+		</head>
+		<body scroll='no'>
+		<div id='centering'>
+		<!-- motd goes here -->
+		<h2>Zombie Master</h2>
+		<h3>Beta 1.X.X</h3>
+		<h4>Make sure you bind all new keys in the keyboard config!</h4>
+		<p><b>ZM for noobs</b></p>
+		<p><i>As Zombie Master</i>: Click on the orbs, spawn zombies, kill humans.</p>
+		<p><i>As Human</i>: Get guns, check map objectives (F1), survive and complete objectives.</p>
+		<p>www.zombiemaster.org</p>
+
+		</div>
+		</body>
+		</html>]])
+
+	frame:MakePopup()
+end
+
+function MakepCredits()
+	local wid = math.min(ScrW(), 750)
+
+	local y = 8
+
+	local frame = vgui.Create("DFrame")
+	frame:SetWide(wid)
+	frame:SetTitle(" ")
+	frame:SetKeyboardInputEnabled(false)
+	frame.lblTitle:SetFont("dexfont_med")
+	frame.Paint = function(self, w, h)
+		draw.RoundedBox(8, 0, 0, w, h, Color(0, 0, 0, 180))
+	end
+
+	local label = EasyLabel(frame, GAMEMODE.Name.." Credits", "ZSHUDFontNS", color_white)
+	label:AlignTop(y)
+	label:CenterHorizontal()
+	y = y + label:GetTall() + 8
+
+	for authorindex, authortab in ipairs(GAMEMODE.Credits) do
+		local lineleft = EasyLabel(frame, string.Replace(authortab[1], "@", "(at)"), "ZSHUDFontSmallestNS", color_white)
+		local linemid = EasyLabel(frame, "-", "ZSHUDFontSmallestNS", color_white)
+		local lineright = EasyLabel(frame, authortab[3], "ZSHUDFontSmallestNS", color_white)
+		local linesub
+		if authortab[2] then
+			linesub = EasyURL(frame, authortab[2], "DefaultFont", color_white)
+		end
+
+		lineleft:AlignLeft(8)
+		lineleft:AlignTop(y)
+		lineright:AlignRight(8)
+		lineright:AlignTop(y)
+		linemid:CenterHorizontal()
+		linemid:AlignTop(y)
+
+		y = y + lineleft:GetTall()
+		if linesub then
+			linesub:AlignTop(y)
+			linesub:AlignLeft(8)
+			y = y + linesub:GetTall()
+		end
+		y = y + 10
+	end
+
+	frame:SetTall(y + 8)
+	frame:Center()
+	frame:SetAlpha(0)
+	frame:AlphaTo(255, 0.5, 0)
+	frame:MakePopup()
+end
+
+local pPlayerModel
+local function SwitchPlayerModel(self)
+	surface.PlaySound("buttons/button14.wav")
+	RunConsoleCommand("cl_playermodel", self.m_ModelName)
+	chat.AddText(COLOR_LIMEGREEN, "You've changed your desired player model to "..tostring(self.m_ModelName))
+
+	pPlayerModel:Close()
+end
+function MakepPlayerModel()
+	if pPlayerModel and pPlayerModel:Valid() then pPlayerModel:Remove() end
+	
+	local numcols = 8
+	local wid = numcols * 68 + 24
+	local hei = 400
+
+	pPlayerModel = vgui.Create("DFrame")
+	pPlayerModel:SetSkin("Default")
+	pPlayerModel:SetTitle("Player model selection")
+	pPlayerModel:SetSize(wid, hei)
+	pPlayerModel:Center()
+	pPlayerModel:SetDeleteOnClose(true)
+	pPlayerModel.btnMaxim:SetVisible(false)
+	pPlayerModel.btnMinim:SetVisible(false)
+	pPlayerModel.Paint = function(self, w, h)
+		draw.RoundedBox(8, 0, 0, w, h, Color(130, 0, 0))
+		draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
+	end
+
+	local list = vgui.Create("DPanelList", pPlayerModel)
+	list:StretchToParent(8, 24, 8, 8)
+	list:EnableVerticalScrollbar()
+
+	local grid = vgui.Create("DGrid", pPlayerModel)
+	grid:SetCols(numcols)
+	grid:SetColWide(68)
+	grid:SetRowHeight(68)
+	
+	local playermodels = player_manager.AllValidModels()
+	playermodels["zombie"] = nil
+	playermodels["zombiefast"] = nil
+	playermodels["corpse"] = nil
+	playermodels["charple"] = nil
+	playermodels["skeleton"] = nil
+	playermodels["zombine"] = nil
+	for name, mdl in pairs(playermodels) do
+		if mdl ~= nil then
+			local button = vgui.Create("SpawnIcon", grid)
+			button:SetPos(0, 0)
+			button:SetModel(mdl)
+			button.m_ModelName = name
+			button.OnMousePressed = SwitchPlayerModel
+			grid:AddItem(button)
+		end
+	end
+	grid:SetSize(wid - 16, math.ceil(table.Count(player_manager.AllValidModels()) / numcols) * grid:GetRowHeight())
+
+	list:AddItem(grid)
+
+	pPlayerModel:SetSkin("Default")
+	pPlayerModel:MakePopup()
+end
+
+function MakepPlayerColor()
+	if pPlayerColor and pPlayerColor:Valid() then pPlayerColor:Remove() end
+
+	pPlayerColor = vgui.Create("DFrame")
+	pPlayerColor:SetWide(math.min(ScrW(), 500))
+	pPlayerColor:SetTitle(" ")
+	pPlayerColor:SetDeleteOnClose(true)
+	pPlayerColor.btnMaxim:SetVisible(false)
+	pPlayerColor.btnMinim:SetVisible(false)
+	pPlayerColor.Paint = function(self, w, h)
+		draw.RoundedBox(8, 0, 0, w, h, Color(130, 0, 0))
+		draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
+	end
+
+	local y = 8
+
+	local label = EasyLabel(pPlayerColor, "Colors", "ZSHUDFont", color_white)
+	label:SetPos((pPlayerColor:GetWide() - label:GetWide()) / 2, y)
+	y = y + label:GetTall() + 8
+
+	local lab = EasyLabel(pPlayerColor, "Player color")
+	lab:SetPos(8, y)
+	y = y + lab:GetTall()
+
+	local colpicker = vgui.Create("DColorMixer", pPlayerColor)
+	colpicker:SetAlphaBar(false)
+	colpicker:SetPalette(false)
+	colpicker.UpdateConVars = function(me, color)
+		me.NextConVarCheck = SysTime() + 0.2
+		RunConsoleCommand("cl_playercolor", color.r / 100 .." ".. color.g / 100 .." ".. color.b / 100)
+	end
+	local r, g, b = string.match(GetConVarString("cl_playercolor"), "(%g+) (%g+) (%g+)")
+	if r then
+		colpicker:SetColor(Color(r * 100, g * 100, b * 100))
+	end
+	colpicker:SetSize(pPlayerColor:GetWide() - 16, 72)
+	colpicker:SetPos(8, y)
+	y = y + colpicker:GetTall()
+
+	local lab = EasyLabel(pPlayerColor, "Weapon color")
+	lab:SetPos(8, y)
+	y = y + lab:GetTall()
+
+	local colpicker = vgui.Create("DColorMixer", pPlayerColor)
+	colpicker:SetAlphaBar(false)
+	colpicker:SetPalette(false)
+	colpicker.UpdateConVars = function(me, color)
+		me.NextConVarCheck = SysTime() + 0.2
+		RunConsoleCommand("cl_weaponcolor", color.r / 100 .." ".. color.g / 100 .." ".. color.b / 100)
+	end
+	local r, g, b = string.match(GetConVarString("cl_weaponcolor"), "(%g+) (%g+) (%g+)")
+	if r then
+		colpicker:SetColor(Color(r * 100, g * 100, b * 100))
+	end
+	colpicker:SetSize(pPlayerColor:GetWide() - 16, 72)
+	colpicker:SetPos(8, y)
+	y = y + colpicker:GetTall()
+
+	pPlayerColor:SetTall(y + 8)
+	pPlayerColor:Center()
+	pPlayerColor:MakePopup()
+end
+
+local surfacecolor = Color(72, 0, 0)
+local outlinecolor = Color(110, 0, 0)
+local function DrawZMButton(self, w, h)
+	if self:IsHovered() then
+		surfacecolor = Color(92, 0, 0)
+		outlinecolor = Color(140, 0, 0)
+	else
+		surfacecolor = Color(72, 0, 0)
+		outlinecolor = Color(110, 0, 0)
+	end
+	draw.RoundedBox(8, 0, 0, w, h, outlinecolor)
+	draw.RoundedBox(4, 2, 2, w - 4, h - 4, surfacecolor)
+end
+function GM:ShowOptions()
+	local menu = vgui.Create("Panel")
+	menu:SetSize(BetterScreenScale() * 420, ScrH() * 0.35)
+	menu:Center()
+	menu.Paint = function(self, w, h)
+		draw.RoundedBox(8, 0, 0, w, h, Color(150, 0, 0))
+		draw.RoundedBox(4, 4, 4, w - 7, h - 7, Color(60, 0, 0))
+	end
+	menu.Created = SysTime()
+
+	local header = EasyLabel(menu, self.Name, "ZSHUDFont")
+	header:SetContentAlignment(8)
+	header:DockMargin(0, 10, 0, 64)
+	header:Dock(TOP)
+	
+	local but = vgui.Create("DButton", menu)
+	but:SetFont("ZSHUDFontSmaller")
+	but:SetText("Help")
+	but:SetTall(32)
+	but:DockMargin(12, 0, 12, 12)
+	but:DockPadding(0, 12, 0, 12)
+	but:Dock(TOP)
+	but.DoClick = function() MakepHelp() end
+	but:SetTextColor(color_white)
+	but.Paint = DrawZMButton
+	
+	local but = vgui.Create("DButton", menu)
+	but:SetFont("ZSHUDFontSmaller")
+	but:SetText("Player Model")
+	but:SetTall(32)
+	but:DockMargin(12, 0, 12, 12)
+	but:DockPadding(0, 12, 0, 12)
+	but:Dock(TOP)
+	but.DoClick = function() MakepPlayerModel() end
+	but:SetTextColor(color_white)
+	but.Paint = DrawZMButton
+
+	local but = vgui.Create("DButton", menu)
+	but:SetFont("ZSHUDFontSmaller")
+	but:SetText("Player Color")
+	but:SetTall(32)
+	but:DockMargin(12, 0, 12, 12)
+	but:DockPadding(0, 12, 0, 12)
+	but:Dock(TOP)
+	but.DoClick = function() MakepPlayerColor() end
+	but:SetTextColor(color_white)
+	but.Paint = DrawZMButton
+
+	local but = vgui.Create("DButton", menu)
+	but:SetFont("ZSHUDFontSmaller")
+	but:SetText("Credits")
+	but:SetTall(32)
+	but:DockMargin(12, 0, 12, 12)
+	but:DockPadding(0, 12, 0, 12)
+	but:Dock(TOP)
+	but.DoClick = function() MakepCredits() end
+	but:SetTextColor(color_white)
+	but.Paint = DrawZMButton
+
+	local but = vgui.Create("DButton", menu)
+	but:SetFont("ZSHUDFontSmaller")
+	but:SetText("Close")
+	but:SetTall(32)
+	but:DockMargin(12, 24, 12, 0)
+	but:DockPadding(0, 12, 0, 12)
+	but:Dock(TOP)
+	but.DoClick = function() menu:Remove() end
+	but:SetTextColor(color_white)
+	but.Paint = DrawZMButton
+
+	menu:MakePopup()
+end
+
 function GM:ShowHelp()
 	gui.EnableScreenClicker(true)
-	
-	if IsValid(self.objmenu) then
-		self.objmenu:SetVisible(true)
-		return
-	end
 	
 	local frame = vgui.Create("DEXRoundedFrame")
 	frame:SetWide(ScrW() * 0.75)
@@ -125,6 +441,16 @@ function GM:ShowHelp()
 	frame:SetKeyboardInputEnabled(false)
 	frame:SetMouseInputEnabled(true)
 	frame:Center()
+	frame.Paint = function(self, w, h)
+		draw.RoundedBoxEx(8, 0, 64, w, h - 64, Color(5, 5, 5, 180), false, false, true, true)
+		draw.RoundedBoxEx(8, 0, 0, w, 64, Color(5, 5, 5, 220), true, true, false, false)
+	end
+	
+	local sprite = vgui.Create("DImage", frame)
+	sprite:AlignTop(-5)
+	sprite:AlignLeft(5)
+	sprite:SetSize(ScrW() * 0.07, ScrH() * 0.07)
+	sprite:SetImage("vgui/gfx/vgui/hl2mp_logo")
 	
 	local pan = vgui.Create("DPanel", frame)
 	pan:SetPos(frame:GetWide() * 0.08, frame:GetTall() * 0.08)
@@ -134,8 +460,8 @@ function GM:ShowHelp()
 	end
 	
 	local label = EasyLabel(frame, "Objectives!", "ZSHUDFont", color_white)
-	label:AlignLeft(20)
-	label:AlignTop(4)
+	label:AlignLeft(frame:GetWide() * 0.1)
+	label:AlignTop(frame:GetTall() * 0.01)
 	
 	local scroll = vgui.Create("DScrollPanel", pan)
 	scroll:SetSize(pan:GetWide() - 5, pan:GetTall() - 5)
@@ -161,6 +487,7 @@ function GM:ShowHelp()
 			gui.EnableScreenClicker(false)
 		end
 		frame:SetVisible(false)
+		sprite:SetVisible(false)
 	end
 	but.Paint = function(self, w, h) 
 		draw.OutlinedBox(0, 0, w, h, 2, Color(46, 46, 46))
@@ -174,6 +501,7 @@ function GM:ShowHelp()
 	end
 	
 	self.objmenu = frame
+	self.objmenuimage = sprite
 end
 
 function GM:MakePreferredMenu()

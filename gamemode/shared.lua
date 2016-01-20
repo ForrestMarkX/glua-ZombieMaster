@@ -3,6 +3,13 @@ GM.Author = "Mka0207 & Forrest Mark X"
 GM.Email = "N/A"
 GM.Website = "N/A"
 
+GM.Credits = {
+	{"Forrest Mark X", "", "Progammer"},
+	{"William \"JetBoom\" Moodhe", "www.noxiousnet.com", "Code snippets from Zombie Survival"},
+	{"Chewgum", "", "Vestige gamemode code"},
+	{"Mka0207", "http://steamcommunity.com/id/mka0207/myworkshopfiles", "Building the base and icon work"}
+}
+
 TEAM_SURVIVOR = 1
 TEAM_ZOMBIEMASTER = 2
 
@@ -222,7 +229,10 @@ function GM:IsSpecialPerson(pl, image)
 	local img, tooltip
 	local steamid = pl:SteamID()
 
-	if steamid == "STEAM_0:1:3307510" then
+	if steamid == "STEAM_0:0:18807892" then
+		img = "icon16/application_xp_terminal.png"
+		tooltip = "ForrestMarkX\nDeveloper!"
+	elseif steamid == "STEAM_0:1:3307510" then
 		img = "icon16/heart.png"
 		tooltip = "JetBoom\nContributor!"
 	elseif steamid == "STEAM_0:0:8232794" then
@@ -230,7 +240,7 @@ function GM:IsSpecialPerson(pl, image)
 		tooltip = "Chewgum\nContributor!"
 	elseif steamid == "STEAM_0:0:18000855" then
 		img = "icon16/heart.png"
-		tooltip = "Mka0207\nContributor!"
+		tooltip = "Mka0207\nContributor!"	
 	elseif pl:IsAdmin() then
 		img = "icon16/shield.png"
 		tooltip = "Admin"

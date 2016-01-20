@@ -63,6 +63,26 @@ function EasyButton(parent, text, xpadding, ypadding)
 	return dpanel
 end
 
+function EasyURL(parent, text, font, textcolor)
+	local dpanel = vgui.Create("DLabel", parent)
+	if font then
+		dpanel:SetFont(font or "DefaultFont")
+	end
+	dpanel:SetEnabled(true)
+	dpanel:SetText(text)
+	dpanel:SizeToContents()
+	if textcolor then
+		dpanel:SetTextColor(textcolor)
+	end
+	dpanel:SetKeyboardInputEnabled(false)
+	dpanel:SetMouseInputEnabled(false)
+	dpanel.DoClick = function(self)
+		gui.OpenURL(self:GetText())
+	end
+
+	return dpanel
+end
+
 function draw.OutlinedBox( x, y, w, h, thickness, clr )
 	surface.SetDrawColor( clr )
 	for i=0, thickness - 1 do

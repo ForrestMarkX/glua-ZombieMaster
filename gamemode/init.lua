@@ -761,6 +761,10 @@ function GM:ShowHelp(pl)
 	pl:SendLua("GAMEMODE:ShowHelp()")
 end
 
+function GM:ShowTeam(pl)
+	pl:SendLua("GAMEMODE:ShowOptions()")
+end
+
 function GM:PlayerDisconnected(ply)
 	if self:GetRoundActive() then
 		if ply:Team() == TEAM_ZOMBIEMASTER then
