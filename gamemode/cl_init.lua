@@ -489,11 +489,9 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 	if IsValid(ent) and ent:IsNPC() then
 		local force = ent:GetDamageForce()
 		if force and not force:IsZero() then
-			local phys = ragdoll:GetPhysicsObject()
-			if IsValid(phys) then
-				phys:ApplyForceCenter(force)
-			else
-				ragdoll:SetVelocity(force)
+			for i=0, ragdoll:GetPhysicsObjectCount() - 1 do
+				local phys = ragdoll:GetPhysicsObjectNum(i)
+				phys:ApplyForceCenter(force * 10000)
 			end
 		end
 	end
