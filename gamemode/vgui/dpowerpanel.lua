@@ -74,7 +74,7 @@ function PANEL:Init()
 				self.toollab = vgui.Create("DLabel", self.toolpan)
 				self.toollab:SetTextColor(color_white)
 				self.toollab:SetText(v.tooltip)
-				self.toollab:SetFont("ZSHUDFontSmaller")
+				self.toollab:SetFont("ZMHUDFontSmaller")
 				self.toollab:SizeToContents()
 				
 				self.toolpan:InvalidateLayout(true)

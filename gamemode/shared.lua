@@ -28,16 +28,63 @@ include("sh_players.lua")
 include("sh_entites.lua")
 
 function GM:Initialize()
-	self:PrecacheResources()
-	self:AddCustomAmmo()
+	for name, mdl in pairs(player_manager.AllValidModels()) do
+		util.PrecacheModel(mdl)
+	end
+	
+	for _, mdl in pairs(file.Find("models/zombie/*.mdl", "GAME")) do
+		util.PrecacheModel(mdl)
+	end
+	
+	game.AddAmmoType({ name = "revolver", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ, plydmg = 0, npcdmg = 0, maxcarry = 24, force = 5000 })
+	game.AddAmmoType({ name = "molotov", dmgtype = DMG_BURN, tracer = TRACER_NONE, plydmg = 0, npcdmg = 0, maxcarry = 3, force = 0 })
+	game.AddAmmoType({name = "unused"})
 	
 	gamemode.Call("BuildZombieDataTable")
 	
 	if CLIENT then
-		self:CreateFonts()
+		local screenscale = BetterScreenScale()
+		
+		surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = screenscale * 120, weight = 500, blursize = 0, scanlines = 0, antialias = true, additive = false})
+		surface.CreateFont("zm_hud_font", {font = "Consolas", size = 20, weight = 700, antialias = true, additive = false})
+		surface.CreateFont("zm_hud_font2", {font = "Consolas", size = 16, weight = 700, antialias = true, additive = false})
+		
+		surface.CreateFont("ZMHUDFontTiny", {font = "tahoma", size = screenscale * 16, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMHUDFontSmallest", {font = "tahoma", size = screenscale * 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMHUDFontSmaller", {font = "tahoma", size = screenscale * 22, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMHUDFontSmall", {font = "tahoma", size = screenscale * 28, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMHUDFont", {font = "tahoma", size = screenscale * 42, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMHUDFontBig", {font = "tahoma", size = screenscale * 72, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMHUDFontTinyBlur", {font = "tahoma", size = screenscale * 16, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+		surface.CreateFont("ZMHUDFontSmallerBlur", {font = "tahoma", size = screenscale * 22, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+		surface.CreateFont("ZMHUDFontSmallBlur", {font = "tahoma", size = screenscale * 28, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+		surface.CreateFont("ZMHUDFontBlur", {font = "tahoma", size = screenscale * 42, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+		surface.CreateFont("ZMHUDFontBigBlur", {font = "tahoma", size = screenscale * 72, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+		
+		surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = 32, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMScoreBoardSubTitle", {font = "Verdana", size = 22, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana", size = 16, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana", size = 24, weight = 0, antialias = true, additive = false, shadow = false, outline = false})
+		surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+		
+		surface.CreateFont("DefaultFontVerySmall", {font = "tahoma", size = 10, weight = 0, antialias = false})
+		surface.CreateFont("DefaultFontSmall", {font = "tahoma", size = 11, weight = 0, antialias = false})
+		surface.CreateFont("DefaultFontSmallDropShadow", {font = "tahoma", size = 11, weight = 0, shadow = true, antialias = false})
+		surface.CreateFont("DefaultFont", {font = "tahoma", size = 13, weight = 500, antialias = false})
+		surface.CreateFont("DefaultFontBold", {font = "tahoma", size = 13, weight = 1000, antialias = false})
+		surface.CreateFont("DefaultFontLarge", {font = "tahoma", size = 16, weight = 0, antialias = false})
 	else
-		self:AddResources()
-		self:AddNetworkStrings()
+		resource.AddWorkshop("591300663")
+
+		util.AddNetworkString("zm_gamemodecall")
+		util.AddNetworkString("zm_trigger")
+		util.AddNetworkString("zm_mapinfo")	
+		util.AddNetworkString("zm_queue")
+		util.AddNetworkString("zm_remove_queue")
+		util.AddNetworkString("zm_sendcurrentgroups")
+		util.AddNetworkString("zm_sendselectedgroup")
+		util.AddNetworkString("zm_spawnclientragdoll")
+		
 		game.ConsoleCommand("fire_dmgscale 1\nmp_flashlight 1\nsv_gravity 600\n")
 		
 		local mapinfo = "maps/"..game.GetMap()..".txt"
@@ -81,33 +128,12 @@ function GM:GetResourceCost(type)
 	return 0
 end
 
-function GM:AddCustomAmmo()
-	game.AddAmmoType({ name = "revolver", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ, plydmg = 0, npcdmg = 0, maxcarry = 24, force = 5000 })
-	game.AddAmmoType({ name = "molotov", dmgtype = DMG_BURN, tracer = TRACER_NONE, plydmg = 0, npcdmg = 0, maxcarry = 3, force = 0 })
-	game.AddAmmoType({name = "unused"})
-end
-
 function GM:PlayerIsAdmin(pl)
 	return pl:IsAdmin()
 end
 
 function GM:GetFallDamage(pl, fallspeed)
 	return 0
-end
-
---Control global default clips here.
-function GM:SetupDefaultClip(tab)
-	tab.DefaultClip = tab.ClipSize
-end
-
-function GM:PrecacheResources()
-	for name, mdl in pairs(player_manager.AllValidModels()) do
-		util.PrecacheModel(mdl)
-	end
-	
-	for _, mdl in pairs(file.Find("models/zombie/*.mdl", "GAME")) do
-		util.PrecacheModel(mdl)
-	end
 end
 
 --[[
@@ -213,18 +239,6 @@ function GM:PlayerShouldTakeDamage(pl, attacker)
 	return pl:IsSurvivor()
 end
 
-function GM:PlayerTraceAttack(pl, dmginfo, dir, trace)
-end
-
-function GM:FindUseEntity(pl, ent)
-	if not ent:IsValid() then
-		local e = pl:TraceLine(90, MASK_SOLID, {pl}).Entity
-		if e:IsValid() then return e end
-	end
-
-	return ent
-end
-
 function GM:IsSpecialPerson(pl, image)
 	local img, tooltip
 	local steamid = pl:SteamID()
@@ -318,7 +332,7 @@ end
 function GM:BuildZombieDataTable()
 	-- Shambler.
 	local shambler = {}
-	shambler.class = "npc_zm_zombie"
+	shambler.class = "npc_zombie"
 	shambler.name = "Shambler"
 	shambler.description = "Weak and slow, but packs a punch and smashes barricades."
 	shambler.icon = "VGUI/zombies/info_shambler"
@@ -330,7 +344,7 @@ function GM:BuildZombieDataTable()
 
 	-- Banshee.
 	local banshee = {}
-	banshee.class = "npc_zm_fastzombie"
+	banshee.class = "npc_fastzombie"
 	banshee.name = "Banshee"
 	banshee.description = "A fast zombie, it's faster than the rest. But it can't take that much damage."
 	banshee.icon = "VGUI/zombies/info_banshee"
@@ -342,7 +356,7 @@ function GM:BuildZombieDataTable()
 
 	-- Hulk.
 	local hulk = {}
-	hulk.class = "npc_zm_poisonzombie"
+	hulk.class = "npc_poisonzombie"
 	hulk.name = "Hulk"
 	hulk.description = "Big. Strong. Hulks smash humans to bits."
 	hulk.icon = "VGUI/zombies/info_hulk"

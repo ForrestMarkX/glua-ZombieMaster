@@ -19,10 +19,12 @@ function ENT:Think()
 	if self.delayset then
 		self:EmitSound("ZMPower.PhysExplode_Boom")
 
-		//make players in range drop their stuff, radius is cvar'd
-		for _, pl in pairs(ents.FindInSphere(self:LocalToWorld(self:OBBCenter()), GetConVar("zm_physexp_forcedrop_radius"):GetFloat())) do
-			if IsValid(pl) and pl:IsPlayer() then
-				pl:ForceDropOfCarriedPhysObjects()
+		if SERVER then
+			//make players in range drop their stuff, radius is cvar'd
+			for _, pl in pairs(ents.FindInSphere(self:LocalToWorld(self:OBBCenter()), GetConVar("zm_physexp_forcedrop_radius"):GetFloat())) do
+				if IsValid(pl) and pl:IsPlayer() then
+					pl:DropObject()
+				end
 			end
 		end
 

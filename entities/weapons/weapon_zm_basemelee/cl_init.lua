@@ -1,5 +1,4 @@
 include("shared.lua")
-include("animations.lua")
 
 SWEP.DrawAmmo = false
 SWEP.DrawCrosshair = false
@@ -8,35 +7,7 @@ SWEP.ViewModelFOV = 60
 SWEP.Slot = 0
 SWEP.SlotPos = 0
 
-function SWEP:DrawWeaponSelection(...)
-	return self:BaseDrawWeaponSelection(...)
-end
-
-function SWEP:OnRemove()
-	self:Anim_OnRemove()
-end
-
-function SWEP:ViewModelDrawn()
-	self:Anim_ViewModelDrawn()
-end
-
-function SWEP:PreDrawViewModel(vm)
-	if self.ShowViewModel == false then
-		render.SetBlend(0)
-	end
-end
-
-function SWEP:PostDrawViewModel(vm)
-	if self.ShowViewModel == false then
-		render.SetBlend(1)
-	end
-end
-
-function SWEP:DrawWorldModel()
-	local owner = self:GetOwner()
-	if owner:IsValid() and owner.ShadowMan then return end
-
-	self:Anim_DrawWorldModel()
+function SWEP:DrawHUD()
 end
 
 function SWEP:GetViewModelPosition(pos, ang)

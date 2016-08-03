@@ -70,40 +70,39 @@ function ENT:OnTakeDamage(dmginfo)
 	end
 end
 
-local ammoreplacements = {
-	["item_ammo_357"] = "357",
-	["item_ammo_357_large"] = "357_large",
-	["item_ammo_pistol"] = "pistol",
-	["item_ammo_pistol_large"] = "pistol_large",
-	["item_ammo_buckshot"] = "buckshot",
-	["item_ammo_ar2"] = "ar2",
-	["item_ammo_ar2_large"] = "ar2_large",
-	["item_ammo_smg1"] = "smg1",
-	["item_ammo_smg1_large"] = "smg1_large",
-	["item_box_buckshot"] = "buckshot",
-	["item_ammo_revolver"] = "revolver"
-}
-function ENT:OnRemove()
+ENT.IsAmmo = false
+function ENT:Think()
 	if self.Destroyed then
+		local playercount = #team.GetPlayers(TEAM_SURVIVOR)
+		if playercount > 64 then
+			self.itemcount = math.Round(self.itemcount * 2.5)
+		elseif playercount > 32 then
+			self.itemcount = math.Round(self.itemcount * 2)
+		elseif playercount > 16 then
+			self.itemcount = math.Round(self.itemcount * 1.5)
+		elseif playercount > 8 then
+			self.itemcount = math.Round(self.itemcount * 1.2)
+		end
+		
 		for i=1, self.itemcount do
 			local pSpawn
-			
 			if string.find(self.itemclass, "item_ammo") or string.find(self.itemclass, "item_box") then
-				pSpawn = ents.Create("prop_ammo")
+				pSpawn = ents.Create("item_zm_ammo")
+				self.IsAmmo = true
 			else
-				pSpawn = ents.Create("prop_weapon")
+				pSpawn = ents.Create(self.itemclass)
+				self.IsAmmo = false
 			end
-
 			if IsValid(pSpawn) then
-				if pSpawn:GetClass() == "prop_ammo" then
-					local ammotype = ammoreplacements[self.itemclass]
-					pSpawn:SetAmmoType(ammotype)
-					pSpawn:SetAmmo(GAMEMODE.AmmoCache[ammotype] or 1)
-				else
-					pSpawn:SetWeaponType(self.itemclass)
-					pSpawn:SetShouldRemoveAmmo(false)
+				if self.IsAmmo then
+					local class = self.itemclass
+					
+					pSpawn.Model = GAMEMODE.AmmoModels[class]
+					pSpawn.AmmoAmount = GAMEMODE.AmmoCache[GAMEMODE.AmmoClass[class]]
+					pSpawn.AmmoType = GAMEMODE.AmmoClass[class]
+					pSpawn.ClassName = class
 				end
-
+				
 				local vecOrigin = Vector(math.Rand(-0.25, 0.25), math.Rand(-0.25, 0.25), math.Rand(-0.25, 0.25))
 				pSpawn:SetPos( self:GetPos() + vecOrigin )
 
@@ -116,11 +115,7 @@ function ENT:OnRemove()
 				pSpawn:Spawn()
 			end
 		end
-	end
-end
-
-function ENT:Think()
-	if self.Destroyed then
+		
 		self:Remove()
 	end
 end

@@ -17,7 +17,12 @@ function ENT:Think()
 	end
 
 	if self:IsDrowning() then
-		owner:TakeSpecialDamage(10, DMG_DROWN, game.GetWorld())
+		local dmginfo = DamageInfo()
+		dmginfo:SetAttacker(game.GetWorld())
+		dmginfo:SetDamageType(DMG_DROWN)
+		dmginfo:SetDamage(10)
+		
+		owner:TakeDamageInfo(dmginfo)
 
 		self:NextThink(CurTime() + 1)
 		return true

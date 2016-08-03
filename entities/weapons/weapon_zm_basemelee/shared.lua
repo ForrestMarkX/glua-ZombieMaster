@@ -1,11 +1,12 @@
 if SERVER then
 	AddCSLuaFile("shared.lua")
 	AddCSLuaFile("cl_init.lua")
-	AddCSLuaFile("animations.lua")
 end
 
 SWEP.ViewModel = "models/weapons/v_axe/v_axe.mdl"
 SWEP.WorldModel = "models/weapons/w_axe.mdl"
+
+SWEP.Base = "weapon_zm_base"
 
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
@@ -46,10 +47,6 @@ function SWEP:Initialize()
 	self:SetDeploySpeed(1.1)
 	self:SetHoldType(self.HoldType)
 	self:SetWeaponSwingHoldType(self.SwingHoldType)
-
-	if CLIENT then
-		self:Anim_Initialize()
-	end
 end
 
 function SWEP:SetWeaponSwingHoldType(t)
@@ -79,10 +76,6 @@ function SWEP:Think()
 		self:StopSwinging()
 		self:MeleeSwing()
 	end
-
-	--[[if CLIENT then
-		self:Anim_Think()
-	end]]
 end
 
 function SWEP:SecondaryAttack()
@@ -93,7 +86,6 @@ function SWEP:Reload()
 end
 
 function SWEP:CanPrimaryAttack()
-	if self.Owner:IsHolding() then return false end
 	return self:GetNextPrimaryFire() <= CurTime() and not self:IsSwinging()
 end
 
@@ -125,10 +117,6 @@ end
 
 function SWEP:Holster()
 	if CurTime() >= self:GetSwingEnd() then
-		if CLIENT then
-			self:Anim_Holster()
-		end
-
 		return true
 	end
 
@@ -250,14 +238,10 @@ function SWEP:GetSwingEnd()
 	return self:GetDTFloat(0)
 end
 
-function SWEP:TranslateActivity(act)
+function SWEP:TranslateActivity( act )
 	if self:GetSwingEnd() ~= 0 and self.ActivityTranslateSwing[act] then
 		return self.ActivityTranslateSwing[act] or -1
 	end
 
-	if self.Owner:IsNPC() then
-		return self.ActivityTranslateAI[act] or -1
-	end
-	
-	return self.ActivityTranslate[act] or -1
+	return self.ActivityTranslate and self.ActivityTranslate[act] or -1
 end

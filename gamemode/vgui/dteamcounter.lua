@@ -17,7 +17,7 @@ function PANEL:Init()
 	self.m_Image.Paint = ImageThink
 
 	self.m_Counter = vgui.Create("DLabel", self)
-	self.m_Counter:SetFont("ZSHUDFontSmaller")
+	self.m_Counter:SetFont("ZMHUDFontSmaller")
 
 	self:Refresh()
 end

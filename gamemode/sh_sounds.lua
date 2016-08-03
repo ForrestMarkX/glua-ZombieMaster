@@ -275,3 +275,267 @@ sound.Add( {
 	pitch = { 95, 100 },
 	sound = "weapons/sledge_zm/sledge_swingalt.wav"
 } )
+
+-- Replacing engine source scripts
+-- I really do not like doing this but I have to since there are no ZM NPCs that don't require a huge base pack
+
+sound.Add( {
+	name = "Zombie.FootstepRight",
+	channel = CHAN_BODY,
+	volume = 0.95,
+	level = 65,
+	pitch = 100,
+	sound = {"npc/shamblie/foot1.wav", "npc/shamblie/foot2.wav", "npc/shamblie/foot3.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.FootstepLeft",
+	channel = CHAN_BODY,
+	volume = 0.95,
+	level = 65,
+	pitch = 100,
+	sound = {"npc/shamblie/foot1.wav", "npc/shamblie/foot2.wav", "npc/shamblie/foot3.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.ScuffRight",
+	channel = CHAN_BODY,
+	volume = 0.95,
+	level = 65,
+	pitch = 100,
+	sound = {"npc/shamblie/foot_slide1.wav", "npc/shamblie/foot_slide2.wav", "npc/shamblie/foot_slide3.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.ScuffLeft",
+	channel = CHAN_BODY,
+	volume = 0.95,
+	level = 65,
+	pitch = 100,
+	sound = {"npc/shamblie/foot_slide1.wav", "npc/shamblie/foot_slide2.wav", "npc/shamblie/foot_slide3.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.AttackHit",
+	channel = CHAN_WEAPON,
+	volume = 0.95,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/shamblie/claw_strike1.wav", "npc/shamblie/claw_strike2.wav", "npc/shamblie/claw_strike3.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.AttackMiss",
+	channel = CHAN_WEAPON,
+	volume = 0.95,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/shamblie/claw_miss1.wav", "npc/shamblie/claw_miss2.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.Pain",
+	channel = CHAN_VOICE,
+	volume = 0.95,
+	level = 75,
+	pitch = {95, 104},
+	sound = {"npc/shamblie/hit_0.wav", "npc/shamblie/hit_1.wav", "npc/shamblie/hit_2.wav", "npc/shamblie/hit_3.wav", "npc/shamblie/hit_4.wav", "npc/shamblie/hit_5.wav", "npc/shamblie/hit_6.wav", "npc/shamblie/hit_7.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.Alert",
+	channel = CHAN_VOICE,
+	volume = 0.95,
+	level = 75,
+	pitch = {95, 104},
+	sound = {"npc/shamblie/growl_0.wav", "npc/shamblie/growl_1.wav", "npc/shamblie/growl_2.wav", "npc/shamblie/growl_3.wav", "npc/shamblie/growl_4.wav", "npc/shamblie/growl_5.wav", "npc/shamblie/growl_6.wav", "npc/shamblie/growl_7.wav", "npc/shamblie/growl_8.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.Idle",
+	channel = CHAN_VOICE,
+	volume = 0.95,
+	level = 75,
+	pitch = {92, 104},
+	sound = {"npc/shamblie/moan_loop1.wav", "npc/shamblie/moan_loop2.wav", "npc/shamblie/moan_loop3.wav", "npc/shamblie/moan_loop4.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.Die",
+	channel = CHAN_VOICE,
+	volume = 0.95,
+	level = 75,
+	pitch = {95, 104},
+	sound = {"npc/shamblie/zombie_die1.wav", "npc/shamblie/zombie_die2.wav", "npc/shamblie/zombie_die3.wav"}
+} )
+
+sound.Add( {
+	name = "Zombie.Attack",
+	channel = CHAN_VOICE,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 104},
+	sound = {"npc/shamblie/zo_attack1.wav", "npc/shamblie/zo_attack2.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.LeapAttack",
+	channel = CHAN_WEAPON,
+	volume = 0.400,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/banshee/leap1.wav", "npc/banshee/leap2.wav", "npc/banshee/leap3_long.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.FootstepRight",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = {95, 105},
+	sound = "npc/banshee/foot4.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.FootstepLeft",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/banshee/foot1.wav", "npc/banshee/foot2.wav", "npc/banshee/foot3.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.AttackHit",
+	channel = CHAN_WEAPON,
+	volume = 1.0,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/banshee/claw_strike1.wav", "npc/banshee/claw_strike2.wav", "npc/banshee/claw_strike3.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.AttackMiss",
+	channel = CHAN_WEAPON,
+	volume = 1.0,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/banshee/claw_miss1.wav", "npc/banshee/claw_miss2.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.Attack",
+	channel = CHAN_WEAPON,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = "npc/banshee/leap1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.Pain",
+	channel = CHAN_BODY,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = "npc/banshee/leap1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.Die",
+	channel = CHAN_BODY,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = "npc/banshee/wake1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.Idle",
+	channel = CHAN_BODY,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/banshee/idle1.wav", "npc/banshee/idle2.wav", "npc/banshee/idle3.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.AlertFar",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/banshee/fz_alert_far1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.AlertNear",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/banshee/fz_alert_close1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.GallopLeft",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = {"npc/banshee/foot1.wav", "npc/banshee/foot2.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.GallopRight",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = {"npc/banshee/foot3.wav", "npc/banshee/foot4.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.Scream",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/banshee/fz_scream1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.RangeAttack",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/banshee/leap1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.Frenzy",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/banshee/fz_frenzy1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.Moan1",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/banshee/breathe_loop1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_FastZombie.Gurgle",
+	channel = CHAN_BODY,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/banshee/gurgle_loop1.wav"
+} )

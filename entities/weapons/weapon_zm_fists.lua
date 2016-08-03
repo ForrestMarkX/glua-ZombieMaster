@@ -1,11 +1,10 @@
 AddCSLuaFile()
+DEFINE_BASECLASS("weapon_zm_basemelee")
 
 if CLIENT then
 	SWEP.PrintName = "Fists"
 	SWEP.ViewModelFOV = 50
 end
-
-SWEP.Base = "weapon_zs_basemelee"
 
 SWEP.ViewModel = "models/weapons/c_fists_zm.mdl"
 SWEP.WorldModel = ""

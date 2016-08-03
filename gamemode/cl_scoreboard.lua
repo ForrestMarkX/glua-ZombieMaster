@@ -3,7 +3,7 @@ function GM:ScoreboardShow()
 	gui.EnableScreenClicker(true)
 
 	if not ScoreBoard then
-		ScoreBoard = vgui.Create("ZSScoreBoard")
+		ScoreBoard = vgui.Create("ZMScoreBoard")
 	end
 
 	ScoreBoard:SetSize(math.min(ScrW(), ScrH()) - 5, ScrH() * 0.9)
@@ -42,7 +42,7 @@ function PANEL:Init()
 	self.NextRefresh = RealTime() + 0.1
 
 	self.m_TitleLabel = vgui.Create("DLabel", self)
-	self.m_TitleLabel.Font = "ZSScoreBoardTitle"
+	self.m_TitleLabel.Font = "ZMScoreBoardTitle"
 	self.m_TitleLabel:SetFont(self.m_TitleLabel.Font)
 	self.m_TitleLabel:SetText(GetHostName())
 	self.m_TitleLabel:SetTextColor(COLOR_GRAY)
@@ -154,7 +154,7 @@ function PANEL:RemovePlayerPanel(panel)
 	end
 end
 
-vgui.Register("ZSScoreBoard", PANEL, "Panel")
+vgui.Register("ZMScoreBoard", PANEL, "Panel")
 
 local PANEL = {}
 
@@ -201,9 +201,9 @@ function PANEL:Init()
 	self.m_SpecialImage:SetMouseInputEnabled(true)
 	self.m_SpecialImage:SetVisible(false)
 
-	self.m_PlayerLabel = EasyLabel(self, " ", "ZSScoreBoardPlayer", COLOR_WHITE)
-	self.m_ScoreLabel = EasyLabel(self, " ", "ZSScoreBoardPlayerSmall", COLOR_WHITE)
-	self.m_DeathLabel = EasyLabel(self, " ", "ZSScoreBoardPlayerSmall", COLOR_WHITE)
+	self.m_PlayerLabel = EasyLabel(self, " ", "ZMScoreBoardPlayer", COLOR_WHITE)
+	self.m_ScoreLabel = EasyLabel(self, " ", "ZMScoreBoardPlayerSmall", COLOR_WHITE)
+	self.m_DeathLabel = EasyLabel(self, " ", "ZMScoreBoardPlayerSmall", COLOR_WHITE)
 
 	self.m_PingMeter = vgui.Create("DPingMeter", self)
 	self.m_PingMeter.PingBars = 5

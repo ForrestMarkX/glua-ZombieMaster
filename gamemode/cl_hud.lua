@@ -15,7 +15,7 @@ function GM:_HUDPaint()
 	end
 	
 	if not self:GetRoundActive() then
-		draw.SimpleText("Waiting for all players to be ready.", "ZSHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Waiting for all players to be ready.", "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
 	end
 	
 	hook.Run( "HUDDrawTargetID" )
@@ -41,8 +41,8 @@ function GM:HumanHUD(screenscale)
 	
 	local health = MySelf:Health()
 	local healthCol = health <= 10 and Color(185, 0, 0, 255) or health <= 30 and Color(150, 50, 0) or health <= 60 and Color(255, 200, 0) or color_white
-	draw.SimpleTextBlurry(MySelf:Health(), "ZSHUDFontBig", x + wid * 0.75, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	draw.SimpleTextBlurry("Health", "ZSHUDFontSmall", x + wid * 0.27, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	draw.SimpleTextBlurry(MySelf:Health(), "ZMHUDFontBig", x + wid * 0.75, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	draw.SimpleTextBlurry("Health", "ZMHUDFontSmall", x + wid * 0.27, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 local h, w = ScrH(), ScrW()
@@ -183,15 +183,15 @@ function MakepCredits()
 		draw.RoundedBox(8, 0, 0, w, h, Color(0, 0, 0, 180))
 	end
 
-	local label = EasyLabel(frame, GAMEMODE.Name.." Credits", "ZSHUDFontNS", color_white)
+	local label = EasyLabel(frame, GAMEMODE.Name.." Credits", "ZMHUDFontNS", color_white)
 	label:AlignTop(y)
 	label:CenterHorizontal()
 	y = y + label:GetTall() + 8
 
 	for authorindex, authortab in ipairs(GAMEMODE.Credits) do
-		local lineleft = EasyLabel(frame, string.Replace(authortab[1], "@", "(at)"), "ZSHUDFontSmallestNS", color_white)
-		local linemid = EasyLabel(frame, "-", "ZSHUDFontSmallestNS", color_white)
-		local lineright = EasyLabel(frame, authortab[3], "ZSHUDFontSmallestNS", color_white)
+		local lineleft = EasyLabel(frame, string.Replace(authortab[1], "@", "(at)"), "ZMHUDFontSmallestNS", color_white)
+		local linemid = EasyLabel(frame, "-", "ZMHUDFontSmallestNS", color_white)
+		local lineright = EasyLabel(frame, authortab[3], "ZMHUDFontSmallestNS", color_white)
 		local linesub
 		if authortab[2] then
 			linesub = EasyURL(frame, authortab[2], "DefaultFont", color_white)
@@ -298,7 +298,7 @@ function MakepPlayerColor()
 
 	local y = 8
 
-	local label = EasyLabel(pPlayerColor, "Colors", "ZSHUDFont", color_white)
+	local label = EasyLabel(pPlayerColor, "Colors", "ZMHUDFont", color_white)
 	label:SetPos((pPlayerColor:GetWide() - label:GetWide()) / 2, y)
 	y = y + label:GetTall() + 8
 
@@ -368,13 +368,13 @@ function GM:ShowOptions()
 	end
 	menu.Created = SysTime()
 
-	local header = EasyLabel(menu, self.Name, "ZSHUDFont")
+	local header = EasyLabel(menu, self.Name, "ZMHUDFont")
 	header:SetContentAlignment(8)
 	header:DockMargin(0, 10, 0, 64)
 	header:Dock(TOP)
 	
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZSHUDFontSmaller")
+	but:SetFont("ZMHUDFontSmaller")
 	but:SetText("Help")
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
@@ -385,7 +385,7 @@ function GM:ShowOptions()
 	but.Paint = DrawZMButton
 	
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZSHUDFontSmaller")
+	but:SetFont("ZMHUDFontSmaller")
 	but:SetText("Player Model")
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
@@ -396,7 +396,7 @@ function GM:ShowOptions()
 	but.Paint = DrawZMButton
 
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZSHUDFontSmaller")
+	but:SetFont("ZMHUDFontSmaller")
 	but:SetText("Player Color")
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
@@ -407,7 +407,7 @@ function GM:ShowOptions()
 	but.Paint = DrawZMButton
 
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZSHUDFontSmaller")
+	but:SetFont("ZMHUDFontSmaller")
 	but:SetText("Credits")
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
@@ -418,7 +418,7 @@ function GM:ShowOptions()
 	but.Paint = DrawZMButton
 
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZSHUDFontSmaller")
+	but:SetFont("ZMHUDFontSmaller")
 	but:SetText("Close")
 	but:SetTall(32)
 	but:DockMargin(12, 24, 12, 0)
@@ -459,7 +459,7 @@ function GM:ShowHelp()
 		draw.RoundedBox(8, 0, 0, w, h, Color(24, 24, 24))
 	end
 	
-	local label = EasyLabel(frame, "Objectives!", "ZSHUDFont", color_white)
+	local label = EasyLabel(frame, "Objectives!", "ZMHUDFont", color_white)
 	label:AlignLeft(frame:GetWide() * 0.1)
 	label:AlignTop(frame:GetTall() * 0.01)
 	
@@ -467,7 +467,7 @@ function GM:ShowHelp()
 	scroll:SetSize(pan:GetWide() - 5, pan:GetTall() - 5)
 	
 	local lab = vgui.Create("DLabel", scroll)
-	lab:SetFont("ZSHUDFontSmaller")
+	lab:SetFont("ZMHUDFontSmaller")
 	lab:AlignTop(8)
 	lab:AlignLeft(8)
 	lab:SetText(self.MapInfo)
@@ -475,7 +475,7 @@ function GM:ShowHelp()
 	
 	local hoverColor = Color(0, 0, 0)
 	local but = vgui.Create("DButton", frame)
-	but:SetFont("ZSHUDFontSmaller")
+	but:SetFont("ZMHUDFontSmaller")
 	but:SetText("Okay")
 	but:SetTall(frame:GetTall() * 0.05)
 	but:SetWide(frame:GetWide() * 0.13)
@@ -529,7 +529,7 @@ function GM:MakePreferredMenu()
 	
 	local label = vgui.Create("DLabel", frame)
 	label:AlignTop(45)
-	label:SetFont("ZSHUDFontSmaller")
+	label:SetFont("ZMHUDFontSmaller")
 	label:SetText("Choose your playstyle.")
 	label:SetTextColor(color_white)
 	label:SizeToContents()
@@ -636,7 +636,7 @@ function GM:SpawnTrapMenu(class, ent)
 			self.lblTitle:SetPos(12, 8)
 		end
 		
-		trapPanel.lblTitle:SetFont("ZSHUDFontSmallest")
+		trapPanel.lblTitle:SetFont("ZMHUDFontSmallest")
 			
 		trapPanel.Close = function(self)
 			self:SetVisible(false)

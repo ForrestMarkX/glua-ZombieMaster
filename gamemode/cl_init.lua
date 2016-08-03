@@ -159,46 +159,6 @@ function GM:OnPlayerChat( player, strText, bTeamOnly, bPlayerIsDead )
 	return true
 end
 
-function surface.CreateLegacyFont(font, size, weight, antialias, additive, name, shadow, outline, blursize)
-	surface.CreateFont(name, {font = font, size = size, weight = weight, antialias = antialias, additive = additive, shadow = shadow, outline = outline, blursize = blursize})
-end
-
-function GM:CreateFonts()
-	local fontfamily = "Typenoksidi"
-	
-	local screenscale = BetterScreenScale()
-	surface.CreateLegacyFont("zmweapons", screenscale * 36, 100, true, false, "ZMDeathFonts", false, true)
-	
-	surface.CreateLegacyFont(fontfamily, screenscale * 16, fontweight, fontaa, false, "ZSHUDFontTiny", fontshadow, fontoutline)
-	surface.CreateLegacyFont(fontfamily, screenscale * 20, fontweight, fontaa, false, "ZSHUDFontSmallest", fontshadow, fontoutline)
-	surface.CreateLegacyFont(fontfamily, screenscale * 22, fontweight, fontaa, false, "ZSHUDFontSmaller", fontshadow, fontoutline)
-	surface.CreateLegacyFont(fontfamily, screenscale * 28, fontweight, fontaa, false, "ZSHUDFontSmall", fontshadow, fontoutline)
-	surface.CreateLegacyFont(fontfamily, screenscale * 42, fontweight, fontaa, false, "ZSHUDFont", fontshadow, fontoutline)
-	surface.CreateLegacyFont(fontfamily, screenscale * 72, fontweight, fontaa, false, "ZSHUDFontBig", fontshadow, fontoutline)
-	surface.CreateLegacyFont(fontfamily, screenscale * 16, fontweight, fontaa, false, "ZSHUDFontTinyBlur", false, false, 8)
-	surface.CreateLegacyFont(fontfamily, screenscale * 22, fontweight, fontaa, false, "ZSHUDFontSmallerBlur", false, false, 8)
-	surface.CreateLegacyFont(fontfamily, screenscale * 28, fontweight, fontaa, false, "ZSHUDFontSmallBlur", false, false, 8)
-	surface.CreateLegacyFont(fontfamily, screenscale * 42, fontweight, fontaa, false, "ZSHUDFontBlur", false, false, 8)
-	surface.CreateLegacyFont(fontfamily, screenscale * 72, fontweight, fontaa, false, "ZSHUDFontBigBlur", false, false, 8)
-	
-	surface.CreateLegacyFont(fontfamily, 32, fontweight, true, false, "ZSScoreBoardTitle", false, true)
-	surface.CreateLegacyFont(fontfamily, 22, fontweight, true, false, "ZSScoreBoardSubTitle", false, true)
-	surface.CreateLegacyFont(fontfamily, 16, fontweight, true, false, "ZSScoreBoardPlayer", false, true)
-	surface.CreateLegacyFont(fontfamily, 24, fontweight, true, false, "ZSScoreBoardHeading", false, false)
-	surface.CreateLegacyFont("arial", 20, 0, true, false, "ZSScoreBoardPlayerSmall", false, true)
-	
-	-- Default, DefaultBold, DefaultSmall, etc. were changed when gmod13 hit. These are renamed fonts that have the old values.
-	surface.CreateFont("DefaultFontVerySmall", {font = "tahoma", size = 10, weight = 0, antialias = false})
-	surface.CreateFont("DefaultFontSmall", {font = "tahoma", size = 11, weight = 0, antialias = false})
-	surface.CreateFont("DefaultFontSmallDropShadow", {font = "tahoma", size = 11, weight = 0, shadow = true, antialias = false})
-	surface.CreateFont("DefaultFont", {font = "tahoma", size = 13, weight = 500, antialias = false})
-	surface.CreateFont("DefaultFontBold", {font = "tahoma", size = 13, weight = 1000, antialias = false})
-	surface.CreateFont("DefaultFontLarge", {font = "tahoma", size = 16, weight = 0, antialias = false})
-	
-	surface.CreateLegacyFont("Consolas", 20, 700, true, false, "zm_hud_font", false, true)
-	surface.CreateLegacyFont("Consolas", 16, 700, true, false, "zm_hud_font2", false, true)
-end
-
 local colBlur = Color(0, 0, 0)
 function draw.SimpleTextBlurry(text, font, x, y, col, xalign, yalign)
 	colBlur.r = col.r
@@ -222,14 +182,6 @@ function GM:PostDrawViewModel(vm, pl, wep)
 		if wep.PostDrawViewModel then
 			wep:PostDrawViewModel(vm)
 		end
-	end
-end
-
-function GM:PreDrawViewModel(vm, pl, wep)
-	if IsValid(pl) and pl:IsHolding() then return true end
-
-	if IsValid(wep) and wep.PreDrawViewModel then
-		return wep:PreDrawViewModel(vm)
 	end
 end
 
@@ -487,11 +439,13 @@ end
 
 function GM:CreateClientsideRagdoll(ent, ragdoll)
 	if IsValid(ent) and ent:IsNPC() then
-		local force = ent:GetDamageForce()
-		if force and not force:IsZero() then
-			for i=0, ragdoll:GetPhysicsObjectCount() - 1 do
-				local phys = ragdoll:GetPhysicsObjectNum(i)
-				phys:ApplyForceCenter(force * 10000)
+		if ent.GetDamageForce then
+			local force = ent:GetDamageForce()
+			if force and not force:IsZero() then
+				for i=0, ragdoll:GetPhysicsObjectCount() - 1 do
+					local phys = ragdoll:GetPhysicsObjectNum(i)
+					phys:ApplyForceCenter(force * 10000)
+				end
 			end
 		end
 	end

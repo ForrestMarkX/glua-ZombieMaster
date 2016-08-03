@@ -2,7 +2,7 @@ local meta = FindMetaTable("Player")
 if not meta then return end
 
 function meta:ShouldNotCollide(ent)
-	return ent:IsPlayer() and (self:Team() == ent:Team() or self.NoCollideAll or ent.NoCollideAll) or ent:GetPhysicsObject():IsValid() and ent:GetPhysicsObject():HasGameFlag(FVPHYSICS_PLAYER_HELD)
+	return ent:IsPlayer() and self:Team() == ent:Team() or ent:IsPlayerHolding()
 end
 
 function meta:IsZM()
@@ -17,16 +17,6 @@ function meta:CanAfford(cost)
 	return self:GetZMPoints() > cost
 end
 
-function meta:ForceDropOfCarriedPhysObjects()
-	if self:IsHolding() then
-		local holding = self:GetHolding()
-		
-		if IsValid(holding) then
-			holding:Remove()
-		end
-	end
-end
-
 function meta:GetZMPoints()
 	return self:GetDTInt(1)
 end
@@ -38,21 +28,6 @@ end
 function meta:TraceLine(distance, mask, filter, start)
 	start = start or self:GetShootPos()
 	return util.TraceLine({start = start, endpos = start + self:GetAimVector() * distance, filter = filter or self, mask = mask})
-end
-
-function meta:IsHolding()
-	return self.status_human_holding and self.status_human_holding:IsValid()
-end
-meta.IsCarrying = meta.IsHolding
-
-function meta:GetHolding()
-	local status = self.status_human_holding
-	if status and status:IsValid() then
-		local obj = status:GetObject()
-		if obj:IsValid() then return obj end
-	end
-
-	return NULL
 end
 
 function meta:MeleeTrace(distance, size, filter, start)

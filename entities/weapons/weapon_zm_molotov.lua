@@ -1,21 +1,20 @@
 AddCSLuaFile()
+DEFINE_BASECLASS("weapon_zm_base")
 
 if CLIENT then
 	SWEP.PrintName = "Molotovs"
 
 	SWEP.ViewModelFlip = false
-	SWEP.DrawCrosshair = true
 	SWEP.ViewModelFOV = 55
+	
+	SWEP.WeaponSelectIconLetter	= "k"
 end
 
 SWEP.Author = "Mka0207 & Forrest Mark X"
 
-SWEP.Base	= "weapon_zs_base"
-
 SWEP.Slot = 4
 SWEP.SlotPos = 0
 
-SWEP.Weight = 1
 SWEP.ViewModel	= "models/weapons/c_molotov_zm.mdl"
 SWEP.WorldModel	= Model( "models/weapons/molotov3rd_zm.mdl" )
 SWEP.UseHands = true
@@ -91,8 +90,6 @@ if SERVER then
 end
 
 function SWEP:CanPrimaryAttack()
-	if self.Owner:IsHolding() then return false end
-	
 	if self.Owner:GetAmmoCount(self.Primary.Ammo) <= 0 then
 		return false
 	end
@@ -117,7 +114,9 @@ function SWEP:Think()
 		self.firing = false
 		self.firetimer = 0
 		
-		self:TakeAmmo()
+		if not self.InfiniteAmmo then
+			self:TakePrimaryAmmo(1)
+		end
 		owner:DoAttackEvent()
 	end
 	

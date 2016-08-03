@@ -1,7 +1,7 @@
 GM.NotifyFadeTime = 8
 
-local DefaultFont = "ZSHUDFontSmallest"
-local DefaultFontEntity = "ZSHUDFontSmallest"
+local DefaultFont = "ZMHUDFontSmallest"
+local DefaultFontEntity = "ZMHUDFontSmallest"
 
 local PANEL  = {}
 

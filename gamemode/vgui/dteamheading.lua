@@ -4,7 +4,7 @@ PANEL.NextRefresh = 0
 PANEL.RefreshTime = 2
 
 function PANEL:Init()
-	self.m_TeamNameLabel = EasyLabel(self, " ", "ZSScoreBoardHeading", color_black)
+	self.m_TeamNameLabel = EasyLabel(self, " ", "ZMScoreBoardHeading", color_black)
 	
 	self.NameCol = vgui.Create("DLabel", self)
 	self.NameCol:SetPos( self:GetWide() * 1.2, 15 )
@@ -12,7 +12,7 @@ function PANEL:Init()
 	self.NameCol:SetSize( 120, 40 )
 	self.NameCol.Paint = function(self, w, h)
 		DisableClipping( true )
-		draw.SimpleText("Name", "ZSScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
+		draw.SimpleText("Name", "ZMScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
 		DisableClipping( false )
 	end
 	
@@ -22,7 +22,7 @@ function PANEL:Init()
 	self.ScoreCol:SetSize( 120, 40 )
 	self.ScoreCol.Paint = function(self, w, h)
 		DisableClipping( true )
-		draw.SimpleText("Score", "ZSScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
+		draw.SimpleText("Score", "ZMScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
 		DisableClipping( false )
 	end
 	
@@ -32,7 +32,7 @@ function PANEL:Init()
 	self.DeathCol:SetSize( 120, 40 )
 	self.DeathCol.Paint = function(self, w, h)
 		DisableClipping( true )
-		draw.SimpleText("Deaths", "ZSScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
+		draw.SimpleText("Deaths", "ZMScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
 		DisableClipping( false )
 	end
 
@@ -42,7 +42,7 @@ function PANEL:Init()
 	self.PingCol:SetSize( 120, 40 )
 	self.PingCol.Paint = function(self, w, h)
 		DisableClipping( true )
-		draw.SimpleText("Ping", "ZSScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
+		draw.SimpleText("Ping", "ZMScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
 		DisableClipping( false )
 	end
 	

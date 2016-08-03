@@ -44,42 +44,39 @@ if file.Exists(GM.FolderName.."/gamemode/maps/"..game.GetMap()..".lua", "LUA") t
 end
 
 function GM:InitPostEntity()
-	gamemode.Call("InitPostEntityMap")
 	RunConsoleCommand("mapcyclefile", "mapcycle_zombiemaster.txt")
 	
 	self:SetRoundStartTime(5)
 	self:SetRoundStart(true)
 	self:SetRoundActive(false)
+	
+	self:SetupAmmo()
 end
 
-function GM:InitPostEntityMap()
-	gamemode.Call("SetupSpawnPoints")
-end
-
-function GM:OnEntityCreated(entity)
-	if IsValid(entity) and entity.GetClass then
-		local replace = nil
-		local class = entity:GetClass()
+function GM:SetupAmmo()
+	local ammotbl = ents.FindByClass("item_ammo_*")
+	table.Add(ammotbl, ents.FindByClass("item_box_*"))
+	
+	for _, ammo in pairs(ammotbl) do
+		if ammo:GetClass() == "item_ammo_revolver" then continue end
 		
-		if class == "npc_fastzombie" then
-			replace = "npc_zm_fastzombie"
-		elseif class == "npc_zombie" then
-			replace = "npc_zm_zombie"
-		elseif class == "npc_poisonzombie" then
-			replace = "npc_zm_poisonzombie"
-		end
-
-		if replace then
-			timer.Simple(0.07, function()
-				if IsValid(entity) then
-					local new = ents.Create(replace)
-					new:SetPos(entity:GetPos())
-					new:SetAngles(entity:GetAngles())
-					new:Spawn()
-					
-					entity:Remove()
-				end
-			end)
+		local ammotype = self.AmmoClass[ammo:GetClass()]
+		if ammotype then
+			local ent = ents.Create("item_zm_ammo")
+			if IsValid(ent) then
+				ent:SetPos(ammo:GetPos())
+				ent:SetAngles(ammo:GetAngles())
+				
+				ent.ClassName = ammo:GetClass()
+				ent.Model = ammo:GetModel()
+				ent.AmmoAmount = self.AmmoCache[ammotype]
+				ent.AmmoType = ammotype
+				ent:Spawn()
+				
+				self.AmmoModels[ammo:GetClass()] = ammo:GetModel()
+				
+				ammo:Remove()
+			end
 		end
 	end
 end
@@ -92,15 +89,40 @@ function GM:SetupSpawnPoints()
 	team.SetSpawnPoint( TEAM_ZOMBIEMASTER, h_spawn )
 end
 
-function GM:AddNetworkStrings()
-	util.AddNetworkString("zm_gamemodecall")
-	util.AddNetworkString("zm_trigger")
-	util.AddNetworkString("zm_mapinfo")	
-	util.AddNetworkString("zm_queue")
-	util.AddNetworkString("zm_remove_queue")
-	util.AddNetworkString("zm_sendcurrentgroups")
-	util.AddNetworkString("zm_sendselectedgroup")
-	util.AddNetworkString("zm_spawnclientragdoll")
+local ShamblerModels = {
+	"models/zombie/zm_classic.mdl",
+	"models/zombie/zm_classic_01.mdl",
+	"models/zombie/zm_classic_02.mdl",
+	"models/zombie/zm_classic_03.mdl",
+	"models/zombie/zm_classic_04.mdl",
+	"models/zombie/zm_classic_05.mdl",
+	"models/zombie/zm_classic_06.mdl",
+	"models/zombie/zm_classic_07.mdl",
+	"models/zombie/zm_classic_08.mdl",
+	"models/zombie/zm_classic_09.mdl"
+}
+function GM:OnEntityCreated(ent)
+	if ent:IsNPC() then
+		if string.sub(ent:GetClass(), 1, 12) == "npc_headcrab" then
+			ent:SetNoDraw(true)
+			ent:Remove() 
+		end
+	
+		if ent.GetNumBodyGroups and ent.SetBodyGroup then
+			for k = 0, ent:GetNumBodyGroups() - 1 do
+				ent:SetBodyGroup(k, 0)
+			end
+		end
+		
+		local entname = ent:GetClass()
+		if string.lower(entname) == "npc_zombie" then
+			timer.Simple(0, function() if IsValid(ent) then ent:SetModel(ShamblerModels[math.random(#ShamblerModels)]) end end)
+		elseif string.lower(entname) == "npc_poisonzombie" then
+			timer.Simple(0, function() if IsValid(ent) then ent:SetModel("models/zombie/hulk.mdl") end end)
+		elseif string.lower(entname) == "npc_fastzombie" then
+			timer.Simple(0, function() if IsValid(ent) then ent:SetModel("models/zombie/zm_fast.mdl") end end)
+		end
+	end
 end
 
 function GM:PlayerSpawnAsSpectator(pl)
@@ -316,58 +338,10 @@ function GM:PostPlayerDeath(ply)
 	ply:Spectate(OBS_MODE_ROAMING)
 end
 
-function GM:ReplaceMapWeapons()
-	for _, ent in pairs(ents.FindByClass("weapon_*")) do
-		if string.sub(ent:GetClass(), 1, 10) == "weapon_zm_" then
-			local wep = ents.Create("prop_weapon")
-			if wep:IsValid() then
-				wep:SetPos(ent:GetPos())
-				wep:SetAngles(ent:GetAngles())
-				wep:SetWeaponType(ent:GetClass())
-				wep:SetShouldRemoveAmmo(false)
-				wep:Spawn()
-				wep.IsPreplaced = true
-			end
-		end
-
-		ent:Remove()
-	end
-end
-
 function GM:PlayerHurt(victim, attacker, healthremaining, damage)
 	if 0 < healthremaining then
 		if victim:Team() == TEAM_SURVIVOR then
 			victim:PlayPainSound()
-		end
-	end
-end
-
-local ammoreplacements = {
-	["item_ammo_357"] = "357",
-	["item_ammo_357_large"] = "357_large",
-	["item_ammo_pistol"] = "pistol",
-	["item_ammo_pistol_large"] = "pistol_large",
-	["item_ammo_buckshot"] = "buckshot",
-	["item_ammo_ar2"] = "ar2",
-	["item_ammo_ar2_large"] = "ar2_large",
-	["item_ammo_smg1"] = "smg1",
-	["item_ammo_smg1_large"] = "smg1_large",
-	["item_box_buckshot"] = "buckshot",
-	["item_ammo_revolver"] = "revolver"
-}
-function GM:ReplaceMapAmmo()
-	for classname, ammotype in pairs(ammoreplacements) do
-		for _, ent in pairs(ents.FindByClass(classname)) do
-			local newent = ents.Create("prop_ammo")
-			if newent:IsValid() then
-				newent:SetAmmoType(ammotype)
-				newent.PlacedInMap = true
-				newent:SetPos(ent:GetPos())
-				newent:SetAngles(ent:GetAngles())
-				newent:Spawn()
-				newent:SetAmmo(self.AmmoCache[ammotype] or 1)
-			end
-			ent:Remove()
 		end
 	end
 end
@@ -400,6 +374,10 @@ function GM:RestartLua()
 	self:SetRoundStartTime(1)
 	
 	self:SetCurZombiePop(0)
+end
+
+function GM:PostCleanupMap()
+	self:SetupAmmo()
 end
 
 function GM:DoRestartGame()
@@ -487,10 +465,6 @@ function GM:TeamVictorious(won, message)
 	
 	if won then
 		game.SetTimeScale(0.25)
-		
-		util.RemoveAll("prop_ammo")
-		util.RemoveAll("prop_weapon")
-	
 		timer.Simple(2, function() game.SetTimeScale(1) end)
 	end
 	
@@ -701,16 +675,7 @@ function GM:PlayerPostThink(pl)
 end
 
 function GM:PlayerLoadout(ply)
-	if ply:IsSurvivor() then
-		ply:Give("weapon_zm_fists")
-		ply:SelectWeapon("weapon_zm_fists")
-		
-		local wep = ply:GetActiveWeapon()
-		if IsValid(wep) then
-			wep:SetHoldType("fist")
-		end
-	end
-	
+	if ply:IsSurvivor() then ply:Give("weapon_zm_fists") end
 	return true
 end
 
@@ -721,6 +686,15 @@ function GM:Think()
 	
 	if #self.ConnectingPlayers > 0 and CurTime() >= self.ReadyTimer then
 		table.Empty(self.ConnectingPlayers)
+	end
+	
+	local humans = team.GetPlayers(TEAM_SURVIVOR)
+	for _, pl in pairs(humans) do
+		if pl:Alive() then
+			if pl:WaterLevel() >= 3 and not (pl.status_drown and pl.status_drown:IsValid()) then
+				pl:GiveStatus("drown")
+			end
+		end
 	end
 	
 	if numplayers > 0 then
@@ -739,19 +713,9 @@ function GM:Think()
 	if NextTick <= time then
 		NextTick = time + 1
 		
-		local players = player.GetAll()
-		if #players > 20 then
+		if numplayers > 20 then
 			for _, ply in pairs(players) do
 				if not ply:GetNoCollideWithTeammates() then ply:SetNoCollideWithTeammates(true) end
-			end
-		end
-		
-		local humans = team.GetPlayers(TEAM_SURVIVOR)
-		for _, pl in pairs(humans) do
-			if pl:Alive() then
-				if pl:WaterLevel() >= 3 and not (pl.status_drown and pl.status_drown:IsValid()) then
-					pl:GiveStatus("drown")
-				end
 			end
 		end
 	end
@@ -829,14 +793,6 @@ function GM:ZombieMasterVolunteers()
 	
 	self:SetRoundStart(false)
 	self:SetRoundActive(true)
-
-	for _, ent in pairs(ents.FindByClass("prop_weapon")) do
-		ent:Remove()
-	end
-
-	for _, ent in pairs(ents.FindByClass("prop_ammo")) do
-		ent:Remove()
-	end
 	
 	for _, ply in pairs(player.GetAll()) do
 		if IsValid(ply) then
@@ -846,12 +802,6 @@ function GM:ZombieMasterVolunteers()
 	end
 	
 	game.CleanUpMap(false)
-	gamemode.Call("ReplaceMapWeapons")
-	gamemode.Call("ReplaceMapAmmo")
-	
-	for _, ent in pairs(ents.FindByClass("prop_ammo")) do ent.PlacedInMap = true end
-	for _, ent in pairs(ents.FindByClass("prop_weapon")) do ent.PlacedInMap = true end
-	for _, ent in pairs(ents.FindByClass("prop_flashlightbattery")) do ent.PlacedInMap = true end
 	
 	for _, ply in pairs(team.GetPlayers(TEAM_SPECTATOR)) do
 		gamemode.Call("InitialSpawnRound", ply)
@@ -896,59 +846,69 @@ function GM:LoadNextMap()
 	end
 end
 
-function GM:TryHumanPickup(pl, entity)
-	if entity:IsValid() and not entity.m_NoPickup then
-		local entclass = entity:GetClass()
-		if (string.sub(entclass, 1, 12) == "prop_physics" or entclass == "func_physbox" or entity.HumanHoldable and entity:HumanHoldable(pl)) and pl:IsSurvivor() and pl:Alive() and entity:GetMoveType() == MOVETYPE_VPHYSICS and entity:GetPhysicsObject():IsValid() and entity:GetPhysicsObject():GetMass() <= CARRY_DRAG_MASS and entity:GetPhysicsObject():IsMoveable() and entity:OBBMins():Length() + entity:OBBMaxs():Length() <= CARRY_DRAG_VOLUME then
-			local holder, status = entity:GetHolder()
-			if not holder and not pl:IsHolding() and (pl.NextHold or 0) <= CurTime() and pl:GetShootPos():Distance(entity:NearestPoint(pl:GetShootPos())) <= 64 and pl:GetGroundEntity() ~= entity then
-				local newstatus = ents.Create("status_human_holding")
-				if newstatus:IsValid() then
-					pl.NextHold = CurTime() + 0.25
-					pl.NextUnHold = CurTime() + 0.05
-					newstatus:SetPos(pl:GetShootPos())
-					newstatus:SetOwner(pl)
-					newstatus:SetParent(pl)
-					newstatus:SetObject(entity)
-					newstatus:Spawn()
-				end
-			end
-		end
-	end
-end
-
-function GM:KeyPress(pl, key)
-    if key == IN_USE then
-        if pl:Team() == TEAM_SURVIVOR and pl:Alive() then
-            if pl:IsCarrying() then
-                pl.status_human_holding:Remove()
-            else
-                self:TryHumanPickup(pl, pl:TraceLine(64).Entity)
-            end
-        end
-	end
-end
-
 function GM:AllowPlayerPickup(pl, ent)
-	return false
+	if ent:IsPlayerHolding() then return false end
+	
+	local entclass = ent:GetClass()
+	if string.sub(entclass, 1, 12) == "prop_physics" or string.sub(entclass, 1, 12) == "func_physbox" or entclass == "item_zmmo_zm" or string.sub(entclass, 1 , 10) == "weapon_zm_" and pl:IsSurvivor() and pl:Alive() and ent:GetMoveType() == MOVETYPE_VPHYSICS and ent:GetPhysicsObject():IsValid() and ent:GetPhysicsObject():GetMass() <= CARRY_MASS and ent:GetPhysicsObject():IsMoveable() and ent:OBBMins():Length() + ent:OBBMaxs():Length() <= CARRY_VOLUME then
+		return true
+	end
+	
+	return pl:IsSurvivor()
 end
 
 function GM:PlayerCanHearPlayersVoice(listener, talker)
 	return true, false
 end
 
+function GM:KeyPress(pl, key)
+    if key == IN_USE then
+        if pl:IsSurvivor() and pl:Alive() then
+			local tr = util.TraceLine({
+				start = pl:EyePos(),
+				endpos = pl:EyePos() + pl:EyeAngles():Forward() * 64,
+				filter = player.GetAll()
+			})
+			local ent = tr.Entity
+
+			gamemode.Call("PlayerUse", pl, ent)
+        end
+	end
+end
+
 function GM:PlayerUse(pl, ent)
+	if not IsValid(ent) then return false end
 	if not pl:Alive() or pl:IsZM() or pl:IsSpectator() then return false end
+	if ent:IsPlayerHolding() then return false end
 
 	local entclass = ent:GetClass()
 	if entclass == "prop_door_rotating" then
-		if CurTime() < (ent.m_AntiDoorSpam or 0) then -- Prop doors can be glitched shut by mashing the use button.
+		if CurTime() < (ent.m_AntiDoorSpam or 0) then
 			return false
 		end
 		ent.m_AntiDoorSpam = CurTime() + 0.85
-	elseif pl:IsSurvivor() and not pl:IsCarrying() and pl:KeyPressed(IN_USE) then
-		self:TryHumanPickup(pl, ent)
-	end 
+	elseif pl:IsSurvivor() then
+		if string.sub(entclass, 1 , 10) == "weapon_zm_" then
+			if not gamemode.Call("PlayerCanPickupWeapon", pl, ent) then
+				local phys = ent:GetPhysicsObject()
+				if IsValid(phys) then
+					local mass = phys:GetMass()
+					phys:ApplyForceCenter(Vector(math.random(-mass, mass), math.random(-mass, mass), math.random(-mass, mass)) * 50)
+				end
+				
+				return false
+			end
+			
+			pl:EmitSound("items/ammo_pickup.wav")
+			pl:Give(entclass)
+			
+			local wep = pl:GetWeapon(entclass)
+			wep:SetClip1(ent:Clip1())
+			wep:SetClip2(ent:Clip2())
+			
+			ent:Remove()
+		end
+	end
 
 	return true
 end
@@ -957,44 +917,47 @@ function GM:PlayerSwitchFlashlight(pl, newstate)
 	return pl:IsSurvivor()
 end
 
-function GM:PlayerFootstep(pl, vPos, iFoot, strSoundName, fVolume, pFilter)
-end
-
-function GM:PlayerStepSoundTime(pl, iType, bWalking)
-	local fStepTime = 350
-
-	if iType == STEPSOUNDTIME_NORMAL or iType == STEPSOUNDTIME_WATER_FOOT then
-		local fMaxSpeed = pl:GetMaxSpeed()
-		if fMaxSpeed <= 100 then
-			fStepTime = 400
-		elseif fMaxSpeed <= 300 then
-			fStepTime = 350
-		else
-			fStepTime = 250
-		end
-	elseif iType == STEPSOUNDTIME_ON_LADDER then
-		fStepTime = 450
-	elseif iType == STEPSOUNDTIME_WATER_KNEE then
-		fStepTime = 600
-	end
-
-	if pl:Crouching() then
-		fStepTime = fStepTime + 50
-	end
-
-	return fStepTime
-end
-
-function GM:PlayerStepSoundTime(pl, iType, bWalking)
-	return 350
-end
-
 function GM:PlayerCanPickupWeapon(pl, ent)
-	return pl:Team() == TEAM_SURVIVOR
+	if pl:IsSurvivor() and pl:Alive() then
+		if ent.ThrowTime and ent.ThrowTime > CurTime() then return false end
+		if pl:HasWeapon(ent:GetClass()) and ent.WeaponIsAmmo then return gamemode.Call("PlayerCanPickupItem", pl, ent) end
+		
+		if pl:HasWeapon(ent:GetClass()) then return false end
+		
+		local weps = pl:GetWeapons()
+		for index, wep in pairs(weps) do
+			if wep:GetClass() ~= "weapon_zm_fists" and wep:GetSlot() == ent:GetSlot() then
+				return false
+			end
+		end
+		
+		return true
+	end
+	
+	return false
 end
 
 function GM:PlayerCanPickupItem(pl, item)
-	return pl:Team() == TEAM_SURVIVOR
+	if pl:Alive() and pl:IsSurvivor() and string.sub(item:GetClass(), 1, 10) == "item_ammo_" or item:GetClass() == "item_zm_ammo" or item:GetClass() == "weapon_zm_molotov" then
+		if item.ThrowTime and item.ThrowTime > CurTime() then return false end
+		
+		for _, wep in pairs(pl:GetWeapons()) do
+			local primaryammo = wep.Primary and wep.Primary.Ammo or ""
+			local secondaryammo = wep.Secondary and wep.Secondary.Ammo or ""
+			local ammotype = self.AmmoClass[item.ClassName] or ""
+			
+			if string.lower(primaryammo) == string.lower(ammotype) or string.lower(secondaryammo) == string.lower(ammotype) then
+				local ammoid = game.GetAmmoID(ammotype)
+				if pl:GetAmmoCount(ammotype) < game.GetAmmoMax(ammoid) then
+					return true
+				end
+			end
+		end
+		
+		return false
+	end
+	
+	return pl:IsSurvivor()
 end
 
 function GM:SetCurZombiePop(amount)
@@ -1015,11 +978,11 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 	local pZombie = ents.Create(entname)
 
 	if IsValid(pZombie) then
+		pZombie:SetKeyValue("spawnflags", bit.bor(SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK))
+		pZombie:SetKeyValue("crabcount", -1)
+		
 		pZombie:SetPos(origin)
 		pZombie:SetOwner(pZM)
-		pZombie:DropToFloor()
-		
-		pZombie:SetPos(pZombie:GetPos() + Vector(0, 0, 5))
 		
 		angles.x = 0.0
 		angles.z = 0.0
@@ -1030,6 +993,11 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 		
 		pZM:TakeZMPoints(cost)
 		gamemode.Call("SetCurZombiePop", GAMEMODE:GetCurZombiePop() + popcost)
+		
+		if entname == "npc_burnzombie" or entname "npc_dragzombie" then
+			pZombie:DropToFloor()
+			pZombie:SetPos(pZombie:GetPos() + Vector(0, 0, 5))
+		end
 
 		return pZombie
 	end

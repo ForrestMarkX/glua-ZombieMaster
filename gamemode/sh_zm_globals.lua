@@ -5,14 +5,18 @@ ZM_PHYSEXP_DELAY = 7.4
 SF_PHYSEXPLOSION_NODAMAGE = 0x0001
 SF_PHYSEXPLOSION_DISORIENT_PLAYER = 0x0010
 
-GM.AmmoModels = {}
-GM.AmmoModels["pistol"] = "models/Items/BoxSRounds.mdl"
-GM.AmmoModels["smg1"] = "models/Items/BoxMRounds.mdl"
-GM.AmmoModels["buckshot"] = "models/Items/BoxBuckshot.mdl"
-GM.AmmoModels["357"] = "models/Items/357ammobox.mdl"
-GM.AmmoModels["ar2"] = "models/Items/BoxMRounds.mdl"
-GM.AmmoModels["revolver"] = "models/Items/revolverammo.mdl"
-GM.AmmoModels["molotov"] = "models/weapons/molotov3rd_zm.mdl"
+GM.AmmoClass = {}
+GM.AmmoClass["item_ammo_357"] = "357"
+GM.AmmoClass["item_ammo_357_large"] = "357_large"
+GM.AmmoClass["item_ammo_pistol"] = "pistol"
+GM.AmmoClass["item_ammo_pistol_large"] = "pistol_large"
+GM.AmmoClass["item_ammo_ar2"] = "ar2"
+GM.AmmoClass["item_ammo_ar2_large"] = "ar2_large"
+GM.AmmoClass["item_ammo_smg1"] = "smg1"
+GM.AmmoClass["item_ammo_smg1_large"] = "smg1_large"
+GM.AmmoClass["item_box_buckshot"] = "buckshot"
+GM.AmmoClass["item_ammo_revolver"] = "revolver"
+GM.AmmoClass["weapon_zm_molotov"] = "molotov"
 
 GM.AmmoCache = {}
 GM.AmmoCache["pistol"] = 20
@@ -23,14 +27,19 @@ GM.AmmoCache["ar2"] = 20
 GM.AmmoCache["ar2_large"] = 100
 GM.AmmoCache["357"] = 11
 GM.AmmoCache["357_large"] = 20
-GM.AmmoCache["buckshot"] = 8
+GM.AmmoCache["buckshot"] = 20
 GM.AmmoCache["revolver"] = 6
 GM.AmmoCache["molotov"] = 1
 
-CARRY_DRAG_MASS = 145
-CARRY_DRAG_VOLUME = 120
-CARRY_SPEEDLOSS_PERKG = 1.3
-CARRY_SPEEDLOSS_MINSPEED = 88
+GM.AmmoModels = {}
+GM.AmmoModels["item_ammo_revolver"] = "models/Items/revolverammo.mdl"
+GM.AmmoModels["item_ammo_smg1"] = "models/items/boxmrounds.mdl"
+GM.AmmoModels["item_ammo_357"] = "models/items/357ammo.mdl"
+GM.AmmoModels["item_ammo_pistol"] = "models/items/boxsrounds.mdl"
+GM.AmmoModels["item_box_buckshot"] = "models/items/boxbuckshot.mdl"
+
+CARRY_MASS = 145
+CARRY_VOLUME = 120
 
 GM.HumanGibs = {
 	Model("models/gibs/HGIBS.mdl"),

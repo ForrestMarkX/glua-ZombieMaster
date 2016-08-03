@@ -126,6 +126,8 @@ end
 concommand.Add("_place_zombiespot_zm", ZM_Power_SpotCreate_SV)
 
 local function ZM_Drop_Ammo(ply)
+	if ply.ThrowDelay and ply.ThrowDelay > CurTime() then return end
+	
 	local wep = ply:GetActiveWeapon()
 	
 	if not IsValid(wep) then return end
@@ -142,7 +144,14 @@ local function ZM_Drop_Ammo(ply)
 		amount = ply:GetAmmoCount(ammotype)
 	end
 	
-	local ent = ents.Create("prop_ammo")
+	local ammoclass = ""
+	for class, name in pairs(GAMEMODE.AmmoClass) do
+		if ammotype == name then
+			ammoclass = class
+		end
+	end
+	
+	local ent = ents.Create("item_zm_ammo")
 	if IsValid(ent) then
 		local vecEye = ply:EyePos()
 		local angEye = ply:EyeAngles()
@@ -150,10 +159,15 @@ local function ZM_Drop_Ammo(ply)
 
 		local vecSrc = vecEye + vForward * 60.0
 	
+		ent.Model = GAMEMODE.AmmoModels[ammoclass]
+		ent.AmmoAmount = amount
+		ent.AmmoType = GAMEMODE.AmmoClass[ammoclass]
+		ent.ClassName = ammoclass
+	
 		ent:SetPos(vecSrc)
-		ent:SetAmmoType(ammotype)
-		ent:SetAmmo(amount)
 		ent:Spawn()
+		
+		ent.ThrowTime = CurTime() + 1
 		
 		local pObj = ent:GetPhysicsObject()
 		
@@ -167,6 +181,8 @@ local function ZM_Drop_Ammo(ply)
 
 		ply:RemoveAmmo(amount, ammotype)
 	end
+	
+	ply.ThrowDelay = CurTime() + 0.5
 end
 concommand.Add("zm_dropammo", ZM_Drop_Ammo, nil, "Drops your current weapons ammo")
 
@@ -174,7 +190,7 @@ local function ZM_Drop_Weapon(ply)
 	local wep = ply:GetActiveWeapon()
 	if IsValid(wep) and not wep.Undroppable then
 		local class = wep:GetClass()
-		local ent = ents.Create("prop_weapon")
+		local ent = ents.Create(class)
 		if IsValid(ent) then
 			local vecEye = ply:EyePos()
 			local angEye = ply:EyeAngles()
@@ -182,11 +198,12 @@ local function ZM_Drop_Weapon(ply)
 
 			local vecSrc = vecEye + vForward * 60.0
 			
-			ent:SetWeaponType(class)
 			ent:SetPos(vecSrc)
 			ent:Spawn()
 			ent:SetClip1(wep:Clip1())
 			ent:SetClip2(wep:Clip2())
+			
+			ent.ThrowTime = CurTime() + 1
 			
 			local pObj = ent:GetPhysicsObject()
 			
