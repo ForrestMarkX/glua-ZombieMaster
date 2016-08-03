@@ -682,7 +682,7 @@ end
 local NextTick = 0
 function GM:Think()
 	local time = CurTime()
-	local numplayers = #player.GetAll()
+	local players = player.GetAll()
 	
 	if #self.ConnectingPlayers > 0 and CurTime() >= self.ReadyTimer then
 		table.Empty(self.ConnectingPlayers)
@@ -697,7 +697,7 @@ function GM:Think()
 		end
 	end
 	
-	if numplayers > 0 then
+	if #players > 0 then
 		if #self.UnReadyPlayers == 0 and #self.ConnectingPlayers == 0 and self:GetRoundStart() and not zm_selection_started then
 			PrintMessage(HUD_PRINTCENTER, "All players are ready, choosing a Zombie Master!")
 			zm_selection_started = true
@@ -713,7 +713,7 @@ function GM:Think()
 	if NextTick <= time then
 		NextTick = time + 1
 		
-		if numplayers > 20 then
+		if #players > 20 then
 			for _, ply in pairs(players) do
 				if not ply:GetNoCollideWithTeammates() then ply:SetNoCollideWithTeammates(true) end
 			end
