@@ -23,3 +23,7 @@ SWEP.Primary.MissSound = "Weapon_Fists_ZM.Melee_Hit"
 SWEP.Primary.Delay = 0.8
 
 SWEP.Undroppable = true
+
+function SWEP:ShouldDropOnDie()
+	return false
+end
