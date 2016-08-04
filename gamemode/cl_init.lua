@@ -170,21 +170,6 @@ function draw.SimpleTextBlurry(text, font, x, y, col, xalign, yalign)
 	draw.SimpleText(text, font, x, y, col, xalign, yalign)
 end
 
-function GM:PostDrawViewModel(vm, pl, wep)
-	if wep and wep:IsValid() then
-		if wep.UseHands or not wep:IsScripted() then
-			local hands = pl:GetHands()
-			if hands and hands:IsValid() then
-				hands:DrawModel()
-			end
-		end
-
-		if wep.PostDrawViewModel then
-			wep:PostDrawViewModel(vm)
-		end
-	end
-end
-
 function GM:GUIMouseReleased(mouseCode, aimVector)
 	local tr = TraceLongDistance(aimVector)
 	
@@ -448,6 +433,12 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 				end
 			end
 		end
+		
+		timer.Simple(0.1, function()
+			if not timer.Exists("removeRagdolls") then
+				timer.Create("removeRagdolls", 30, 0, function() game.RemoveRagdolls() end)
+			end
+		end)
 	end
 end
 
@@ -464,6 +455,7 @@ function GM:Think()
 		isDragging = false
 	end
 	
+	-- +lookup and +lookdown is broken in gmod
 	--[[
 	if not isDragging and MySelf:IsZM() and vgui.CursorVisible() then
 		local menuopen = gamemode.Call("IsMenuOpen")
@@ -620,11 +612,6 @@ net.Receive("zm_gamemodecall", function(length)
 	gamemode.Call(net.ReadString())
 end)
 
-net.Receive("zm_centernotify", function(length)
-	local tab = net.ReadTable()
-	GAMEMODE:CenterNotify(unpack(tab))
-end)
-
 net.Receive("zm_mapinfo", function(length)
 	GAMEMODE.MapInfo = net.ReadString()
 end)
@@ -642,11 +629,5 @@ net.Receive("zm_spawnclientragdoll", function(length)
 	local ent = net.ReadEntity()
 	if IsValid(ent) then
 		ent:BecomeRagdollOnClient()
-		
-		timer.Simple(0.1, function()
-			if not timer.Exists("removeRagdolls") then
-				timer.Create("removeRagdolls", 30, 0, function() game.RemoveRagdolls() end)
-			end
-		end)
 	end
 end)

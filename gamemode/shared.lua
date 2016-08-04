@@ -132,10 +132,6 @@ function GM:PlayerIsAdmin(pl)
 	return pl:IsAdmin()
 end
 
-function GM:GetFallDamage(pl, fallspeed)
-	return 0
-end
-
 --[[
 	- Angry Lawyer: April 17, 2007 -
 	
@@ -205,21 +201,6 @@ function GM:GetHandsModel(pl)
     return player_manager.TranslatePlayerHands(simplemodel)
 end
 
-function GM:OnPlayerHitGround(pl, inwater, hitfloater, speed)
-    if inwater then return true end
-
-	local damage = (0.1 * (speed - 525)) ^ 1.2
-
-	if math.floor(damage) > 0 then
-		if SERVER then
-			pl:TakeSpecialDamage(damage, DMG_FALL, game.GetWorld(), game.GetWorld(), pl:GetPos())
-			pl:EmitSound("player/pl_fallpain"..(math.random(2) == 1 and 3 or 1)..".wav")
-		end
-	end
-
-    return true
-end
-
 function GM:PlayerShouldTakeDamage(pl, attacker)
 	if attacker.PBAttacker and attacker.PBAttacker:IsValid() and CurTime() < attacker.NPBAttacker then -- Protection against prop_physbox team killing. physboxes don't respond to SetPhysicsAttacker()
 		attacker = attacker.PBAttacker
@@ -227,7 +208,7 @@ function GM:PlayerShouldTakeDamage(pl, attacker)
 	
 	if IsValid(attacker) then
 		local attowner = attacker.Team
-		if IsValid(attowner) then
+		if type(attowner) ~= "function" and IsValid(attowner) then
 			if attacker:GetClass() == "env_fire" and attowner and pl:Team() == attowner then
 				return false
 			end

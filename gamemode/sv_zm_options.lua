@@ -134,7 +134,7 @@ local function ZM_Drop_Ammo(ply)
 	
 	local ammotype = wep.Primary.Ammo
 	
-	if wep.IsMelee or ammotype == nil or ammotype == "none" then return end
+	if wep.IsMelee or ammotype == nil or ammotype == "none" or wep.CantThrowAmmo then return end
 	
 	local amount = GAMEMODE.AmmoCache[ammotype]
 	

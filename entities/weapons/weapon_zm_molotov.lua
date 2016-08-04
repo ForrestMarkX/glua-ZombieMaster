@@ -38,11 +38,24 @@ SWEP.Secondary.DefaultClip = 1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "dummy"
 
+SWEP.Undroppable = true
+SWEP.CantThrowAmmo = true
+
+function SWEP:SetupDataTables()
+	self:NetworkVar("Float", 0, "NextIdle")
+	self:NetworkVar("Float", 1, "FireTimer")
+	self:NetworkVar("Bool", 0, "Firing")
+end
+
 function SWEP:Initialize()
 	self.BaseClass.Initialize(self)
 	
 	self.m_bLighterFlame = false
 	self.m_bClothFlame = false
+	
+	self:SetNextIdle(0)
+	self:SetFireTimer(0)
+	self:SetFiring(false)
 end
 
 function SWEP:PreDrawViewModel()
@@ -59,34 +72,11 @@ end
 
 function SWEP:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
+	
 	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
 	self:SetNextPrimaryFire(CurTime() + self:SequenceDuration())
-	self.firing = true
-	self.firetimer = CurTime() + self:SequenceDuration()
-end
-
-if SERVER then
-	function SWEP:ThrowMolotov(ply)
-		if ply:GetAmmoCount(self.Primary.Ammo) > 0 then
-			local forward = ply:EyeAngles():Forward()
-			local right = ply:EyeAngles():Right()
-			local up = ply:EyeAngles():Up()
-			
-			local ent = ents.Create("projectile_molotov")
-			
-			if IsValid(ent) then
-				ent:SetOwner(ply)
-				ent:SetPos(ply:GetShootPos() + forward * -8 + right * 6 + up * -8)
-				ent:Spawn()
-
-				local mPhys = ent:GetPhysicsObject()	
-				if IsValid(mPhys) then
-					local force = ply:GetAimVector() * 3000
-					mPhys:ApplyForceCenter(force)
-				end
-			end
-		end
-	end
+	self:SetFiring(true)
+	self:SetFireTimer(CurTime() + self:SequenceDuration())
 end
 
 function SWEP:CanPrimaryAttack()
@@ -102,17 +92,35 @@ function SWEP:Reload()
 end
 
 function SWEP:Think()
-	if self.firing and self.firetimer < CurTime() then
+	if self:GetFiring() and self:GetFireTimer() < CurTime() then
 		local owner = self.Owner
 		
 		if SERVER then
-			self:ThrowMolotov(owner)
+			if owner:GetAmmoCount(self.Primary.Ammo) > 0 then
+				local forward = owner:EyeAngles():Forward()
+				local right = owner:EyeAngles():Right()
+				local up = owner:EyeAngles():Up()
+				
+				local ent = ents.Create("projectile_molotov")
+				
+				if IsValid(ent) then
+					ent:SetOwner(owner)
+					ent:SetPos(owner:GetShootPos() + forward * -8 + right * 6 + up * -8)
+					ent:Spawn()
+
+					local mPhys = ent:GetPhysicsObject()	
+					if IsValid(mPhys) then
+						local force = owner:GetAimVector() * 3000
+						mPhys:ApplyForceCenter(force)
+					end
+				end
+			end
 		end
 		self:SendWeaponAnim(ACT_VM_THROW)
-		self.IdleAnimation = CurTime() + self:SequenceDuration()
+		self:SetNextIdle(CurTime() + self:SequenceDuration())
 		
-		self.firing = false
-		self.firetimer = 0
+		self:SetFireTimer(0)
+		self:SetFiring(false)
 		
 		if not self.InfiniteAmmo then
 			self:TakePrimaryAmmo(1)
@@ -122,7 +130,7 @@ function SWEP:Think()
 	
 	if self.noammo and self.Owner:GetAmmoCount(self.Primary.Ammo) > 0 then
 		self:SendWeaponAnim(ACT_VM_DEPLOY)
-		self.IdleAnimation = CurTime() + self:SequenceDuration()
+		self:SetNextIdle(CurTime() + self:SequenceDuration())
 		self.noammo = false
 	end
 	
@@ -130,8 +138,8 @@ function SWEP:Think()
 		self.noammo = true
 	end
 	
-	if self.IdleAnimation and self.IdleAnimation <= CurTime() then
-		self.IdleAnimation = nil
+	if self:GetNextIdle() ~= 0 and self:GetNextIdle() < CurTime() then
 		self:SendWeaponAnim(ACT_VM_IDLE)
+		self:SetNextIdle(0)
 	end
 end

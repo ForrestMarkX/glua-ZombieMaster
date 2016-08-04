@@ -1,45 +1,45 @@
-SWEP.Category = "Zombie Master SWEPs"
+SWEP.Category 					= "Zombie Master SWEPs"
 
-SWEP.AutoSwitchTo = false
-SWEP.AutoSwitchFrom	= false
-SWEP.WeaponSelectIconLetter	= "c"
-SWEP.DrawAmmo = false
-SWEP.DrawWeaponInfoBox = false
-SWEP.BounceWeaponIcon = false
-SWEP.SwayScale = 1.0
-SWEP.BobScale = 1.0
-SWEP.ViewModelFOV = 75
-SWEP.ViewModelFlip = false
-SWEP.CSMuzzleFlashes = false
-SWEP.UseHands = true
-SWEP.DrawCrosshair = true
+SWEP.AutoSwitchTo 				= false
+SWEP.AutoSwitchFrom				= false
+SWEP.WeaponSelectIconLetter		= "c"
+SWEP.DrawAmmo 					= false
+SWEP.DrawWeaponInfoBox		 	= false
+SWEP.BounceWeaponIcon 			= false
+SWEP.SwayScale 					= 1.0
+SWEP.BobScale 					= 1.0
+SWEP.ViewModelFOV 				= 75
+SWEP.ViewModelFlip 				= false
+SWEP.CSMuzzleFlashes 			= false
+SWEP.UseHands				 	= true
+SWEP.DrawCrosshair 				= true
 
-SWEP.Author	 = "ForrestMarkX"
-SWEP.Contact = "forrestmarkx@outlook.com"
-SWEP.Purpose = ""
-SWEP.Instructions = ""
+SWEP.Author	 					= "ForrestMarkX"
+SWEP.Contact 					= "forrestmarkx@outlook.com"
+SWEP.Purpose 					= ""
+SWEP.Instructions 				= ""
 
-SWEP.Spawnable				= false
-SWEP.AdminSpawnable			= false
+SWEP.Spawnable					= false
+SWEP.AdminSpawnable				= false
 
-SWEP.UseCustomMuzzleFlash = false
-SWEP.MuzzleEffect  = "CSSMuzzleFlashX"
-SWEP.MuzzleAttachment = "1"
+SWEP.UseCustomMuzzleFlash 		= false
+SWEP.MuzzleEffect  				= "CSSMuzzleFlashX"
+SWEP.MuzzleAttachment 			= "1"
 
 SWEP.ShakeWeaponSelectIcon		= false
 
-SWEP.TracerType                 	= "Tracer"
+SWEP.TracerType                 = "Tracer"
 
-SWEP.InfiniteAmmo                       = false
-SWEP.UseScope                           = false
-SWEP.WeaponDeploySpeed                  = 1
+SWEP.InfiniteAmmo               = false
+SWEP.DeploySpeed                = 1
 
 SWEP.Primary.BulletForce	    = "5"
-SWEP.Primary.WeaponDrawSound    = ""
-SWEP.Primary.CustomReloadSound  = ""
 SWEP.Primary.Sound				= "Weapon_AK47.Single"
 SWEP.Primary.NumShots			= 1
 SWEP.Primary.Recoil				= 0
+
+SWEP.DrawSound    				= ""
+SWEP.IsMelee					= false
 
 SWEP.Primary.ClipSize			= -1
 SWEP.Primary.DefaultClip		= -1
@@ -49,6 +49,10 @@ SWEP.Secondary.ClipSize			= -1
 SWEP.Secondary.DefaultClip		= -1
 SWEP.Secondary.Automatic		= false
 SWEP.Secondary.Ammo				= "none"
+
+function SWEP:SetupDataTables()
+	self:NetworkVar("Float" , 0 , "NextIdle")
+end
 
 function SWEP:CanPrimaryAttack()
 	if self:Clip1() <= 0 then
@@ -61,8 +65,8 @@ function SWEP:CanPrimaryAttack()
 end
 
 function SWEP:Deploy()
-	self.IdleAnimation = CurTime() + self:SequenceDuration()
-	self:EmitSound(Sound(self.Primary.WeaponDrawSound))
+	self:SetNextIdle(CurTime() + self:SequenceDuration())
+	self:EmitSound(self.DrawSound)
 	return true
 end
 
@@ -74,13 +78,14 @@ function SWEP:Initialize()
 		self:SetNPCFireRate(0.01)
 	end
 
-    self:SetDeploySpeed(self.WeaponDeploySpeed)
+	self:SetNextIdle(0)
+    self:SetDeploySpeed(self.DeploySpeed)
 end
 
 function SWEP:Reload()
 	if self:DefaultReload(ACT_VM_RELOAD) then
-		self:EmitSound(Sound(self.ReloadSound))
-		self.IdleAnimation = CurTime() + self:SequenceDuration()
+		self:EmitSound(self.ReloadSound)
+		self:SetNextIdle(CurTime() + self:SequenceDuration())
 	end
 end
 
@@ -131,13 +136,13 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	self.Owner:DoAttackEvent()
 	
-	self.IdleAnimation = CurTime() + self:SequenceDuration()
+	self:SetNextIdle(CurTime() + self:SequenceDuration())
 end
 
 function SWEP:Think()
-	if self.IdleAnimation and self.IdleAnimation <= CurTime() then
-		self.IdleAnimation = nil
+	if self:GetNextIdle() ~= 0 and self:GetNextIdle() < CurTime() then
 		self:SendWeaponAnim(ACT_VM_IDLE)
+		self:SetNextIdle(0)
 	end
 end
 

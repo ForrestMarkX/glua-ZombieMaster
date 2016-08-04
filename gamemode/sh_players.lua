@@ -13,6 +13,10 @@ function meta:IsSurvivor()
 	return self:Team() == TEAM_SURVIVOR
 end
 
+function meta:IsSpectator()
+	return self:Team() == TEAM_SPECTATOR
+end
+
 function meta:CanAfford(cost)
 	return self:GetZMPoints() > cost
 end
@@ -25,38 +29,6 @@ function meta:GetZMPointIncome()
 	return self:GetDTInt(2)
 end
 
-function meta:TraceLine(distance, mask, filter, start)
-	start = start or self:GetShootPos()
-	return util.TraceLine({start = start, endpos = start + self:GetAimVector() * distance, filter = filter or self, mask = mask})
-end
-
-function meta:MeleeTrace(distance, size, filter, start)
-	return self:TraceHull(distance, MASK_SOLID, size, filter, start)
-end
-
-function meta:TraceHull(distance, mask, size, filter, start)
-	start = start or self:GetShootPos()
-	return util.TraceHull({start = start, endpos = start + self:GetAimVector() * distance, filter = filter or self, mask = mask, mins = Vector(-size, -size, -size), maxs = Vector(size, size, size)})
-end
-
-function meta:DoubleTrace(distance, mask, size, mask2, filter)
-	local tr1 = self:TraceLine(distance, mask, filter)
-	if tr1.Hit then return tr1 end
-	if mask2 then
-		local tr2 = self:TraceLine(distance, mask2, filter)
-		if tr2.Hit then return tr2 end
-	end
-
-	local tr3 = self:TraceHull(distance, mask, size, filter)
-	if tr3.Hit then return tr3 end
-	if mask2 then
-		local tr4 = self:TraceHull(distance, mask2, size, filter)
-		if tr4.Hit then return tr4 end
-	end
-
-	return tr1
-end
-
 if not meta.OldAlive then
 	meta.OldAlive = meta.Alive
 	function meta:Alive()
@@ -66,31 +38,6 @@ if not meta.OldAlive then
 
 		return self:OldAlive()
 	end
-end
-
-local TEAM_SPECTATOR = TEAM_SPECTATOR
-function meta:IsSpectator()
-	return self:Team() == TEAM_SPECTATOR
-end
-
-function meta:SyncAngles()
-	local ang = self:EyeAngles()
-	ang.pitch = 0
-	ang.roll = 0
-	return ang
-end
-meta.GetAngles = meta.SyncAngles
-
-function meta:GetForward()
-	return self:SyncAngles():Forward()
-end
-
-function meta:GetUp()
-	return self:SyncAngles():Up()
-end
-
-function meta:GetRight()
-	return self:SyncAngles():Right()
 end
 
 local VoiceSets = {}
@@ -274,28 +221,6 @@ function meta:PlayPainSound()
 	end
 end
 
-function meta:TakeSpecialDamage(damage, damagetype, attacker, inflictor, hitpos, damageforce)
-	attacker = attacker or self
-	if not attacker:IsValid() then attacker = self end
-	inflictor = inflictor or attacker
-	if not inflictor:IsValid() then inflictor = attacker end
-
-	local nearest = self:NearestPoint(inflictor:NearestPoint(self:LocalToWorld(self:OBBCenter())))
-
-	local dmginfo = DamageInfo()
-	dmginfo:SetDamage(damage)
-	dmginfo:SetAttacker(attacker)
-	dmginfo:SetInflictor(inflictor)
-	dmginfo:SetDamagePosition(hitpos or nearest)
-	dmginfo:SetDamageType(damagetype)
-	if damageforce then
-		dmginfo:SetDamageForce(damageforce)
-	end
-	self:TakeDamageInfo(dmginfo)
-
-	return dmginfo
-end
-
 if SERVER then
 	function meta:SetZMPoints(points)
 		self:SetDTInt(1, points)
@@ -336,78 +261,5 @@ if SERVER then
 		timer.Simple(0, function()
 			GAMEMODE.CreateGibs(GAMEMODE, pos, self:LocalToWorld(self:OBBMaxs()).z - pos.z)
 		end)
-	end
-	
-	function meta:UnSpectateAndSpawn()
-		self:UnSpectate()
-		self:Spawn()
-	end
-	
-	meta.OldSetMaxHealth = FindMetaTable("Entity").SetMaxHealth
-	function meta:SetMaxHealth(num)
-		num = math.ceil(num)
-		self:SetDTInt(0, num)
-		self:OldSetMaxHealth(num)
-	end
-	
-	function meta:RemoveAllStatus(bSilent, bInstant)
-		if bInstant then
-			for _, ent in pairs(ents.FindByClass("status_*")) do
-				if not ent.NoRemoveOnDeath and ent:GetOwner() == self then
-					ent:Remove()
-				end
-			end
-		else
-			for _, ent in pairs(ents.FindByClass("status_*")) do
-				if not ent.NoRemoveOnDeath and ent:GetOwner() == self then
-					ent.SilentRemove = bSilent
-					ent:SetDie()
-				end
-			end
-		end
-	end
-
-	function meta:RemoveStatus(sType, bSilent, bInstant, sExclude)
-		local removed
-
-		for _, ent in pairs(ents.FindByClass("status_"..sType)) do
-			if ent:GetOwner() == self and not (sExclude and ent:GetClass() == "status_"..sExclude) then
-				if bInstant then
-					ent:Remove()
-				else
-					ent.SilentRemove = bSilent
-					ent:SetDie()
-				end
-				removed = true
-			end
-		end
-
-		return removed
-	end
-
-	function meta:GetStatus(sType)
-		local ent = self["status_"..sType]
-		if ent and ent:IsValid() and ent.Owner == self then return ent end
-	end
-
-	function meta:GiveStatus(sType, fDie)
-		local cur = self:GetStatus(sType)
-		if cur then
-			if fDie then
-				cur:SetDie(fDie)
-			end
-			cur:SetPlayer(self, true)
-			return cur
-		else
-			local ent = ents.Create("status_"..sType)
-			if ent:IsValid() then
-				ent:Spawn()
-				if fDie then
-					ent:SetDie(fDie)
-				end
-				ent:SetPlayer(self)
-				return ent
-			end
-		end
 	end
 end

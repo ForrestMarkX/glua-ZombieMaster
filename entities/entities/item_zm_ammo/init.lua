@@ -4,7 +4,7 @@ include("shared.lua")
 function ENT:Initialize()
 	self:SetModel(self.Model)
 	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetSolid(SOLID_BBOX)
+	self:SetSolid(SOLID_VPHYSICS)
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	
 	self:SetTrigger(true)

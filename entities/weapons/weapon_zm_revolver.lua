@@ -81,7 +81,7 @@ function SWEP:SecondaryAttack()
 	if owner:IsValid() then
 		owner:ViewPunch( Angle(-8, math.Rand(-2, 2), 0) )
 	end
-	self.IdleAnimation = CurTime() + self:SequenceDuration()
+	self:SetNextIdle(CurTime() + self:SequenceDuration())
 end
 
 function SWEP:PrimaryAttack()
@@ -91,13 +91,13 @@ function SWEP:PrimaryAttack()
 	self.firetimer = CurTime() + 0.38
 	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	self.Owner:DoAttackEvent()
-	self.IdleAnimation = CurTime() + self:SequenceDuration()
+	self:SetNextIdle(CurTime() + self:SequenceDuration())
 end
 
 function SWEP:Reload()
 	if self:GetNextReload() <= CurTime() and self:DefaultReload(ACT_VM_RELOAD) then
-		self.IdleAnimation = CurTime() + self:SequenceDuration()
-		self:SetNextReload(self.IdleAnimation)
+		self:SetNextIdle(CurTime() + self:SequenceDuration())
+		self:SetNextReload(self:GetNextIdle())
 		self.Owner:DoReloadEvent()
 		if self.ReloadSound then
 			timer.Simple(1.5, function() self:EmitSound(self.ReloadSound) end)

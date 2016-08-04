@@ -287,6 +287,11 @@ function GM:PlayerNoClip(ply, desiredState)
 	return ply:IsSuperAdmin() or ply:IsZM() or ply:IsSpectator()
 end
 
+function GM:GetFallDamage(ply, speed)
+	speed = speed - 580
+	return speed * 0.19 * 1.25
+end
+
 local LastHumanDied = false	
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	local plteam = ply:Team()
@@ -470,7 +475,8 @@ function GM:TeamVictorious(won, message)
 	
 	local rounds = GetConVar("zm_roundlimit"):GetInt()
 	if self.RoundsPlayed > rounds then
-		timer.Simple(5, function() gamemode.Call("LoadNextMap") end)
+		timer.Simple(5, game.LoadNextMap)
+		timer.Simple(10, function() RunConsoleCommand("changelevel", game.GetMap()) end)
 	else
 		timer.Simple(2, function() gamemode.Call("PreRestartRound") end)
 		timer.Simple(5, function() gamemode.Call("RestartRound") end)
@@ -487,7 +493,10 @@ end
 
 function GM:InitialSpawnRound(ply)
 	ply:ChangeTeam(TEAM_SURVIVOR)
-	ply:UnSpectateAndSpawn()
+	
+	ply:UnSpectate()
+	ply:Spawn()
+	
 	ply:SprintDisable()
 	if ply:KeyDown(IN_WALK) then
 		ply:ConCommand("-walk")
@@ -688,13 +697,32 @@ function GM:Think()
 		table.Empty(self.ConnectingPlayers)
 	end
 	
+	-- Originally from TTT
 	local humans = team.GetPlayers(TEAM_SURVIVOR)
-	for _, pl in pairs(humans) do
-		if pl:Alive() then
-			if pl:WaterLevel() >= 3 and not (pl.status_drown and pl.status_drown:IsValid()) then
-				pl:GiveStatus("drown")
+	for i= 1, #humans do
+		local ply = humans[i]
+        if ply:WaterLevel() == 3 then
+			if ply:IsOnFire() then
+				ply:Extinguish()
 			end
-		end
+
+            if ply.drowning then
+				if ply.drowning < CurTime() then
+					local dmginfo = DamageInfo()
+					dmginfo:SetDamage(15)
+					dmginfo:SetDamageType(DMG_DROWN)
+					dmginfo:SetAttacker(game.GetWorld())
+
+					ply:TakeDamageInfo(dmginfo)
+
+					ply.drowning = CurTime() + 1
+				end
+            else
+				ply.drowning = CurTime() + 30
+            end
+         else
+			ply.drowning = nil
+         end
 	end
 	
 	if #players > 0 then
@@ -808,44 +836,6 @@ function GM:ZombieMasterVolunteers()
 	end
 end
 
-local function RealMap(map)
-	return string.match(map, "(.+)%.bsp")
-end
-function GM:LoadNextMap()
-	-- Just in case.
-	timer.Simple(10, game.LoadNextMap)
-	timer.Simple(15, function() RunConsoleCommand("changelevel", game.GetMap()) end)
-
-	if file.Exists(GetConVar("mapcyclefile"):GetString(), "GAME") then
-		game.LoadNextMap()
-	else
-		local maps = file.Find("maps/zm_*.bsp", "GAME")
-		table.sort(maps)
-		if #maps > 0 then
-			local currentmap = game.GetMap()
-			for i, map in ipairs(maps) do
-				local lowermap = string.lower(map)
-				local realmap = RealMap(lowermap)
-				if realmap == currentmap then
-					if maps[i + 1] then
-						local nextmap = RealMap(maps[i + 1])
-						if nextmap then
-							RunConsoleCommand("changelevel", nextmap)
-						end
-					else
-						local nextmap = RealMap(maps[1])
-						if nextmap then
-							RunConsoleCommand("changelevel", nextmap)
-						end
-					end
-
-					break
-				end
-			end
-		end
-	end
-end
-
 function GM:AllowPlayerPickup(pl, ent)
 	if ent:IsPlayerHolding() then return false end
 	
@@ -903,10 +893,16 @@ function GM:PlayerUse(pl, ent)
 			pl:Give(entclass)
 			
 			local wep = pl:GetWeapon(entclass)
-			wep:SetClip1(ent:Clip1())
-			wep:SetClip2(ent:Clip2())
+			if not wep.IsMelee then
+				if wep.SetClip1 then wep:SetClip1(ent:Clip1()) end
+				if wep.SetClip2 then wep:SetClip2(ent:Clip2()) end
+			end
 			
 			ent:Remove()
+		elseif string.sub(entclass, 1 , 12) == "prop_physics" or string.sub(entclass, 1 , 12) == "func_physbox" then
+			if gamemode.Call("AllowPlayerPickup", pl, ent) and not ent:IsPlayerHolding() then
+				pl:PickupObject(ent)
+			end
 		end
 	end
 
@@ -918,6 +914,10 @@ function GM:PlayerSwitchFlashlight(pl, newstate)
 end
 
 function GM:PlayerCanPickupWeapon(pl, ent)
+	if pl.DelayPickup and pl.DelayPickup > CurTime() then return false end
+	
+	pl.DelayPickup = CurTime() + 0.2
+	
 	if pl:IsSurvivor() and pl:Alive() then
 		if ent.ThrowTime and ent.ThrowTime > CurTime() then return false end
 		if pl:HasWeapon(ent:GetClass()) and ent.WeaponIsAmmo then return gamemode.Call("PlayerCanPickupItem", pl, ent) end
@@ -926,7 +926,7 @@ function GM:PlayerCanPickupWeapon(pl, ent)
 		
 		local weps = pl:GetWeapons()
 		for index, wep in pairs(weps) do
-			if wep:GetClass() ~= "weapon_zm_fists" and wep:GetSlot() == ent:GetSlot() then
+			if wep:GetSlot() == ent:GetSlot() then
 				return false
 			end
 		end
@@ -938,6 +938,10 @@ function GM:PlayerCanPickupWeapon(pl, ent)
 end
 
 function GM:PlayerCanPickupItem(pl, item)
+	if pl.DelayItemPickup and pl.DelayItemPickup > CurTime() then return false end
+	
+	pl.DelayItemPickup = CurTime() + 0.2
+	
 	if pl:Alive() and pl:IsSurvivor() and string.sub(item:GetClass(), 1, 10) == "item_ammo_" or item:GetClass() == "item_zm_ammo" or item:GetClass() == "weapon_zm_molotov" then
 		if item.ThrowTime and item.ThrowTime > CurTime() then return false end
 		
@@ -994,7 +998,7 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 		pZM:TakeZMPoints(cost)
 		gamemode.Call("SetCurZombiePop", GAMEMODE:GetCurZombiePop() + popcost)
 		
-		if entname == "npc_burnzombie" or entname "npc_dragzombie" then
+		if entname == "npc_burnzombie" or entname == "npc_dragzombie" then
 			pZombie:DropToFloor()
 			pZombie:SetPos(pZombie:GetPos() + Vector(0, 0, 5))
 		end

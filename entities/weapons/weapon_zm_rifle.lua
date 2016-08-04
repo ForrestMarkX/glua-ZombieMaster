@@ -1,5 +1,5 @@
 AddCSLuaFile()
-DEFINE_BASECLASS("weapon_zm_base")
+DEFINE_BASECLASS("weapon_zm_shotgunbase")
 
 if CLIENT then
 	SWEP.PrintName = "Rifle"
@@ -38,161 +38,45 @@ SWEP.ReloadDelay = 0.8
 SWEP.Primary.Automatic   		= true
 SWEP.Primary.Ammo         		= "357"
 
-SWEP.Secondary.Delay = 0.3
-SWEP.Secondary.ClipSize = 1
-SWEP.Secondary.DefaultClip = 1
-SWEP.Secondary.Automatic = false
-SWEP.Secondary.Ammo = "dummy"
-
-SWEP.reloadtimer = 0
-SWEP.nextreloadfinish = 0
-
-SWEP.NextZoom = 0
-SWEP.SecondaryDelay = 0.25
+SWEP.Secondary.Delay = 0.25
 
 function SWEP:SetupDataTables()
-	self:NetworkVar( "Float", 0, "RiflePump" )
+	BaseClass.SetupDataTables(self)
+	self:NetworkVar( "Bool", 2, "Zoomed" )
 end
 
 function SWEP:Initialize()
 	BaseClass.Initialize(self)
-	
-	self:SetRiflePump( 0 )
-	self.pumpend = 0
+	self:SetZoomed(false)
 end
 
-function SWEP:Deploy()
-	self:SendWeaponAnim( ACT_VM_DRAW )
-	can_reload = true
-end
+function SWEP:SecondaryAttack()
+	if not self:CanSecondaryAttack() then return end
+	 
+	local owner = self.Owner
 
-function SWEP:Reload()
-	if self.reloading or self.pumping then return end
+	self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
 
-	if self:Clip1() < self.Primary.ClipSize and 0 < self.Owner:GetAmmoCount(self.Primary.Ammo) then
-		self:SetNextPrimaryFire(CurTime() + self.ReloadDelay)
-		self.reloading = true
-		self.reloadtimer = CurTime() + self.ReloadDelay
-		self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START)
-		self.Owner:DoReloadEvent()
-	end
-end
+	local zoomed = self:GetZoomed()
+	self:SetZoomed(not zoomed)
 
-function SWEP:Think()
-	if self.reloading and self.reloadtimer < CurTime() then
-		self.reloadtimer = CurTime() + self.ReloadDelay
-		self:SendWeaponAnim(ACT_VM_RELOAD)
-
-		self.Owner:RemoveAmmo(1, self.Primary.Ammo, false)
-		self:SetClip1(self:Clip1() + 1)
-		self:EmitSound(self.ReloadSound)
-
-		if self.Primary.ClipSize <= self:Clip1() or self.Owner:GetAmmoCount(self.Primary.Ammo) <= 0 then
-			self.nextreloadfinish = CurTime() + self.ReloadDelay
-			self.reloading = false
-			self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-		end
-	end
-
-	local nextreloadfinish = self.nextreloadfinish
-	if nextreloadfinish ~= 0 and nextreloadfinish < CurTime() then
-		self:EmitSound(self.PumpSound)
-		self:SendWeaponAnim(ACT_SHOTGUN_PUMP)
-		self.nextreloadfinish = 0
-	end
-
-	if self:GetRiflePump() ~= 0 and self:GetRiflePump() < CurTime() then
-		self:SendWeaponAnim(ACT_SHOTGUN_PUMP) 
-		self:EmitSound(self.PumpSound)
-		self:SetRiflePump( 0 )
-	end
-	
-	if self.pumpend ~= 0 and self.pumpend < CurTime() then
-		self.pumping = false
-		self.pumpend = 0
+	if zoomed then
+		owner:SetFOV(owner:GetInfo("fov_desired"), 0.15)
+	else
+		owner:SetFOV(owner:GetInfo("fov_desired") * 0.25, 0.15)
 	end
 end
 
-function SWEP:PrimaryAttack()
-	if not self:CanPrimaryAttack() then return end
-	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-
-	self:EmitSound(self.Primary.Sound)
-	
-	if not self.InfiniteAmmo then
-		self:TakePrimaryAmmo(1)
-	end
-	
-	self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
-	
-	if self.Owner:IsValid() then
-		self.Owner:ViewPunch( Angle( -5, 0, 0 ) )
-	end	
-	self:SetRiflePump( CurTime() + 0.7 )
-	self.pumpend = CurTime() + 1.3
-	self.pumping = true
-end
-
-function SWEP:CanPrimaryAttack()
-	if self:Clip1() <= 0 then
-		self:EmitSound(self.EmptySound)
-		self:SetNextPrimaryFire(CurTime() + 0.25)
-		self:Reload()
-		return false
-	end
-
-	if self.reloading then
-		if self:Clip1() < self.Primary.ClipSize then
-			self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
-		else
-			self:SendWeaponAnim(ACT_VM_IDLE)
-		end
-		self.reloading = false
-		self:SetNextPrimaryFire(CurTime() + 0.25)
-		return false
-	end
-
-	return true
-end
-
-if SERVER then
-	function SWEP:SecondaryAttack()
-		if CurTime() < self.NextZoom then return end
-		 
-		local owner = self.Owner
-
-		self.NextZoom = CurTime() + self.SecondaryDelay
-
-		local zoomed = self:GetDTBool(1)
-		self:SetDTBool(1, not zoomed)
-
-		if zoomed then
-			owner:SetFOV(owner:GetInfo("fov_desired"), 0.15)
-		else
-			owner:SetFOV(owner:GetInfo("fov_desired") * 0.25, 0.15)
-		end
-	end
-else
-	function SWEP:SecondaryAttack()
-		if CurTime() < self.NextZoom then return end
-		self.NextZoom = CurTime() + self.SecondaryDelay
-
-		local zoomed = self:GetDTBool(1)
-		self:SetDTBool(1, not zoomed)
-	end
-	
-	function SWEP:PreDrawViewModel(vm, wep, ply)
-		if self.ShowViewModel == false then render.SetBlend(0) end
-		if self:GetDTBool(1) then render.SetBlend(0) end
-	end
+function SWEP:CanSecondaryAttack()
+	return self:GetNextSecondaryFire() <= CurTime()
 end
 
 function SWEP:Holster()
-	if self:GetDTBool(1) then
+	if self:GetZoomed() then
 		local owner = self.Owner
 		owner:SetFOV(owner:GetInfo("fov_desired"), 0.5)
 		self:EmitSound("weapons/sniper/sniper_zoomout.wav", 50, 100)
-		self:SetDTBool(1, false)
+		self:SetZoomed(false)
 	end
 
 	return true
@@ -200,7 +84,14 @@ end
 
 function SWEP:OnRemove()
 	local owner = self.Owner
-	if owner:IsValid() and self:GetDTBool(1) then
+	if owner:IsValid() and self:GetZoomed() then
 		owner:SetFOV(owner:GetInfo("fov_desired"), 0.5)
 	end
+end
+
+if not CLIENT then return end
+
+function SWEP:PreDrawViewModel(vm, wep, ply)
+	if self.ShowViewModel == false then render.SetBlend(0) end
+	if self:GetZoomed() then render.SetBlend(0) end
 end

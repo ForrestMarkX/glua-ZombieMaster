@@ -34,8 +34,12 @@ function ENT:PhysicsCollide(data, physObject)
 	
 	self:EmitSound("Grenade_Molotov.Detonate")
 	self:EmitSound("Grenade_Molotov.Detonate2")
+	
+	self:Remove()
+end
 
-    for _, v in pairs(ents.FindInSphere(self.Entity:GetPos(), 128)) do
+function ENT:OnRemove()
+    for _, v in pairs(ents.FindInSphere(self:GetPos(), 128)) do
         if v:IsWorld() or v:IsWeapon() or not IsValid(v) then return end
 		if IsValid(ent) and ent:IsPlayer() and ent ~= self.Owner then return end
         
@@ -76,6 +80,4 @@ function ENT:PhysicsCollide(data, physObject)
 		sparks:Spawn()
 		sparks:Fire( "SparkOnce", "", 0 )
 	end	
-	
-	self:Remove()
 end

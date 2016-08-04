@@ -15,24 +15,10 @@ SWEP.Slot = 2
 
 SWEP.HoldType = "melee"
 
-SWEP.MeleeDamage = 20
-SWEP.MeleeRange = 30
-SWEP.MeleeSize = 1.5
-
+SWEP.Primary.Damage = 20
+SWEP.Primary.Force = SWEP.Primary.Damage
+SWEP.Primary.Reach = 40
+SWEP.Primary.HitSound = "Weapon_Crowbar.Melee_HitWorld"
+SWEP.Primary.HitFleshSound = "Weapon_Crowbar.Melee_Hit"
+SWEP.Primary.MissSound = "Weapon_Crowbar.Single"
 SWEP.Primary.Delay = 1.2
-
-SWEP.SwingTime = 0.4
-SWEP.SwingRotation = Angle(30, -30, -30)
-SWEP.SwingHoldType = "grenade"
-
-function SWEP:PlaySwingSound()
-	self:EmitSound("Weapon_Crowbar.Single")
-end
-
-function SWEP:PlayHitSound()
-	self:EmitSound("Weapon_Crowbar.Melee_HitWorld")
-end
-
-function SWEP:PlayHitFleshSound()
-	self:EmitSound("Weapon_Crowbar.Melee_Hit")
-end
