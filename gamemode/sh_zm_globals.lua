@@ -56,3 +56,5 @@ GM.RandomPlayerModels = {}
 for name, mdl in pairs(player_manager.AllValidModels()) do
 	table.insert(GM.RandomPlayerModels, name)
 end
+
+gamemode.Call = hook.Run

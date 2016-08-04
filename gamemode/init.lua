@@ -218,7 +218,7 @@ function GM:PlayerSpawn(ply)
 			ply:SetMaterial("")
 		end
 		
-		ply:ShouldDropWeapon(false)
+		ply:ShouldDropWeapon(true)
 		
 		ply:SetMaxHealth(100, true)  
 		gamemode.Call("SetPlayerSpeed", ply, 190, 190)
@@ -290,6 +290,39 @@ end
 function GM:GetFallDamage(ply, speed)
 	speed = speed - 580
 	return speed * 0.19 * 1.25
+end
+
+function GM:OnNPCKilled(ent, attacker, inflictor)
+end
+
+function GM:PlayerDeath(ply, inflictor, attacker)
+	if attacker:IsNPC() then
+		local attackername = ""
+		
+		local pZM = self:FindZM()
+		if IsValid(pZM) then
+			pZM:AddFrags(1)
+		end
+		
+		for _, zombie in pairs(self:GetZombieTable()) do
+			if zombie.class == attacker:GetClass() then
+				attackername = zombie.name
+				break
+			end
+		end
+		
+		net.Start("PlayerKilledByNPC")
+			net.WriteEntity(ply)
+			net.WriteString(inflictor:GetClass())
+			net.WriteString(attackername)
+		net.Broadcast()
+		
+		MsgAll(ply:Nick() .. " was killed by " .. attackername .. "\n")
+		
+		return
+	end
+	
+	self.BaseClass.PlayerDeath(self, ply, inflictor, attacker)
 end
 
 local LastHumanDied = false	
@@ -914,9 +947,10 @@ function GM:PlayerSwitchFlashlight(pl, newstate)
 end
 
 function GM:PlayerCanPickupWeapon(pl, ent)
-	if pl.DelayPickup and pl.DelayPickup > CurTime() then return false end
-	
-	pl.DelayPickup = CurTime() + 0.2
+	if pl.DelayPickup and pl.DelayPickup > CurTime() then 
+		pl.DelayPickup = 0
+		return false 
+	end
 	
 	if pl:IsSurvivor() and pl:Alive() then
 		if ent.ThrowTime and ent.ThrowTime > CurTime() then return false end
@@ -934,13 +968,16 @@ function GM:PlayerCanPickupWeapon(pl, ent)
 		return true
 	end
 	
+	pl.DelayPickup = CurTime() + 0.2
+	
 	return false
 end
 
 function GM:PlayerCanPickupItem(pl, item)
-	if pl.DelayItemPickup and pl.DelayItemPickup > CurTime() then return false end
-	
-	pl.DelayItemPickup = CurTime() + 0.2
+	if pl.DelayItemPickup and pl.DelayItemPickup > CurTime() then 
+		pl.DelayItemPickup = 0
+		return false 
+	end
 	
 	if pl:Alive() and pl:IsSurvivor() and string.sub(item:GetClass(), 1, 10) == "item_ammo_" or item:GetClass() == "item_zm_ammo" or item:GetClass() == "weapon_zm_molotov" then
 		if item.ThrowTime and item.ThrowTime > CurTime() then return false end
@@ -960,6 +997,8 @@ function GM:PlayerCanPickupItem(pl, item)
 		
 		return false
 	end
+	
+	pl.DelayItemPickup = CurTime() + 0.2
 	
 	return pl:IsSurvivor()
 end

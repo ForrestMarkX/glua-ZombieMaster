@@ -631,3 +631,13 @@ net.Receive("zm_spawnclientragdoll", function(length)
 		ent:BecomeRagdollOnClient()
 	end
 end)
+
+net.Receive("PlayerKilledByNPC", function(length)
+	local victim = net.ReadEntity()
+	if not IsValid(victim) then return end
+	
+	local inflictor	= net.ReadString()
+	local attacker	= net.ReadString()
+	
+	GAMEMODE:AddDeathNotice(attacker, TEAM_ZOMBIEMASTER, inflictor, victim:Name(), victim:Team())
+end)
