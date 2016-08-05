@@ -77,7 +77,7 @@ function GM:_PrePlayerDraw(ply)
 end
 
 function GM:_PostPlayerDraw(pl)
-	if MySelf:Team() == TEAM_ZOMBIEMASTER and pl:Team() == TEAM_SURVIVOR then
+	if MySelf:IsZM() and pl:IsSurvivor() then
 		local plHealth, plMaxHealth = pl:Health(), pl:GetMaxHealth()
 		local pos = pl:GetPos() + Vector(0, 0, 2)
 		local colour = Color(0, 0, 0, 125)
@@ -213,7 +213,7 @@ local click_delta = 0
 local zm_ring_pos = Vector(0, 0, 0)
 local zm_ring_ang = Angle(0, 0, 0)
 function GM:GUIMousePressed(mouseCode, aimVector)
-	if MySelf:Team() == TEAM_ZOMBIEMASTER then
+	if MySelf:IsZM() then
 		if mouseCode == MOUSE_LEFT then
 			if placingShockwave then
 				if zm_placedpoweritem then zm_placedpoweritem = false end
@@ -365,13 +365,13 @@ function GM:CreateGhostEntity(trap, rallyID)
 end
 
 function GM:KeyPress( ply, key )
-	if ply:Team() == TEAM_ZOMBIEMASTER and key == IN_SPEED then
+	if ply:IsZM() and key == IN_SPEED then
 		gui.EnableScreenClicker(false)
 	end
 end
 
 function GM:KeyRelease( ply, key )
-	if ply:Team() == TEAM_ZOMBIEMASTER and key == IN_SPEED then
+	if ply:IsZM() and key == IN_SPEED then
 		gui.EnableScreenClicker(true)
 	end
 end
@@ -424,6 +424,8 @@ end
 
 function GM:CreateClientsideRagdoll(ent, ragdoll)
 	if IsValid(ent) and ent:IsNPC() then
+		ragdoll:SetModel(ent:GetModel())
+		
 		if ent.GetDamageForce then
 			local force = ent:GetDamageForce()
 			if force and not force:IsZero() then
@@ -640,4 +642,14 @@ net.Receive("PlayerKilledByNPC", function(length)
 	local attacker	= net.ReadString()
 	
 	GAMEMODE:AddDeathNotice(attacker, TEAM_ZOMBIEMASTER, inflictor, victim:Name(), victim:Team())
+end)
+
+net.Receive("PlayerKilled", function(length)
+	local victim = net.ReadEntity()
+	if not IsValid(victim) then return end
+	
+	local inflictor	= net.ReadString()
+	local attacker = "Something"
+	
+	GAMEMODE:AddDeathNotice( attacker, -1, inflictor, victim:Name(), victim:Team() )
 end)

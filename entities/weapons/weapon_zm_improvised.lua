@@ -7,7 +7,7 @@ if CLIENT then
 	SWEP.WeaponSelectIconLetter	= "h"
 end
 
-SWEP.ViewModel = "models/weapons/c_crowbar.mdl"
+SWEP.ViewModel = "models/weapons/c_improvised_zm.mdl"
 SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.UseHands = true
 

@@ -30,7 +30,7 @@ function ENT:FillWeaponLists()
 end
 
 function ENT:DistributeToPlayer(ply)
-	if not IsValid(ply) and GetConVar("zm_loadout_disable"):GetBool() and ply:Team() ~= TEAM_SURVIVOR then return end
+	if not IsValid(ply) and GetConVar("zm_loadout_disable"):GetBool() and not ply:IsSurvivor() then return end
 
 	if self.m_iMethod == 1 then
 		for i=1, 4 do

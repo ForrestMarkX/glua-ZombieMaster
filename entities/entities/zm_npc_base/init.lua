@@ -156,7 +156,7 @@ function ENT:FindEnemy()
 end
 
 function ENT:UpdateEnemy(enemy)
-	if enemy and enemy:IsValid() and enemy:Alive() and enemy:Team() == TEAM_SURVIVOR then
+	if enemy and enemy:IsValid() and enemy:Alive() and enemy:IsSurvivor() then
 		self:SetEnemy(enemy, true)
 		self:UpdateEnemyMemory(enemy, enemy:GetPos())
 	else
@@ -256,7 +256,7 @@ function ENT:Think()
 end
 
 function ENT:GetRelationship(entity)
-	if entity:IsValid() and entity:IsPlayer() and entity:Team() == TEAM_SURVIVOR then
+	if entity:IsValid() and entity:IsPlayer() and entity:IsSurvivor() then
 		return D_HT
 	end
 	
@@ -290,4 +290,8 @@ function ENT:SelectSchedule()
 	end
 	
 	self:SetSchedule(sched)
+end
+
+function ENT:Classify()
+	return CLASS_ZOMBIE
 end

@@ -198,6 +198,7 @@ local function ZM_Drop_Weapon(ply)
 
 			local vecSrc = vecEye + vForward * 60.0
 			
+			ent.Dropped = true
 			ent:SetPos(vecSrc)
 			ent:Spawn()
 			ent:SetClip1(wep:Clip1())

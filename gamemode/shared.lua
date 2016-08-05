@@ -87,7 +87,7 @@ function GM:Initialize()
 		util.AddNetworkString("zm_sendselectedgroup")
 		util.AddNetworkString("zm_spawnclientragdoll")
 		
-		game.ConsoleCommand("fire_dmgscale 1\nmp_flashlight 1\nsv_gravity 600\n")
+		game.ConsoleCommand("fire_dmgscale 1\nmp_falldamage 1\nsv_gravity 600\n")
 		
 		local mapinfo = "maps/"..game.GetMap()..".txt"
 		if file.Exists(mapinfo, "GAME") then
@@ -99,11 +99,11 @@ function GM:Initialize()
 end
 
 function GM:GetPopulationCost(type)
-	if type == "npc_zm_fastzombie" then
+	if type == "npc_fastzombie" then
 		return GetConVar("zm_popcost_banshee"):GetInt()
-	elseif type == "npc_zm_zombie" then
+	elseif type == "npc_zombie" then
 		return GetConVar("zm_popcost_shambler"):GetInt()
-	elseif type == "npc_zm_poisonzombie" then
+	elseif type == "npc_poisonzombie" then
 		return GetConVar("zm_popcost_hulk"):GetInt()
 	elseif type == "npc_burnzombie" then
 		return GetConVar("zm_popcost_immolator"):GetInt()

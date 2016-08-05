@@ -43,7 +43,7 @@ end
 
 if CLIENT then
 	function ENT:DrawTranslucent()
-		if MySelf:Team() ~= TEAM_ZOMBIEMASTER then return end
+		if not MySelf:IsZM() then return end
 		
 		render.SuppressEngineLighting(true)
 		self:DrawModel()

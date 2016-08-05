@@ -72,11 +72,12 @@ end
 
 function SWEP:Initialize()
 	if SERVER then
-		self:SetWeaponHoldType(self.HoldType)
 		self:SetNPCMinBurst(30)
 		self:SetNPCMaxBurst(30)
 		self:SetNPCFireRate(0.01)
 	end
+	
+	self:SetHoldType(self.HoldType)
 
 	self:SetNextIdle(0)
     self:SetDeploySpeed(self.DeploySpeed)
@@ -151,6 +152,10 @@ function SWEP:CanSecondaryAttack()
 end
 
 function SWEP:SecondaryAttack()
+end
+
+function SWEP:Equip(NewOwner)
+	self.Dropped = false
 end
 
 if not CLIENT then return end

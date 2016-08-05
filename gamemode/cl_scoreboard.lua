@@ -15,7 +15,7 @@ function GM:ScoreboardShow()
 end
 
 function GM:ScoreboardHide()
-	if MySelf:Team() ~= TEAM_ZOMBIEMASTER then
+	if not MySelf:IsZM() then
 		gui.EnableScreenClicker(false)
 	end
 

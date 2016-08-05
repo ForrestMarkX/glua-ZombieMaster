@@ -122,6 +122,15 @@ function GM:OnEntityCreated(ent)
 		elseif string.lower(entname) == "npc_fastzombie" then
 			timer.Simple(0, function() if IsValid(ent) then ent:SetModel("models/zombie/zm_fast.mdl") end end)
 		end
+		
+		if string.lower(entname) == "npc_zombie" or string.lower(entname) == "npc_poisonzombie" or string.lower(entname) == "npc_fastzombie" then
+			local zombies = ents.FindByClass("npc_burnzombie")
+			table.Add(zombies, ents.FindByClass("npc_dragzombie"))
+			
+			for _, zom in pairs(zombies) do
+				ent:AddEntityRelationship(zom, D_LI, 99)
+			end
+		end
 	end
 end
 
@@ -145,11 +154,11 @@ function GM:PlayerDeathThink(pl)
 end
 
 function GM:CanPlayerSuicide(ply)
-	if ply:Team() == TEAM_ZOMBIEMASTER and not self:GetRoundEnd() then	
+	if ply:IsZM() and not self:GetRoundEnd() then	
 		gamemode.Call("TeamVictorious", true, "The Zombie Master has submitted.\n")
 	end
 	
-	return ply:Team() == TEAM_SURVIVOR
+	return ply:IsSurvivor()
 end
 
 function GM:PlayerInitialSpawn(pl)
@@ -210,7 +219,7 @@ function GM:PlayerSpawn(ply)
 		return
 	end
 	
-	if ply:Team() == TEAM_SURVIVOR then
+	if ply:IsSurvivor() then
 		ply:StripWeapons()
 		ply:SetColor(color_white)
 
@@ -285,11 +294,6 @@ end
 
 function GM:PlayerNoClip(ply, desiredState)
 	return ply:IsSuperAdmin() or ply:IsZM() or ply:IsSpectator()
-end
-
-function GM:GetFallDamage(ply, speed)
-	speed = speed - 580
-	return speed * 0.19 * 1.25
 end
 
 function GM:OnNPCKilled(ent, attacker, inflictor)
@@ -378,7 +382,7 @@ end
 
 function GM:PlayerHurt(victim, attacker, healthremaining, damage)
 	if 0 < healthremaining then
-		if victim:Team() == TEAM_SURVIVOR then
+		if victim:IsSurvivor() then
 			victim:PlayPainSound()
 		end
 	end
@@ -792,7 +796,7 @@ end
 
 function GM:PlayerDisconnected(ply)
 	if self:GetRoundActive() then
-		if ply:Team() == TEAM_ZOMBIEMASTER then
+		if ply:IsZM() then
 			gamemode.Call("TeamVictorious", true, "The Zombie Master has left!\n")
 		elseif team.NumPlayers(TEAM_SURVIVOR) <= 0 then
 			gamemode.Call("TeamVictorious", false, "All the humans have left!\n")
@@ -911,28 +915,7 @@ function GM:PlayerUse(pl, ent)
 		end
 		ent.m_AntiDoorSpam = CurTime() + 0.85
 	elseif pl:IsSurvivor() then
-		if string.sub(entclass, 1 , 10) == "weapon_zm_" then
-			if not gamemode.Call("PlayerCanPickupWeapon", pl, ent) then
-				local phys = ent:GetPhysicsObject()
-				if IsValid(phys) then
-					local mass = phys:GetMass()
-					phys:ApplyForceCenter(Vector(math.random(-mass, mass), math.random(-mass, mass), math.random(-mass, mass)) * 50)
-				end
-				
-				return false
-			end
-			
-			pl:EmitSound("items/ammo_pickup.wav")
-			pl:Give(entclass)
-			
-			local wep = pl:GetWeapon(entclass)
-			if not wep.IsMelee then
-				if wep.SetClip1 then wep:SetClip1(ent:Clip1()) end
-				if wep.SetClip2 then wep:SetClip2(ent:Clip2()) end
-			end
-			
-			ent:Remove()
-		elseif string.sub(entclass, 1 , 12) == "prop_physics" or string.sub(entclass, 1 , 12) == "func_physbox" then
+		if string.sub(entclass, 1 , 12) == "prop_physics" or string.sub(entclass, 1 , 12) == "func_physbox" then
 			if gamemode.Call("AllowPlayerPickup", pl, ent) and not ent:IsPlayerHolding() then
 				pl:PickupObject(ent)
 			end
@@ -940,6 +923,10 @@ function GM:PlayerUse(pl, ent)
 	end
 
 	return true
+end
+
+function GM:CreateEntityRagdoll(owner, ragdoll)
+	ragdoll:SetModel(owner:GetModel())
 end
 
 function GM:PlayerSwitchFlashlight(pl, newstate)
@@ -963,6 +950,21 @@ function GM:PlayerCanPickupWeapon(pl, ent)
 			if wep:GetSlot() == ent:GetSlot() then
 				return false
 			end
+		end
+		
+		if ent:CreatedByMap() or ent.Dropped then
+			local class = ent:GetClass()
+			
+			pl:Give(class)
+			
+			local wep = pl:GetWeapon(class)
+			if not wep.IsMelee and wep:GetClass() == class then
+				wep:SetClip1(ent:Clip1())
+				wep:SetClip2(ent:Clip2())
+			end
+			
+			ent:Remove()
+			return false
 		end
 		
 		return true
@@ -1032,10 +1034,11 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 		pZombie:SetAngles(angles)
 
 		pZombie:Spawn()
+			
 		pZombie:Activate()
 		
 		pZM:TakeZMPoints(cost)
-		gamemode.Call("SetCurZombiePop", GAMEMODE:GetCurZombiePop() + popcost)
+		GAMEMODE:SetCurZombiePop(GAMEMODE:GetCurZombiePop() + popcost)
 		
 		if entname == "npc_burnzombie" or entname == "npc_dragzombie" then
 			pZombie:DropToFloor()
@@ -1366,6 +1369,7 @@ function GM:AddResources()
 	resource.AddFile( "models/trap.mdl" )
 	resource.AddFile( "models/weapons/c_fists_zm.mdl" )
 	resource.AddFile( "models/weapons/c_flashlight_zm.mdl" )
+	resource.AddFile( "models/weapons/c_improvised_zm.mdl" )
 	resource.AddFile( "models/weapons/c_mac_zm.mdl" )
 	resource.AddFile( "models/weapons/c_molotov_zm.mdl" )
 	resource.AddFile( "models/weapons/c_pistol_zm.mdl" )

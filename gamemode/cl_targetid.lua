@@ -1,5 +1,5 @@
 function GM:HUDDrawTargetID()
-	if MySelf:Team() == TEAM_ZOMBIEMASTER then return end
+	if MySelf:IsZM() then return end
 	
 	local tr = util.GetPlayerTrace(MySelf)
 	local trace = util.TraceLine( tr )

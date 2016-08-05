@@ -5,7 +5,7 @@ ENT.GlowSize = 128
 
 local matGlow = Material("sprites/glow04_noz")
 function ENT:DrawTranslucent()
-	if MySelf:Team() ~= TEAM_ZOMBIEMASTER then return end
+	if MySelf:IsZM() then return end
 	
 	render.SuppressEngineLighting(true)
 	render.SetMaterial(matGlow)
@@ -15,7 +15,7 @@ function ENT:DrawTranslucent()
 end
 
 function ENT:Think()
-	if MySelf:Team() == TEAM_ZOMBIEMASTER and self:GetActive() then
+	if MySelf:IsZM() and self:GetActive() then
 		local dlight = DynamicLight( self:EntIndex() )
 		if ( dlight ) then
 			dlight.pos = self:GetPos()

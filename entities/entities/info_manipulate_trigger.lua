@@ -24,7 +24,7 @@ if SERVER then
 
 	function ENT:Think()
 		for _, pl in pairs(ents.FindInSphere(self:GetPos(), GetConVar("zm_trap_triggerrange"):GetInt())) do
-			if pl:IsPlayer() and pl:Team() == TEAM_SURVIVOR then
+			if pl:IsPlayer() and pl:IsSurvivor() then
 				self:Trigger()
 				return
 			end

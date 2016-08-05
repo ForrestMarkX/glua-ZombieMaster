@@ -32,7 +32,7 @@ end
 if not meta.OldAlive then
 	meta.OldAlive = meta.Alive
 	function meta:Alive()
-		if self:Team() == TEAM_ZOMBIEMASTER then
+		if self:IsZM() then
 			return true
 		end
 
