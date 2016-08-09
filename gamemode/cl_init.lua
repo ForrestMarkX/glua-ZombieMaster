@@ -64,12 +64,39 @@ local function TraceLongDistance(vector)
 	return util.TraceLine(data)
 end
 
-function GM:InitPostEntity()
+function GM:HUDShouldDraw()
+end
+
+function GM:HUDPaint()
+end
+
+function GM:PostPlayerDraw()
+end
+
+function GM:PrePlayerDraw()
+end
+
+function GM:PostDrawOpaqueRenderables()
+end
+
+function GM:CreateMove()
+end
+
+function GM:PostClientInit()
 	self.HUDShouldDraw = self._HUDShouldDraw
 	self.HUDPaint = self._HUDPaint
 	self.PostPlayerDraw = self._PostPlayerDraw
 	self.PrePlayerDraw = self._PrePlayerDraw
+	self.PostDrawOpaqueRenderables = self._PostDrawOpaqueRenderables
 	self.CreateMove = self._CreateMove
+end
+
+function GM:OnReloaded()
+	gamemode.Call("PostClientInit")
+end
+
+function GM:InitPostEntity()
+	gamemode.Call("PostClientInit")
 end
 
 function GM:_PrePlayerDraw(ply)
@@ -77,7 +104,7 @@ function GM:_PrePlayerDraw(ply)
 end
 
 function GM:_PostPlayerDraw(pl)
-	if MySelf:IsZM() and pl:IsSurvivor() then
+	if MySelf:IsZM() and pl:IsSurvivor() and pl:Alive() then
 		local plHealth, plMaxHealth = pl:Health(), pl:GetMaxHealth()
 		local pos = pl:GetPos() + Vector(0, 0, 2)
 		local colour = Color(0, 0, 0, 125)
@@ -94,6 +121,41 @@ function GM:_PostPlayerDraw(pl)
 		render.SetMaterial(healtheffect)
 		render.DrawQuadEasy(pos, Vector(0, 0, 1), 38, 28, Color(255, 255, 255))
 		render.DrawQuadEasy(pos, Vector(0, 0, -1), 38, 28, Color(255, 255, 255))
+	end
+end
+
+local startVal = 0
+local endVal = 1
+local fadeSpeed = 1.6
+local function FadeToDraw(self)
+	if self.fadeAlpha < 1 then
+		self.fadeAlpha = self.fadeAlpha + fadeSpeed * FrameTime()
+		self.fadeAlpha = math.Clamp(self.fadeAlpha, startVal, endVal)
+		
+		render.SetBlend(self.fadeAlpha)
+		self:DrawModel()
+		render.SetBlend(1)
+	else
+		self:DrawModel()
+	end
+end
+function GM:OnEntityCreated(ent)
+	if ent:IsNPC() then
+		local entname = string.lower(ent:GetClass())
+		
+		if string.sub(entname, 1, 12) == "npc_headcrab" then
+			ent.RenderOverride = function(self)
+				return true
+			end
+			
+			return
+		end
+	
+		if string.lower(entname) == "npc_zombie" or string.lower(entname) == "npc_poisonzombie" or string.lower(entname) == "npc_fastzombie" then
+			gamemode.Call("SetupNPCZombieModels", ent)
+			ent.fadeAlpha = 0
+			ent.RenderOverride = FadeToDraw
+		end
 	end
 end
 
@@ -265,6 +327,24 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				gamemode.Call("SpawnTrapMenu", class, ent)
 			end
 		elseif mouseCode == MOUSE_RIGHT then
+			if placingShockwave then
+				MySelf:PrintMessage(HUD_PRINTTALK, "Exited explosion mode...")
+				placingShockwave = false
+				zm_placedpoweritem = false
+				return
+			elseif placingZombie then
+				MySelf:PrintMessage(HUD_PRINTTALK, "Exited hidden spawn mode...")
+				placingZombie = false
+				zm_placedpoweritem = true
+				return
+			elseif placingTrap then
+				placingTrap = false
+				return
+			elseif placingRally then
+				zm_placedrally = false
+				return
+			end
+			
 			if zm_rightclicked then zm_rightclicked = false end
 			
 			click_delta = CurTime()
@@ -422,24 +502,43 @@ function GM:IsMenuOpen()
 	return false
 end
 
+local entnum = 0
 function GM:CreateClientsideRagdoll(ent, ragdoll)
 	if IsValid(ent) and ent:IsNPC() then
 		ragdoll:SetModel(ent:GetModel())
+		ragdoll.fadeAlpha = 255
 		
-		if ent.GetDamageForce then
-			local force = ent:GetDamageForce()
-			if force and not force:IsZero() then
-				for i=0, ragdoll:GetPhysicsObjectCount() - 1 do
-					local phys = ragdoll:GetPhysicsObjectNum(i)
-					phys:ApplyForceCenter(force * 10000)
-				end
-			end
+		local force, physbone = ent:GetBulletForce()
+		if force and not force:IsZero() then
+			local phys = ragdoll:GetPhysicsObjectNum(physbone)
+			phys:ApplyForceCenter(force * 5000)
 		end
 		
-		timer.Simple(0.1, function()
-			if not timer.Exists("removeRagdolls") then
-				timer.Create("removeRagdolls", 30, 0, function() game.RemoveRagdolls() end)
-			end
+		timer.Simple(30, function()
+			if not IsValid(ragdoll) then return end
+			
+			ragdoll:SetRenderMode(RENDERMODE_TRANSALPHA)
+			
+			local col = Color(255, 255, 255)
+			local timername = "FadeRagdoll_"..tostring(ent).."_"..entnum
+			entnum = entnum + 1
+			timer.Create(timername, 0, 0, function()
+				if not IsValid(ragdoll) then timer.Destroy(timername) end
+				
+				if ragdoll.fadeAlpha <= 0 then
+					entnum = entnum - 1
+					
+					timer.Destroy(timername)
+					ragdoll:Remove()
+					return
+				end
+				
+				ragdoll.fadeAlpha = ragdoll.fadeAlpha - (255 * FrameTime())
+				ragdoll.fadeAlpha = math.Clamp(ragdoll.fadeAlpha, 0, 255)
+				
+				col.a = ragdoll.fadeAlpha
+				ragdoll:SetColor(col)
+			end)
 		end)
 	end
 end
@@ -489,13 +588,15 @@ function GM:Think()
 	--]]
 end
 
-function GM:PostDrawOpaqueRenderables()
+function GM:_PostDrawOpaqueRenderables()
 	if MySelf:IsZM() then
 		cam.Start3D()
 			local zombies = ents.FindByClass("npc_*")
 		
 			for _, entity in pairs(zombies) do
-				if IsValid(entity) then
+				if string.sub(entity:GetClass(), 1, 12) == "npc_headcrab" then continue end
+				
+				if IsValid(entity) and entity:Health() > 0 then
 					local Health, MaxHealth = entity:Health(), entity:GetMaxHealth()
 					local pos = entity:GetPos() + Vector(0, 0, 2)
 					local colour = Color(0, 0, 0, 125)
@@ -651,5 +752,14 @@ net.Receive("PlayerKilled", function(length)
 	local inflictor	= net.ReadString()
 	local attacker = "Something"
 	
-	GAMEMODE:AddDeathNotice( attacker, -1, inflictor, victim:Name(), victim:Team() )
+	GAMEMODE:AddDeathNotice(attacker, TEAM_UNASSIGNED, inflictor, victim:Name(), victim:Team())
+end)
+
+net.Receive("zm_coloredprintmessage", function(length)
+	local msg = net.ReadString()
+	local color = net.ReadColor()
+	local dur =	net.ReadUInt(32)
+	local fade = net.ReadFloat()
+	
+	util.PrintMessageC(nil, msg, color, dur, fade)
 end)

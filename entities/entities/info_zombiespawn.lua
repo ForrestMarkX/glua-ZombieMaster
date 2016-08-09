@@ -141,6 +141,13 @@ if SERVER then
 			vector.y = vector.y + yDeviation
 		until util.IsInWorld(vector)
 		
+		local entities = ents.FindInBox(vector + Vector(-16, -16, 0), vector + Vector(16, 16, 64))
+		for k, v in pairs(entities) do
+			if IsValid(v) and v:IsNPC() then
+				return self:GetSuitableVector()
+			end
+		end
+		
 		return vector
 	end
 

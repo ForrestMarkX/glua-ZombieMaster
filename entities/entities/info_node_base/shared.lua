@@ -1,6 +1,6 @@
 ENT.Type = "anim"
 ENT.Model = ""
-ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
+ENT.RenderGroup = RENDERGROUP_BOTH
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Int", 0, "Cost")

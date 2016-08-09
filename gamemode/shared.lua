@@ -74,7 +74,7 @@ function GM:Initialize()
 		surface.CreateFont("DefaultFontBold", {font = "Consolas", size = 13, weight = 1000, antialias = false})
 		surface.CreateFont("DefaultFontLarge", {font = "Consolas", size = 16, weight = 0, antialias = false})
 	else
-		resource.AddWorkshop("591300663")
+		self:AddResources()
 
 		util.AddNetworkString("PlayerKilledByNPC")
 		
@@ -86,6 +86,7 @@ function GM:Initialize()
 		util.AddNetworkString("zm_sendcurrentgroups")
 		util.AddNetworkString("zm_sendselectedgroup")
 		util.AddNetworkString("zm_spawnclientragdoll")
+		util.AddNetworkString("zm_coloredprintmessage")
 		
 		game.ConsoleCommand("fire_dmgscale 1\nmp_falldamage 1\nsv_gravity 600\n")
 		
@@ -132,6 +133,31 @@ end
 
 function GM:PlayerIsAdmin(pl)
 	return pl:IsAdmin()
+end
+
+local ShamblerModels = {
+	"models/zombie/zm_classic.mdl",
+	"models/zombie/zm_classic_01.mdl",
+	"models/zombie/zm_classic_02.mdl",
+	"models/zombie/zm_classic_03.mdl",
+	"models/zombie/zm_classic_04.mdl",
+	"models/zombie/zm_classic_05.mdl",
+	"models/zombie/zm_classic_06.mdl",
+	"models/zombie/zm_classic_07.mdl",
+	"models/zombie/zm_classic_08.mdl",
+	"models/zombie/zm_classic_09.mdl"
+}
+function GM:SetupNPCZombieModels(ent)
+	if not IsValid(ent) then return end
+	
+	local entname = string.lower(ent:GetClass())
+	if entname == "npc_zombie" then
+		ent:SetModel(ShamblerModels[math.random(#ShamblerModels)])
+	elseif entname == "npc_poisonzombie" then
+		ent:SetModel("models/zombie/hulk.mdl")
+	elseif entname == "npc_fastzombie" then
+		ent:SetModel("models/zombie/zm_fast.mdl")
+	end
 end
 
 --[[

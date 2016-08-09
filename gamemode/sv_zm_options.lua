@@ -54,7 +54,11 @@ local function ZM_Power_KillZombies(ply)
 	
 	for _, ent in pairs(ents.FindByClass("npc_*")) do
 		if ent:GetNWBool("selected") then
-			ent:TakeDamage(ent:Health())
+			local dmginfo = DamageInfo()
+			dmginfo:SetDamage(ent:Health())
+			dmginfo:SetDamageType(DMG_REMOVENORAGDOLL)
+			
+			ent:TakeDamageInfo(dmginfo)
 		end
 	end
 	

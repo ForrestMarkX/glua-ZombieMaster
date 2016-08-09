@@ -4,47 +4,45 @@ PANEL.NextRefresh = 0
 PANEL.RefreshTime = 2
 
 function PANEL:Init()
-	self.m_TeamNameLabel = EasyLabel(self, " ", "ZMScoreBoardHeading", color_black)
+	self.m_TeamNameLabel = EasyLabel(self, " ", "ZMScoreBoardHeading", color_white)
 	
+	--[[
 	self.NameCol = vgui.Create("DLabel", self)
-	self.NameCol:SetPos( self:GetWide() * 1.2, 15 )
 	self.NameCol:SetText(" ")
-	self.NameCol:SetSize( 120, 40 )
+	self.NameCol:SetSize( 240, 80 )
+	self.NameCol:Dock(LEFT)
+	self.NameCol:DockMargin(0, 34, 0, 34)
 	self.NameCol.Paint = function(self, w, h)
-		DisableClipping( true )
 		draw.SimpleText("Name", "ZMScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
-		DisableClipping( false )
 	end
 	
 	self.ScoreCol = vgui.Create("DLabel", self)
-	self.ScoreCol:SetPos( self:GetWide() * 3.5, 15 )
 	self.ScoreCol:SetText(" ")
 	self.ScoreCol:SetSize( 120, 40 )
+	self.ScoreCol:Dock(LEFT)
+	self.ScoreCol:DockMargin(0, 34, 0, 34)
 	self.ScoreCol.Paint = function(self, w, h)
-		DisableClipping( true )
 		draw.SimpleText("Score", "ZMScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
-		DisableClipping( false )
 	end
 	
 	self.DeathCol = vgui.Create("DLabel", self)
-	self.DeathCol:SetPos( self:GetWide() * 4.5, 15 )
 	self.DeathCol:SetText(" ")
 	self.DeathCol:SetSize( 120, 40 )
+	self.DeathCol:Dock(LEFT)
+	self.DeathCol:DockMargin(0, 34, 0, 34)
 	self.DeathCol.Paint = function(self, w, h)
-		DisableClipping( true )
 		draw.SimpleText("Deaths", "ZMScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
-		DisableClipping( false )
 	end
 
 	self.PingCol = vgui.Create("DLabel", self)
-	self.PingCol:SetPos( self:GetWide() * 6.32, 15 )
 	self.PingCol:SetText(" ")
 	self.PingCol:SetSize( 120, 40 )
+	self.PingCol:Dock(LEFT)
+	self.PingCol:DockMargin(0, 34, 0, 34)
 	self.PingCol.Paint = function(self, w, h)
-		DisableClipping( true )
 		draw.SimpleText("Ping", "ZMScoreBoardPlayer", w/2, h/2, color_white, 1, 1)
-		DisableClipping( false )
 	end
+	--]]
 	
 	self:InvalidateLayout()
 end
@@ -63,27 +61,19 @@ end
 function PANEL:Refresh()
 	local teamid = self:GetTeam()
 	
-	if teamid ~= TEAM_SURVIVOR then
-		self.ScoreCol:SetVisible(false)
-		self.DeathCol:SetVisible(false)
-	else
-		self.ScoreCol:SetVisible(true)
-		self.DeathCol:SetVisible(true)
-	end
-	
 	self.m_TeamNameLabel:SetText(team.GetName(teamid))
-	self.m_TeamNameLabel:SetColor(team.GetColor(teamid))
 	self.m_TeamNameLabel:SizeToContents()
 	
 	self:InvalidateLayout()
 end
 
-function PANEL:Paint()
+function PANEL:Paint(wid, hei)
 	local teamid = self:GetTeam()
-	local wid, hei = self:GetWide(), self:GetTall()
-	DisableClipping( true )
-	draw.RoundedBox(4, 0, hei + 17, wid, 2, team.GetColor(teamid))
-	DisableClipping( false )
+	
+	local col = team.GetColor(teamid)
+	draw.RoundedBox(4, 0, 0, wid, hei, Color(col.r * 0.45, col.g * 0.45, col.b * 0.45))
+	draw.RoundedBox(4, 2, 2, wid - 4, hei - 4, Color(col.r * 0.65, col.g * 0.65, col.b * 0.65))
+	
 	return true
 end
 

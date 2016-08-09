@@ -1,6 +1,27 @@
 local meta = FindMetaTable("Entity")
 if not meta then return end
 
+meta.oldPlayerHolding = meta.IsPlayerHolding
+function meta:IsPlayerHolding()
+	if SERVER then
+		local isHolding = self:oldPlayerHolding()
+		if self:GetNWBool("holding") ~= isHolding then
+			self:SetNWBool("holding", isHolding)
+		end
+		return isHolding
+	else
+		return self:GetNWBool("holding")
+	end
+end
+
+function meta:SetBulletForce(force, physbone)
+	return self:SetNWVector("damageforce", force), self:SetNWInt("damagephysbone", physbone)
+end
+
+function meta:GetBulletForce()
+	return self:GetNWVector("damageforce"), self:GetNWInt("damagephysbone")
+end
+
 function meta:TakeSpecialDamage(damage, damagetype, attacker, inflictor, hitpos)
 	attacker = attacker or self
 	if not attacker:IsValid() then attacker = self end

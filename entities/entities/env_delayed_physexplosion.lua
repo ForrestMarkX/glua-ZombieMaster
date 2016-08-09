@@ -21,9 +21,9 @@ function ENT:Think()
 
 		if SERVER then
 			//make players in range drop their stuff, radius is cvar'd
-			for _, pl in pairs(ents.FindInSphere(self:LocalToWorld(self:OBBCenter()), GetConVar("zm_physexp_forcedrop_radius"):GetFloat())) do
-				if IsValid(pl) and pl:IsPlayer() then
-					pl:DropObject()
+			for _, ent in pairs(ents.FindInSphere(self:LocalToWorld(self:OBBCenter()), GetConVar("zm_physexp_forcedrop_radius"):GetFloat())) do
+				if IsValid(ent) and not ent:IsPlayer() then
+					DropEntityIfHeld(ent)
 				end
 			end
 		end

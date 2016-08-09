@@ -5,11 +5,16 @@ ENT.GlowSize = 128
 
 local matGlow = Material("sprites/glow04_noz")
 function ENT:DrawTranslucent()
-	if MySelf:IsZM() then return end
+	if not MySelf:IsZM() then return end
 	
-	render.SuppressEngineLighting(true)
 	render.SetMaterial(matGlow)
 	render.DrawSprite(self:GetPos(), self.GlowSize, self.GlowSize, self.GlowColor)
+end
+
+function ENT:Draw()
+	if not MySelf:IsZM() then return end
+	
+	render.SuppressEngineLighting(true)
 	self:DrawModel()
 	render.SuppressEngineLighting(false)
 end

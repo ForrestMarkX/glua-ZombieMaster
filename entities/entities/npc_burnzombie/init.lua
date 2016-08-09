@@ -98,7 +98,7 @@ end
 function ENT:OnTakeDamage(dmginfo)
 	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
 	local atkowner = attacker.OwnerClass
-	if attacker:GetClass() == "env_fire" and atkowner and atkowner == self:GetClass() then
+	if IsValid(attacker) and attacker:GetClass() == "env_fire" and atkowner and atkowner == self:GetClass() then
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
 		return

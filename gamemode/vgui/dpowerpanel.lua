@@ -4,6 +4,15 @@ local image1 = surface.GetTextureID("VGUI/minicrosshair")
 local image2 = surface.GetTextureID("VGUI/minishockwave")
 local image3 = surface.GetTextureID("VGUI/minigroupadd")
 	
+local function ButtonPaint(self, w, h)
+	draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, self.alpha))
+	
+	surface.SetDrawColor(255, 255, 255, self.alpha)
+	surface.SetTexture(self.Image)
+	surface.DrawTexturedRect(2, 0, 32, 32)
+	
+	draw.DrawSimpleOutlined(0, 0, w, h -1, color_black)
+end
 function PANEL:Init()
 	self.last = nil
 	
@@ -29,17 +38,8 @@ function PANEL:Init()
 		{image = "VGUI/minicrosshair", func = function() RunConsoleCommand("zm_switch_to_offense") end, tooltip = "Attack: Order selected units to attack any humans they see."}
 	}
 	
-	self.button1.Paint = function(self)
-		local w, h = self:GetSize()
-		
-		draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, self.alpha))
-		
-		surface.SetDrawColor(255, 255, 255, self.alpha)
-		surface.SetTexture(image1)
-		surface.DrawTexturedRect(2, 0, 32, 32)
-		
-		draw.DrawSimpleOutlined(0, 0, w, h -1, color_black)
-	end
+	self.button1.Image = image1
+	self.button1.Paint = ButtonPaint
 	
 	self.button1.OnMousePressed = function(_self, code)
 		if self.last then
@@ -132,17 +132,8 @@ function PANEL:Init()
 		{image = "VGUI/minispotcreate", func = function() RunConsoleCommand("zm_power_spotcreate") end, tooltip = "Hidden Summon: Click in the world to create a Shambler. Only works out of sight of the humans (Costs "..GetConVar("zm_spotcreate_cost"):GetInt()..")."}
 	}
 	
-	self.button2.Paint = function(self)
-		local w, h = self:GetSize()
-		
-		draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, self.alpha))
-		
-		surface.SetDrawColor(255, 255, 255, self.alpha)
-		surface.SetTexture(image2)
-		surface.DrawTexturedRect(2, 1, 30, 30)
-		
-		draw.DrawSimpleOutlined(0, 0, w, h -1, color_black)
-	end
+	self.button2.Image = image2
+	self.button2.Paint = ButtonPaint
 	
 	self.button2.OnMousePressed = self.button1.OnMousePressed
 	
@@ -158,17 +149,8 @@ function PANEL:Init()
 		{image = "VGUI/minigroupselect", func = function() RunConsoleCommand("zm_selectgroup") end, tooltip = "Select squad: Select the chosen squad. The units in this squad will be selected."}
 	}
 	
-	self.button3.Paint = function(self)
-		local w, h = self:GetSize()
-		
-		draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, self.alpha))
-		
-		surface.SetDrawColor(255, 255, 255, self.alpha)
-		surface.SetTexture(image3)
-		surface.DrawTexturedRect(2, 0, 32, 32)
-		
-		draw.DrawSimpleOutlined(0, 0, w, h -1, color_black)
-	end
+	self.button3.Image = image3
+	self.button3.Paint = ButtonPaint
 end
 
 function PANEL:Paint()

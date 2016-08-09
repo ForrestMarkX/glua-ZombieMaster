@@ -27,7 +27,7 @@ function SWEP:PrimaryAttack()
     self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
     
 	local owner = self.Owner
-	owner:SetAnimation(PLAYER_ATTACK1)
+	owner:DoAttackEvent()
 	
 	local trace = util.TraceLine( {
 		start = owner:GetShootPos(),

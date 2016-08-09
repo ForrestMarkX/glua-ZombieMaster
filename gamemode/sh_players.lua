@@ -2,7 +2,7 @@ local meta = FindMetaTable("Player")
 if not meta then return end
 
 function meta:ShouldNotCollide(ent)
-	return ent:IsPlayer() and self:Team() == ent:Team() or ent:IsPlayerHolding()
+	return ent:IsPlayerHolding()
 end
 
 function meta:IsZM()
