@@ -1,4 +1,4 @@
-ENT.Type = "anim"
+ENT.Type = "point"
 
 function ENT:Initialize() 
 	self:SetSolid( SOLID_NONE )

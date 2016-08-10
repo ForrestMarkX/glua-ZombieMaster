@@ -41,10 +41,12 @@ function SWEP:PrimaryAttack()
 		bullet.Num    = 1
 		bullet.Src    = owner:GetShootPos()
 		bullet.Dir    = owner:GetAimVector()
+		bullet.Distance = self.Primary.Reach
 		bullet.Spread = Vector(0, 0, 0)
 		bullet.Tracer = 0
 		bullet.Force  = self.Primary.Force
 		bullet.Damage = self.Primary.Damage
+		bullet.Callback = self.DefaultBulletCallback
 		
 		owner:FireBullets(bullet)
 		

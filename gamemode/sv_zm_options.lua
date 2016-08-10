@@ -193,41 +193,13 @@ concommand.Add("zm_dropammo", ZM_Drop_Ammo, nil, "Drops your current weapons amm
 local function ZM_Drop_Weapon(ply)
 	local wep = ply:GetActiveWeapon()
 	if IsValid(wep) and not wep.Undroppable then
-		local class = wep:GetClass()
-		local ent = ents.Create(class)
-		if IsValid(ent) then
-			local vecEye = ply:EyePos()
-			local angEye = ply:EyeAngles()
-			local vForward = angEye:Forward()
-
-			local vecSrc = vecEye + vForward * 60.0
-			
-			ent.Dropped = true
-			ent:SetPos(vecSrc)
-			ent:Spawn()
-			ent:SetClip1(wep:Clip1())
-			ent:SetClip2(wep:Clip2())
-			
-			ent.ThrowTime = CurTime() + 1
-			
-			local pObj = ent:GetPhysicsObject()
-			
-			local vecVelocity = ply:GetAimVector() * 200
-			
-			if IsValid(pObj) then
-				pObj:AddVelocity(vecVelocity)
-			else
-				ent:SetVelocity(vecVelocity)
-			end
-
-			ply:StripWeapon(class)
-			
-			local weps = ply:GetWeapons()
-			local randwep = weps[math.random(#weps)]
-			
-			if randwep then
-				ply:SelectWeapon(randwep:GetClass())
-			end
+		ply:DropWeapon(wep)
+		
+		local weps = ply:GetWeapons()
+		local randwep = weps[math.random(#weps)]
+		
+		if randwep then
+			ply:SelectWeapon(randwep:GetClass())
 		end
 	end
 end

@@ -75,6 +75,7 @@ function ENT:CreateAndGiveWeapon(ply, weapon_type)
 	}
 
 	local weapon_name = WeaponTypeToName[weapon_type]
+	if weapon_name == nil then return end
 
 	local add_ammo = true
 

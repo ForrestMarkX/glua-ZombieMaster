@@ -52,9 +52,21 @@ GM.HumanGibs = {
 	Model("models/gibs/Strider_Gib4.mdl")
 }
 
+GM.RestrictedPMs = {}
+GM.RestrictedPMs["zombie"] = true
+GM.RestrictedPMs["zombiefast"] = true
+GM.RestrictedPMs["corpse"] = true
+GM.RestrictedPMs["charple"] = true
+GM.RestrictedPMs["skeleton"] = true
+GM.RestrictedPMs["zombine"] = true
+
 GM.RandomPlayerModels = {}
-for name, mdl in pairs(player_manager.AllValidModels()) do
-	table.insert(GM.RandomPlayerModels, name)
+
+local playermodels = player_manager.AllValidModels()
+for name, mdl in pairs(playermodels) do
+	if not GM.RestrictedPMs[name] then
+		table.insert(GM.RandomPlayerModels, name)
+	end
 end
 
 gamemode.Call = hook.Run

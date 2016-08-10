@@ -152,7 +152,6 @@ function GM:OnEntityCreated(ent)
 		end
 	
 		if string.lower(entname) == "npc_zombie" or string.lower(entname) == "npc_poisonzombie" or string.lower(entname) == "npc_fastzombie" then
-			gamemode.Call("SetupNPCZombieModels", ent)
 			ent.fadeAlpha = 0
 			ent.RenderOverride = FadeToDraw
 		end
@@ -505,16 +504,23 @@ end
 local entnum = 0
 function GM:CreateClientsideRagdoll(ent, ragdoll)
 	if IsValid(ent) and ent:IsNPC() then
+		local instantfade = false
+		local ragdollnum = #ents.FindByClass(ragdoll:GetClass())
+		if ragdollnum > GetConVar("zm_max_ragdolls"):GetInt() then
+			instantfade = true
+		end
+		
 		ragdoll:SetModel(ent:GetModel())
 		ragdoll.fadeAlpha = 255
 		
 		local force, physbone = ent:GetBulletForce()
 		if force and not force:IsZero() then
 			local phys = ragdoll:GetPhysicsObjectNum(physbone)
-			phys:ApplyForceCenter(force * 5000)
+			phys:ApplyForceCenter(force * 50)
 		end
 		
-		timer.Simple(30, function()
+		local fadetime = instantfade and 0 or GetConVar("zm_ragdoll_fadetime"):GetInt()
+		timer.Simple(fadetime, function()
 			if not IsValid(ragdoll) then return end
 			
 			ragdoll:SetRenderMode(RENDERMODE_TRANSALPHA)

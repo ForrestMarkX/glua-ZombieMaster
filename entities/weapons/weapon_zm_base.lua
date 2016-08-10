@@ -105,6 +105,15 @@ function SWEP:PrimaryAttack()
 	end
 end
 
+function SWEP:DefaultBulletCallback(attacker, tr, dmginfo)
+	if tr.Hit then
+		local ent = tr.Entity
+		if IsValid(ent) and ent:IsNPC() and dmginfo:GetDamage() >= ent:Health() then
+			ent:SetBulletForce(dmginfo:GetDamageForce(), tr.PhysicsBone)
+		end
+	end
+end
+
 function SWEP:ShootBullet(dmg, numbul, cone)
 	numbul 	= numbul or 1
 	cone 	= cone or 0.01
@@ -118,6 +127,7 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	bullet.TracerName = self.TracerType
 	bullet.Force	= self.Primary.BulletForce
 	bullet.Damage	= dmg
+	bullet.Callback = self.DefaultBulletCallback
 
 	local PlayerPos = self.Owner:GetShootPos()
 	local PlayerAim = self.Owner:GetAimVector()

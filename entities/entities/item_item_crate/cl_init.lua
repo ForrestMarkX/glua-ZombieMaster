@@ -7,3 +7,8 @@ end
 function ENT:SetObjectHealth(health)
 	self:SetDTFloat(0, health)
 end
+
+function ENT:Draw()
+	if self:GetObjectHealth() <= 0 then return end
+	self:DrawModel()
+end

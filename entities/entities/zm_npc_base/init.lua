@@ -90,7 +90,7 @@ function ENT:Death(killer)
 
 			popCost = popCost or 1
 
-			GAMEMODE:SetCurZombiePop(population - popCost)
+			GAMEMODE:TakeCurZombiePop(popCost)
 		end
 
 		self.computedDeath = true

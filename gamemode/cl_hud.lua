@@ -258,12 +258,11 @@ function MakepPlayerModel()
 	grid:SetRowHeight(68)
 	
 	local playermodels = player_manager.AllValidModels()
-	playermodels["zombie"] = nil
-	playermodels["zombiefast"] = nil
-	playermodels["corpse"] = nil
-	playermodels["charple"] = nil
-	playermodels["skeleton"] = nil
-	playermodels["zombine"] = nil
+	for _, name in pairs(GAMEMODE.RestrictedPMs) do
+		if playermodels[name] then
+			playermodels[name] = nil
+		end
+	end
 	for name, mdl in pairs(playermodels) do
 		if mdl ~= nil then
 			local button = vgui.Create("SpawnIcon", grid)
@@ -274,7 +273,7 @@ function MakepPlayerModel()
 			grid:AddItem(button)
 		end
 	end
-	grid:SetSize(wid - 16, math.ceil(table.Count(player_manager.AllValidModels()) / numcols) * grid:GetRowHeight())
+	grid:SetSize(wid - 16, math.ceil(table.Count(playermodels) / numcols) * grid:GetRowHeight())
 
 	list:AddItem(grid)
 
