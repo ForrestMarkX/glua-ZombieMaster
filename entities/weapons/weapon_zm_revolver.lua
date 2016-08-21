@@ -46,6 +46,10 @@ function SWEP:Think()
 		self:PlayPrimaryFireSound()
 		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
 		
+		if not self.InfiniteAmmo then
+			self:TakePrimaryAmmo(1)
+		end
+		
 		self.firing = false
 		self.firetimer = 0
 	end
@@ -64,6 +68,10 @@ function SWEP:SecondaryAttack()
 	self:PlayPrimaryFireSound()
 	self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
 	self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
+	
+	if not self.InfiniteAmmo then
+		self:TakePrimaryAmmo(1)
+	end
 	
 	self:SetNextIdle(CurTime() + self:SequenceDuration())
 end
