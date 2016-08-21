@@ -5,12 +5,10 @@ function PANEL:Init()
 	self.AvatarButton:AlignLeft(18)
 	self.AvatarButton:SetSize(32, 32)
 	self.AvatarButton.DoClick = function() self.Player:ShowProfile() end
-	self.AvatarButton:SetVisible(false)
-	
-	self.Avatar = self:Add("AvatarImage")
+
+	self.Avatar = vgui.Create("AvatarImage", self.AvatarButton)
 	self.Avatar:SetSize(32, 32)
 	self.Avatar:SetMouseInputEnabled(false)
-	self.Avatar:AlignLeft(18)
 	
 	self.SpecialImage = self:Add("DImage")
 	self.SpecialImage:SetSize(16, 16)
@@ -123,7 +121,7 @@ function PANEL:Paint(w, h)
 
 		if self.m_Flash then
 			mul = 0.6 + math.abs(math.sin(RealTime() * 6)) * 0.4
-		elseif pl == MySelf then
+		elseif pl == LocalPlayer() then
 			mul = 0.8
 		end
 		
@@ -303,7 +301,7 @@ function GM:ScoreboardShow()
 end
 
 function GM:ScoreboardHide()
-	if not MySelf:IsZM() then
+	if not LocalPlayer():IsZM() then
 		gui.EnableScreenClicker(false)
 	end
 	

@@ -3,6 +3,7 @@ include("cl_killicons.lua")
 include("cl_utility.lua")
 include("cl_scoreboard.lua")
 include("cl_dermaskin.lua")
+include("cl_entites.lua")
 
 include("cl_zm_options.lua")
 include("cl_targetid.lua")
@@ -44,22 +45,20 @@ local nightVision_ColorMod = {
 	["$pp_colour_mulb"] 		= 0
 }
 
-w, h = ScrW(), ScrH()
-
-MySelf = MySelf or NULL
-hook.Add("InitPostEntity", "GetLocal", function()
-	MySelf = LocalPlayer()
-
-	GAMEMODE.HookGetLocal = GAMEMODE.HookGetLocal or (function(g) end)
-	gamemode.Call("HookGetLocal", MySelf)
-	RunConsoleCommand("initpostentity")
-end)
-
-local function TraceLongDistance(vector)
+local function TraceLongDistance(vector, nocollideall)
 	local data = {}
-	data.start = MySelf:GetShootPos()
-	data.endpos = data.start +(vector *9999999999999)
-	data.filter = MySelf
+	data.start = LocalPlayer():GetShootPos()
+	data.endpos = data.start + (vector * 56756)
+	data.filter = nocollideall and ents.GetAll() or LocalPlayer()
+	
+	return util.TraceLine(data)
+end
+
+local function TraceLongDistanceFilter(vector, filter)
+	local data = {}
+	data.start = LocalPlayer():GetShootPos()
+	data.endpos = data.start + (vector * 56756)
+	data.filter = filter
 	
 	return util.TraceLine(data)
 end
@@ -83,6 +82,8 @@ function GM:CreateMove()
 end
 
 function GM:PostClientInit()
+	RunConsoleCommand("zm_player_ready")
+
 	self.HUDShouldDraw = self._HUDShouldDraw
 	self.HUDPaint = self._HUDPaint
 	self.PostPlayerDraw = self._PostPlayerDraw
@@ -92,11 +93,11 @@ function GM:PostClientInit()
 end
 
 function GM:OnReloaded()
-	gamemode.Call("PostClientInit")
+	hook.Call("PostClientInit", self)
 end
 
 function GM:InitPostEntity()
-	gamemode.Call("PostClientInit")
+	hook.Call("PostClientInit", self)
 end
 
 function GM:_PrePlayerDraw(ply)
@@ -104,7 +105,7 @@ function GM:_PrePlayerDraw(ply)
 end
 
 function GM:_PostPlayerDraw(pl)
-	if MySelf:IsZM() and pl:IsSurvivor() and pl:Alive() then
+	if LocalPlayer():IsZM() and pl:IsSurvivor() and pl:Alive() then
 		local plHealth, plMaxHealth = pl:Health(), pl:GetMaxHealth()
 		local pos = pl:GetPos() + Vector(0, 0, 2)
 		local colour = Color(0, 0, 0, 125)
@@ -144,6 +145,7 @@ function GM:OnEntityCreated(ent)
 		local entname = string.lower(ent:GetClass())
 		
 		if string.sub(entname, 1, 12) == "npc_headcrab" then
+			ent:DrawShadow(false)
 			ent.RenderOverride = function(self)
 				return true
 			end
@@ -231,8 +233,15 @@ function draw.SimpleTextBlurry(text, font, x, y, col, xalign, yalign)
 	draw.SimpleText(text, font, x, y, col, xalign, yalign)
 end
 
+local function TraceToNPCs(ent)
+	if ent:IsNPC() and not ent:GetSharedBool("selected") then
+		return true
+	end
+	
+	return false
+end
 function GM:GUIMouseReleased(mouseCode, aimVector)
-	local tr = TraceLongDistance(aimVector)
+	local tr = TraceLongDistanceFilter(aimVector, TraceToNPCs)
 	
 	if tr.Entity and tr.Entity:IsNPC() then
 		isDragging = false
@@ -241,7 +250,7 @@ function GM:GUIMouseReleased(mouseCode, aimVector)
 	
 	if isDragging then
 		local a, b = gui.ScreenToVector(traceX, traceY), gui.ScreenToVector(mouseX, mouseY)
-		local c, d = TraceLongDistance(a), TraceLongDistance(b)
+		local c, d = TraceLongDistanceFilter(a, TraceToNPCs), TraceLongDistanceFilter(b, TraceToNPCs)
 		
 		if c.HitPos and d.HitPos then
 			RunConsoleCommand("zm_traceselect", tostring(d.HitPos), tostring(c.HitPos))
@@ -274,7 +283,7 @@ local click_delta = 0
 local zm_ring_pos = Vector(0, 0, 0)
 local zm_ring_ang = Angle(0, 0, 0)
 function GM:GUIMousePressed(mouseCode, aimVector)
-	if MySelf:IsZM() then
+	if LocalPlayer():IsZM() then
 		if mouseCode == MOUSE_LEFT then
 			if placingShockwave then
 				if zm_placedpoweritem then zm_placedpoweritem = false end
@@ -289,7 +298,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				placingZombie = false
 				zm_placedpoweritem = true
 			elseif placingTrap then
-				local hitPos = TraceLongDistance(aimVector).HitPos
+				local hitPos = TraceLongDistance(aimVector, true).HitPos
 				local vector = string.Explode(" ", tostring(hitPos))
 			
 				RunConsoleCommand("zm_placetrigger", vector[1], vector[2], vector[3], trapTrigger)
@@ -298,7 +307,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			elseif placingRally then
 				if zm_placedrally then zm_placedrally = false end
 				
-				local hitPos = TraceLongDistance(aimVector).HitPos
+				local hitPos = TraceLongDistance(aimVector, true).HitPos
 				local vector = string.Explode(" ", tostring(hitPos))
 				
 				RunConsoleCommand("zm_placerally", vector[1], vector[2], vector[3], trapTrigger)
@@ -312,7 +321,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			if zm_placedpoweritem or zm_placedrally then
 				click_delta = CurTime()
 
-				local tr = TraceLongDistance(aimVector)
+				local tr = TraceLongDistance(aimVector, true)
 				zm_ring_pos = tr.HitPos
 				zm_ring_ang = tr.HitNormal:Angle()
 				zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
@@ -327,12 +336,12 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			end
 		elseif mouseCode == MOUSE_RIGHT then
 			if placingShockwave then
-				MySelf:PrintMessage(HUD_PRINTTALK, "Exited explosion mode...")
+				LocalPlayer():PrintMessage(HUD_PRINTTALK, "Exited explosion mode...")
 				placingShockwave = false
 				zm_placedpoweritem = false
 				return
 			elseif placingZombie then
-				MySelf:PrintMessage(HUD_PRINTTALK, "Exited hidden spawn mode...")
+				LocalPlayer():PrintMessage(HUD_PRINTTALK, "Exited hidden spawn mode...")
 				placingZombie = false
 				zm_placedpoweritem = true
 				return
@@ -348,7 +357,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			
 			click_delta = CurTime()
 
-			local tr = TraceLongDistance(aimVector)
+			local tr = TraceLongDistance(aimVector, true)
 			zm_ring_pos = tr.HitPos
 			zm_ring_ang = tr.HitNormal:Angle()
 			zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
@@ -361,9 +370,9 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 end
 
 function GM:_CreateMove( cmd )
-	if MySelf:IsZM() then
+	if LocalPlayer():IsZM() then
 		if not isDragging and vgui.CursorVisible() then
-			local menuopen = gamemode.Call("IsMenuOpen")
+			local menuopen = hook.Call("IsMenuOpen", self)
 			if not menuopen then
 				local x, y = gui.MousePos()
 				if x ~= 0 or y ~= 0 then
@@ -436,9 +445,9 @@ end
 
 function GM:CreateGhostEntity(trap, rallyID)
 	if trap then
-		gamemode.Call("SetPlacingTrapEntity", true)
+		hook.Call("SetPlacingTrapEntity", self, true)
 	else
-		gamemode.Call("SetPlacingRallyPoint", true)
+		hook.Call("SetPlacingRallyPoint", self, true)
 		trapTrigger = rallyID
 	end
 end
@@ -485,7 +494,7 @@ function GM:IsMenuOpen()
 		return true
 	end
 	
-	local menus = gamemode.Call("GetZombieMenus")
+	local menus = hook.Call("GetZombieMenus", self)
 	if menus then
 		for _, menu in pairs(menus) do
 			if IsValid(menu) and menu:IsVisible() then
@@ -512,12 +521,6 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 		
 		ragdoll:SetModel(ent:GetModel())
 		ragdoll.fadeAlpha = 255
-		
-		local force, physbone = ent:GetBulletForce()
-		if force and not force:IsZero() then
-			local phys = ragdoll:GetPhysicsObjectNum(physbone)
-			phys:ApplyForceCenter(force * 50)
-		end
 		
 		local fadetime = instantfade and 0 or GetConVar("zm_ragdoll_fadetime"):GetInt()
 		timer.Simple(fadetime, function()
@@ -551,7 +554,7 @@ end
 
 --local SCROLL_THRESHOLD = 8
 function GM:Think()
-	if input.IsMouseDown(MOUSE_LEFT) and holdTime < CurTime() and not isDragging and MySelf:IsZM() then
+	if input.IsMouseDown(MOUSE_LEFT) and holdTime < CurTime() and not isDragging and LocalPlayer():IsZM() then
 		holdTime = CurTime()
 		mouseX, mouseY = gui.MousePos()
 		
@@ -564,7 +567,7 @@ function GM:Think()
 	
 	-- +lookup and +lookdown is broken in gmod
 	--[[
-	if not isDragging and MySelf:IsZM() and vgui.CursorVisible() then
+	if not isDragging and LocalPlayer():IsZM() and vgui.CursorVisible() then
 		local menuopen = gamemode.Call("IsMenuOpen")
 		if not menuopen then
 			local mousex, mousey = gui.MousePos()	
@@ -595,7 +598,7 @@ function GM:Think()
 end
 
 function GM:_PostDrawOpaqueRenderables()
-	if MySelf:IsZM() then
+	if LocalPlayer():IsZM() then
 		cam.Start3D()
 			local zombies = ents.FindByClass("npc_*")
 		
@@ -616,7 +619,7 @@ function GM:_PostDrawOpaqueRenderables()
 					render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
 					render.DrawQuadEasy(pos, Vector(0, 0, -1), 40, 40, colour)
 					
-					if entity:GetNWBool("selected", false) then
+					if entity:GetSharedBool("selected", false) then
 						render.SetMaterial(circleMaterial)
 						
 						render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
@@ -668,11 +671,12 @@ function GM:_PostDrawOpaqueRenderables()
 	end
 end
 
+local spec_overlay = Material("zm_overlay.png", "smooth unlitgeneric nocull")
 function GM:RenderScreenspaceEffects()
-	if MySelf:IsSpectator() then
-		render.SetMaterial( Material( "zm_overlay.png", "smooth unlitgeneric nocull" ) )
+	if LocalPlayer():IsSpectator() then
+		render.SetMaterial(spec_overlay)
 		render.DrawScreenQuad()
-	elseif MySelf:IsZM() then
+	elseif LocalPlayer():IsZM() then
 		if self.nightVision then
 			self.nightVisionCur = self.nightVisionCur or 0.5
 			
@@ -701,7 +705,7 @@ function GM:RestartRound()
 	GAMEMODE.ZombieGroups = nil
 	GAMEMODE.SelectedZombieGroups = nil
 	
-	gamemode.Call("ResetZombieMenus")
+	hook.Call("ResetZombieMenus", self)
 	
 	placingShockWave = false
 	placingZombie = false

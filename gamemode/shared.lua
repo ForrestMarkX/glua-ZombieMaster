@@ -1,31 +1,28 @@
 GM.Name = "Zombie Master"
-GM.Author = "Mka0207 & Forrest Mark X"
-GM.Email = "N/A"
-GM.Website = "N/A"
+GM.Author = "Forrest Mark X"
+GM.Email = "forrestmarkx@outlook.com"
+GM.Website = "http://steamcommunity.com/id/ForrestMarkX/"
+GM.TeamBased = true
 
 GM.Credits = {
-	{"Forrest Mark X", "", "Progammer"},
+	{"Forrest Mark X", "http://steamcommunity.com/id/ForrestMarkX/", "Progammer"},
 	{"William \"JetBoom\" Moodhe", "www.noxiousnet.com", "Code snippets from Zombie Survival"},
 	{"Chewgum", "", "Vestige gamemode code"},
 	{"Mka0207", "http://steamcommunity.com/id/mka0207/myworkshopfiles", "Building the base and icon work"}
 }
 
-TEAM_SURVIVOR = 1
-TEAM_ZOMBIEMASTER = 2
-
-team.SetUp(TEAM_SURVIVOR, "Survivors", Color(255, 64, 64, 255)) 
-team.SetUp(TEAM_ZOMBIEMASTER, "Zombie Master", Color(153, 255, 153, 255)) 
-team.SetUp(TEAM_SPECTATOR, "Spectators", Color(120, 120 , 120, 255))
-
+include("sh_networking.lua")
 include("sh_sounds.lua")
 include("sh_zm_globals.lua")
 include("sh_utility.lua")
+include("sh_zerolag.lua")
 
 include("sh_zm_options.lua")
 
 include("sh_weapons.lua")
 include("sh_players.lua")
 include("sh_entites.lua")
+include("sh_npc.lua")
 
 function GM:Initialize()
 	for name, mdl in pairs(player_manager.AllValidModels()) do
@@ -40,7 +37,7 @@ function GM:Initialize()
 	game.AddAmmoType({ name = "molotov", dmgtype = DMG_BURN, tracer = TRACER_NONE, plydmg = 0, npcdmg = 0, maxcarry = 3, force = 0 })
 	game.AddAmmoType({name = "unused"})
 	
-	gamemode.Call("BuildZombieDataTable")
+	hook.Call("BuildZombieDataTable", self)
 	
 	if CLIENT then
 		local screenscale = BetterScreenScale()
@@ -74,6 +71,10 @@ function GM:Initialize()
 		surface.CreateFont("DefaultFontBold", {font = "Consolas", size = 13, weight = 1000, antialias = false})
 		surface.CreateFont("DefaultFontLarge", {font = "Consolas", size = 16, weight = 0, antialias = false})
 	else
+		self:SetRoundStartTime(5)
+		self:SetRoundStart(true)
+		self:SetRoundActive(false)
+		
 		self:AddResources()
 
 		util.AddNetworkString("PlayerKilledByNPC")
@@ -97,6 +98,19 @@ function GM:Initialize()
 			self.MapInfo = "No objectives found!"
 		end
 	end
+end
+
+function GM:CreateTeams()
+	TEAM_SURVIVOR = 1
+	team.SetUp(TEAM_SURVIVOR, "Survivors", Color(255, 64, 64, 255)) 
+	team.SetSpawnPoint(TEAM_SURVIVOR, "info_player_deathmatch")
+	
+	TEAM_ZOMBIEMASTER = 2
+	team.SetUp(TEAM_ZOMBIEMASTER, "Zombie Master", Color(153, 255, 153, 255))
+	team.SetSpawnPoint(TEAM_ZOMBIEMASTER, "info_player_zombiemaster")
+	
+	team.SetUp(TEAM_SPECTATOR, "Spectators", Color(120, 120, 120, 255))
+	team.SetSpawnPoint(TEAM_SPECTATOR, {"info_player_deathmatch", "info_player_zombiemaster", "worldspawn"})
 end
 
 function GM:GetPopulationCost(type)
@@ -256,32 +270,24 @@ function GM:IsSpecialPerson(pl, image)
 	return false
 end
 
-function GM:SetRoundActive(active)
-    SetGlobalBool("roundactive", active)
-end
-
-function GM:SetRoundStart(active)
-    SetGlobalBool("roundstart", active)
-end
-
-function GM:SetRoundEnd(active)
-    SetGlobalBool("roundended", active)
+function GM:GetZMSelection()
+    return GetSharedBool("zm_zmselection_start", false)
 end
 
 function GM:GetRoundStart()
-    return GetGlobalBool("roundstart", false)
+    return GetSharedBool("zm_round_start", false)
 end
 
 function GM:GetRoundActive()
-    return GetGlobalBool("roundactive", false)
+    return GetSharedBool("zm_round_active", false)
 end
 
 function GM:GetRoundEnd()
-    return GetGlobalBool("roundended", false)
+    return GetSharedBool("zm_round_ended", false)
 end
 
 function GM:GetCurZombiePop()
-	return GetGlobalInt("m_iZombiePopCount", 0)
+	return GetSharedInt("m_iZombiePopCount", 0)
 end
 
 function GM:GetMaxZombiePop()
@@ -321,8 +327,8 @@ function GM:BuildZombieDataTable()
 	shambler.description = "Weak and slow, but packs a punch and smashes barricades."
 	shambler.icon = "VGUI/zombies/info_shambler"
 	shambler.flag = 1
-	shambler.cost = gamemode.Call("GetResourceCost", shambler.class)
-	shambler.popCost = gamemode.Call("GetPopulationCost", shambler.class)
+	shambler.cost = hook.Call("GetResourceCost", self, shambler.class)
+	shambler.popCost = hook.Call("GetPopulationCost", self, shambler.class)
 
 	self:AddZombieType(shambler)
 
@@ -333,8 +339,8 @@ function GM:BuildZombieDataTable()
 	banshee.description = "A fast zombie, it's faster than the rest. But it can't take that much damage."
 	banshee.icon = "VGUI/zombies/info_banshee"
 	banshee.flag = 2
-	banshee.cost = gamemode.Call("GetResourceCost", banshee.class)
-	banshee.popCost = gamemode.Call("GetPopulationCost", banshee.class)
+	banshee.cost = hook.Call("GetResourceCost", self, banshee.class)
+	banshee.popCost = hook.Call("GetPopulationCost", self, banshee.class)
 
 	self:AddZombieType(banshee)
 
@@ -345,8 +351,8 @@ function GM:BuildZombieDataTable()
 	hulk.description = "Big. Strong. Hulks smash humans to bits."
 	hulk.icon = "VGUI/zombies/info_hulk"
 	hulk.flag = 4
-	hulk.cost = gamemode.Call("GetResourceCost", hulk.class)
-	hulk.popCost = gamemode.Call("GetPopulationCost", hulk.class)
+	hulk.cost = hook.Call("GetResourceCost", self, hulk.class)
+	hulk.popCost = hook.Call("GetPopulationCost", self, hulk.class)
 
 	self:AddZombieType(hulk)
 
@@ -357,8 +363,8 @@ function GM:BuildZombieDataTable()
 	drifter.description = "Spits disorienting acid over a short distance."
 	drifter.icon = "VGUI/zombies/info_drifter"
 	drifter.flag = 8
-	drifter.cost = gamemode.Call("GetResourceCost", drifter.class)
-	drifter.popCost = gamemode.Call("GetPopulationCost", drifter.class)
+	drifter.cost = hook.Call("GetResourceCost", self, drifter.class)
+	drifter.popCost = hook.Call("GetPopulationCost", self, drifter.class)
 
 	self:AddZombieType(drifter)
 
@@ -369,8 +375,8 @@ function GM:BuildZombieDataTable()
 	immolator.description = "Burns itself and everything around it in combat."
 	immolator.icon = "VGUI/zombies/info_immolator"
 	immolator.flag = 16
-	immolator.cost = gamemode.Call("GetResourceCost", immolator.class)
-	immolator.popCost = gamemode.Call("GetPopulationCost", immolator.class)
+	immolator.cost = hook.Call("GetResourceCost", self, immolator.class)
+	immolator.popCost = hook.Call("GetPopulationCost", self, immolator.class)
 
 	self:AddZombieType(immolator)
 end

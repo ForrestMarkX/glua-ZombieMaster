@@ -2,8 +2,14 @@ ZM_PHYSEXP_DAMAGE = 17500
 ZM_PHYSEXP_RADIUS = 222
 ZM_PHYSEXP_DELAY = 7.4
 
-SF_PHYSEXPLOSION_NODAMAGE = 0x0001
-SF_PHYSEXPLOSION_DISORIENT_PLAYER = 0x0010
+SF_PHYSEXPLOSION_NODAMAGE = 1
+SF_PHYSEXPLOSION_PUSH_PLAYER = 2
+SF_PHYSEXPLOSION_PUSH_RADIALLY = 4
+SF_PHYSEXPLOSION_TESTLOS = 8
+SF_PHYSEXPLOSION_DISORIENT_PLAYER = 16
+
+HUMAN_WIN_SCORE = 50
+HUMAN_LOSS_SCORE = 50
 
 GM.AmmoClass = {}
 GM.AmmoClass["item_ammo_357"] = "357"
@@ -34,8 +40,11 @@ GM.AmmoCache["molotov"] = 1
 GM.AmmoModels = {}
 GM.AmmoModels["item_ammo_revolver"] = "models/Items/revolverammo.mdl"
 GM.AmmoModels["item_ammo_smg1"] = "models/items/boxmrounds.mdl"
+GM.AmmoModels["item_ammo_smg1_large"] = "models/items/boxmrounds.mdl"
 GM.AmmoModels["item_ammo_357"] = "models/items/357ammo.mdl"
+GM.AmmoModels["item_ammo_357_large"] = "models/items/357ammo.mdl"
 GM.AmmoModels["item_ammo_pistol"] = "models/items/boxsrounds.mdl"
+GM.AmmoModels["item_ammo_pistol_large"] = "models/items/boxsrounds.mdl"
 GM.AmmoModels["item_box_buckshot"] = "models/items/boxbuckshot.mdl"
 
 CARRY_MASS = 145
@@ -69,4 +78,6 @@ for name, mdl in pairs(playermodels) do
 	end
 end
 
-gamemode.Call = hook.Run
+function gamemode.Call(func, ...)
+	return hook.Call(func, GAMEMODE or gmod.GetGamemode(), ...)
+end

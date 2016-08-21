@@ -5,14 +5,14 @@ ENT.GlowSize = 128
 
 local matGlow = Material("sprites/glow04_noz")
 function ENT:DrawTranslucent()
-	if not MySelf:IsZM() then return end
+	if not LocalPlayer():IsZM() then return end
 	
 	render.SetMaterial(matGlow)
 	render.DrawSprite(self:GetPos(), self.GlowSize, self.GlowSize, self.GlowColor)
 end
 
 function ENT:Draw()
-	if not MySelf:IsZM() then return end
+	if not LocalPlayer():IsZM() then return end
 	
 	render.SuppressEngineLighting(true)
 	self:DrawModel()
@@ -20,7 +20,7 @@ function ENT:Draw()
 end
 
 function ENT:Think()
-	if MySelf:IsZM() and self:GetActive() then
+	if LocalPlayer():IsZM() and self:GetActive() then
 		local dlight = DynamicLight( self:EntIndex() )
 		if ( dlight ) then
 			dlight.pos = self:GetPos()

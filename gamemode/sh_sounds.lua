@@ -348,7 +348,7 @@ sound.Add( {
 	volume = 0.95,
 	level = 75,
 	pitch = {95, 104},
-	sound = {"npc/shamblie/growl_0.wav", "npc/shamblie/growl_1.wav", "npc/shamblie/growl_2.wav", "npc/shamblie/growl_3.wav", "npc/shamblie/growl_4.wav", "npc/shamblie/growl_5.wav", "npc/shamblie/growl_6.wav", "npc/shamblie/growl_7.wav", "npc/shamblie/growl_8.wav"}
+	sound = {"npc/shamblie/zombie_alert1.wav", "npc/shamblie/zombie_alert2.wav", "npc/shamblie/zombie_alert3.wav"}
 } )
 
 sound.Add( {
@@ -357,7 +357,7 @@ sound.Add( {
 	volume = 0.95,
 	level = 75,
 	pitch = {92, 104},
-	sound = {"npc/shamblie/moan_loop1.wav", "npc/shamblie/moan_loop2.wav", "npc/shamblie/moan_loop3.wav", "npc/shamblie/moan_loop4.wav"}
+	sound = {"npc/shamblie/growl_0.wav", "npc/shamblie/growl_1.wav", "npc/shamblie/growl_2.wav", "npc/shamblie/growl_3.wav", "npc/shamblie/growl_4.wav", "npc/shamblie/growl_5.wav", "npc/shamblie/growl_6.wav", "npc/shamblie/growl_7.wav", "npc/shamblie/growl_8.wav"}
 } )
 
 sound.Add( {
@@ -376,6 +376,42 @@ sound.Add( {
 	level = 75,
 	pitch = {95, 104},
 	sound = {"npc/shamblie/zo_attack1.wav", "npc/shamblie/zo_attack2.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_BaseZombie.Moan1",
+	channel = CHAN_VOICE,
+	volume = 0.95,
+	level = 75,
+	pitch = 100,
+	sound = "npc/shamblie/moan_loop1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_BaseZombie.Moan2",
+	channel = CHAN_VOICE,
+	volume = 0.95,
+	level = 75,
+	pitch = 100,
+	sound = "npc/shamblie/moan_loop2.wav"
+} )
+
+sound.Add( {
+	name = "NPC_BaseZombie.Moan3",
+	channel = CHAN_VOICE,
+	volume = 0.95,
+	level = 75,
+	pitch = 100,
+	sound = "npc/shamblie/moan_loop3.wav"
+} )
+
+sound.Add( {
+	name = "NPC_BaseZombie.Moan4",
+	channel = CHAN_VOICE,
+	volume = 0.95,
+	level = 75,
+	pitch = 100,
+	sound = "npc/shamblie/moan_loop4.wav"
 } )
 
 sound.Add( {
@@ -429,7 +465,7 @@ sound.Add( {
 	volume = 0.600,
 	level = 75,
 	pitch = {95, 105},
-	sound = "npc/banshee/leap1.wav"
+	sound = "npc/banshee/test.wav"
 } )
 
 sound.Add( {
@@ -438,7 +474,7 @@ sound.Add( {
 	volume = 0.600,
 	level = 75,
 	pitch = {95, 105},
-	sound = "npc/banshee/leap1.wav"
+	sound = "npc/banshee/test.wav"
 } )
 
 sound.Add( {
@@ -510,7 +546,7 @@ sound.Add( {
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = "npc/banshee/leap1.wav"
+	sound = "npc/banshee/leap_begin.wav"
 } )
 
 sound.Add( {
@@ -519,7 +555,7 @@ sound.Add( {
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = "npc/banshee/fz_frenzy1.wav"
+	sound = {"npc/banshee/fz_frenzy1.wav", "npc/banshee/fz_frenzy2.wav", "npc/banshee/fz_frenzy3.wav", "npc/banshee/fz_frenzy4.wav", "npc/banshee/fz_frenzy5.wav", "npc/banshee/fz_frenzy6.wav", "npc/banshee/fz_frenzy7.wav"}
 } )
 
 sound.Add( {

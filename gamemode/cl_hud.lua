@@ -2,20 +2,25 @@ local skullMaterial  = surface.GetTextureID("VGUI/miniskull")
 local popMaterial	 = surface.GetTextureID("VGUI/minifigures")
 local selection_color_outline = Color(255, 0, 0, 255)
 local selection_color_box 	  = Color(120, 0, 0, 80)
+local h, w = ScrH(), ScrW()
 
 function GM:_HUDPaint()
-	local myteam = MySelf:Team()
+	local myteam = LocalPlayer():Team()
 	local screenscale = BetterScreenScale()
 	local wid, hei = 225 * screenscale, 72 * screenscale
 
-	if MySelf:IsSurvivor() then
+	if LocalPlayer():IsSurvivor() then
 		self:HumanHUD(screenscale)
-	elseif MySelf:IsZM() then
+	elseif LocalPlayer():IsZM() then
 		self:ZombieMasterHUD(screenscale)
 	end
 	
 	if not self:GetRoundActive() then
-		draw.SimpleText("Waiting for all players to be ready.", "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
+		if not self:GetZMSelection() then
+			draw.SimpleText("Waiting for all players to be ready.", "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
+		else
+			draw.SimpleText("All players are ready, choosing a Zombie Master!", "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
+		end
 	end
 	
 	hook.Run( "HUDDrawTargetID" )
@@ -24,7 +29,7 @@ function GM:_HUDPaint()
 end
 
 function GM:_HUDShouldDraw(name)
-	local wep = MySelf:GetActiveWeapon()
+	local wep = LocalPlayer():GetActiveWeapon()
 	if wep.HUDShouldDraw then
 		local ret = wep:HUDShouldDraw(name)
 		if ret ~= nil then return ret end
@@ -39,15 +44,14 @@ function GM:HumanHUD(screenscale)
 	
 	draw.RoundedBox(16, x + 2, y + 2, wid, hei, Color(60, 0, 0, 200))
 	
-	local health = MySelf:Health()
+	local health = LocalPlayer():Health()
 	local healthCol = health <= 10 and Color(185, 0, 0, 255) or health <= 30 and Color(150, 50, 0) or health <= 60 and Color(255, 200, 0) or color_white
-	draw.SimpleTextBlurry(MySelf:Health(), "ZMHUDFontBig", x + wid * 0.75, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	draw.SimpleTextBlurry(LocalPlayer():Health(), "ZMHUDFontBig", x + wid * 0.75, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	draw.SimpleTextBlurry("Health", "ZMHUDFontSmall", x + wid * 0.27, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
-local h, w = ScrH(), ScrW()
 function GM:ZombieMasterHUD(scale)
-	if MySelf:IsZM() then
+	if LocalPlayer():IsZM() then
 		-- Resources + Income.
 		draw.DrawSimpleRect(5, h - 43, 150, 38, Color(60, 0, 0, 200))
 		draw.DrawSimpleOutlined(5, h - 43, 150, 38, color_black)
@@ -56,10 +60,10 @@ function GM:ZombieMasterHUD(scale)
 		surface.SetTexture(skullMaterial)
 		surface.DrawTexturedRect(7, h - 41, 32, 32)
 		
-		draw.DrawText(MySelf:GetZMPoints(), "zm_hud_font", 60, h - 42, color_white, 1)
+		draw.DrawText(tostring(LocalPlayer():GetZMPoints()), "zm_hud_font", 60, h - 42, color_white, 1)
 		
-		if MySelf:GetZMPointIncome() then
-			draw.DrawText("+ " .. MySelf:GetZMPointIncome(), "zm_hud_font2", 90, h - 24, color_white, 1)
+		if LocalPlayer():GetZMPointIncome() then
+			draw.DrawText("+ " .. LocalPlayer():GetZMPointIncome(), "zm_hud_font2", 90, h - 24, color_white, 1)
 		end
 		
 		-- Population.
@@ -482,7 +486,7 @@ function GM:ShowHelp()
 	but:AlignRight(frame:GetWide() * 0.062)
 	but:SetTextColor(color_white)
 	but.DoClick = function()
-		if not MySelf:IsZM() then
+		if not LocalPlayer():IsZM() then
 			gui.EnableScreenClicker(false)
 		end
 		frame:SetVisible(false)
@@ -517,7 +521,7 @@ function GM:MakePreferredMenu()
 	frame:AlignTop(20)
 	frame:AlignLeft(20)
 	frame.Close = function(self)
-		if not MySelf:IsZM() then
+		if not LocalPlayer():IsZM() then
 			gui.EnableScreenClicker(false)
 		end
 		self:Remove()
@@ -665,7 +669,7 @@ function GM:SpawnTrapMenu(class, ent)
 		activate.Think = function(self)
 			self.BaseClass.Think(self)
 			
-			if not MySelf:CanAfford(cost) then
+			if not LocalPlayer():CanAfford(cost) then
 				self:SetEnabled(false)
 			else
 				self:SetEnabled(true)
@@ -686,7 +690,7 @@ function GM:SpawnTrapMenu(class, ent)
 			isDragging = false
 			holdTime = CurTime()
 			
-			if MySelf:CanAfford(cost) then
+			if LocalPlayer():CanAfford(cost) then
 				RunConsoleCommand("zm_clicktrap", ent:EntIndex())
 				trapPanel:Close()
 			end
@@ -706,7 +710,7 @@ function GM:SpawnTrapMenu(class, ent)
 		setTrigger.Think = function(self)
 			self.BaseClass.Think(self)
 			
-			if not MySelf:CanAfford(trapCost) then
+			if not LocalPlayer():CanAfford(trapCost) then
 				self:SetEnabled(false)
 			else
 				self:SetEnabled(true)
@@ -727,8 +731,8 @@ function GM:SpawnTrapMenu(class, ent)
 			isDragging = false
 			holdTime = CurTime()
 			
-			if MySelf:CanAfford(trapCost) then
-				gamemode.Call("CreateGhostEntity", true, ent:EntIndex())
+			if LocalPlayer():CanAfford(trapCost) then
+				hook.Call("CreateGhostEntity", GAMEMODE, true, ent:EntIndex())
 				
 				trapTrigger = ent:EntIndex()
 				
@@ -754,7 +758,7 @@ function GM:SpawnTrapMenu(class, ent)
 		
 		self.trapMenu = trapPanel
 	elseif class == "info_zombiespawn" and ent:GetActive() then
-		local data = gamemode.Call("GetZombieMenus")
+		local data = hook.Call("GetZombieMenus", self)
 		local menu = data[ent]
 		
 		if not IsValid(menu) then
@@ -787,6 +791,12 @@ function GM:HUDDrawPickupHistory()
 	local wide = 0
 
 	for k, v in pairs(self.PickupHistory) do
+		if v.name == "#revolver_ammo" then
+			v.name = "Revolver Ammo"
+		elseif v.name == "#molotov_ammo" then
+			v.name = "Molotov Ammo"
+		end
+		
 		if not istable(v) then
 			Msg(tostring(v) .."\n")
 			PrintTable(self.PickupHistory)

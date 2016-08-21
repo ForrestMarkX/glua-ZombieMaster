@@ -83,8 +83,7 @@ function PANEL:SetNotification(...)
 				if v.font == "" then
 					defaultfont = nil
 				else
-					surface.SetFont(v.font)
-					local tw, th = surface.GetTextSize("w")
+					local tw, th = draw.GetFontWidth(v.font), draw.GetFontHeight(v.font)
 					if tw then
 						defaultfont = v.font
 					end

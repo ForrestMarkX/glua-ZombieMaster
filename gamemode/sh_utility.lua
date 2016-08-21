@@ -4,6 +4,10 @@ function WorldVisible(posa, posb)
 	return not util.TraceLine({start = posa, endpos = posb, mask = MASK_SOLID_BRUSHONLY}).Hit
 end
 
+function TrueVisible(posa, posb)
+	return not util.TraceLine({start = posa, endpos = posb, filter = player.GetAll(), mask = MASK_SHOT}).Hit
+end
+
 function TrueVisibleFilters(posa, posb, ...)
 	local filt = ents.FindByClass("projectile_*")
 	filt = table.Add(filt, player.GetAll())
@@ -26,19 +30,6 @@ function util.BlastDamageEx(inflictor, attacker, epicenter, radius, damage, dama
 			end
 		end
 	end
-end
-
-function util.BlastDamage2(inflictor, attacker, epicenter, radius, damage)
-	util.BlastDamageEx(inflictor, attacker, epicenter, radius, damage, DMG_BLAST)
-end
-
-function util.Blood(pos, amount, dir, force, noprediction)
-	local effectdata = EffectData()
-		effectdata:SetOrigin(pos)
-		effectdata:SetMagnitude(amount)
-		effectdata:SetNormal(dir)
-		effectdata:SetScale(math.max(128, force))
-	util.Effect("bloodstream", effectdata, nil, noprediction)
 end
 
 -- From ULX csay. Needed to print a colored message at the center of the screen

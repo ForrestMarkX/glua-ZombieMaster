@@ -99,6 +99,7 @@ function SWEP:PrimaryAttack()
 		self:TakePrimaryAmmo(1)
 	end
 	
+	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
 	
 	if self.Owner:IsValid() then

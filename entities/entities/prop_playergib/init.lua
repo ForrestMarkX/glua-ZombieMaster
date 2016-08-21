@@ -65,8 +65,6 @@ function ENT:OnTakeDamage(dmginfo)
 	if self.m_Health <= 0 and not self.Destroyed then
 		self.Destroyed = true
 		self.DieTime = 0
-
-		util.Blood(self:GetPos(), math.random(1, 2), Vector(0, 0, 1), 100, self:GetDTInt(0), true)
 	end
 end
 
@@ -83,6 +81,5 @@ function ENT:StartTouch(ent)
 		ent:SetHealth(math.min(ent:GetMaxZombieHealth(), ent:Health() + 10))
 
 		self:EmitSound("physics/body/body_medium_break"..math.random(2, 4)..".wav")
-		util.Blood(self:GetPos(), math.random(2), Vector(0, 0, 1), 100, self:GetDTInt(0), true)
 	end
 end

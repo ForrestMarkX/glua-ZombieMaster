@@ -1,21 +1,21 @@
 function GM:HUDDrawTargetID()
-	if MySelf:IsZM() then return end
+	if LocalPlayer():IsZM() then return end
 	
-	local tr = util.GetPlayerTrace(MySelf)
-	local trace = util.TraceLine( tr )
-	if not trace.Hit then return end
-	if not trace.HitNonWorld then return end
+	local tr = util.GetPlayerTrace(LocalPlayer())
+	local trace = util.TraceLine(tr)
 	
-	local text = "ERROR"
+	if not trace.Hit or not trace.HitNonWorld then return end
+	
+	local ent = trace.Entity
+	if not IsValid(ent) then return end
+	if not ent:IsPlayer() then return end
+	
+	local text = ent:Nick() or "ERROR"
 	local font = "TargetID"
-	local healthtext = "ERROR"
 	
-	if trace.Entity:IsPlayer() then
-		text = trace.Entity:Nick()
-		healthtext = trace.Entity:Health() < 20 and "Critical" or trace.Entity:Health() < 50 and "Wounded" or trace.Entity:Health() < 75 and "Injured" or "Healthy"
-	else return
-	end
+	local health = ent:Health()
+	local healthtext = health < 20 and "Critical" or health < 50 and "Wounded" or health < 75 and "Injured" or "Healthy"
 	
-	surface.SetFont( font )
-	draw.DrawText(text.."("..healthtext..")", "DermaLarge", ScrW()/96, ScrH()/1.88, Color(255, 255, 255, 255))
+	surface.SetFont(font)
+	draw.DrawText(text.."("..healthtext..")", "DermaLarge", ScrW() / 96, ScrH() / 1.88, Color(255, 255, 255, 255))
 end

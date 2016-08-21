@@ -32,9 +32,6 @@ SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 0.26
 SWEP.Primary.Cone 				= 0.023
 
-SWEP.ReloadDelay = 0.4
-SWEP.RequiredClip = 1
-
 SWEP.Primary.Automatic   		= false
 SWEP.Primary.Ammo         		= "pistol"
 
@@ -43,6 +40,3 @@ SWEP.Secondary.ClipSize = 1
 SWEP.Secondary.DefaultClip = 1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "dummy"
-
-SWEP.reloadtimer = 0
-SWEP.nextreloadfinish = 0

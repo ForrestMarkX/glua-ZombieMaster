@@ -67,8 +67,7 @@ if SERVER then
 								if IsValid(self) then
 									local rally = self:GetRallyEntity()
 									if IsValid(rally) then
-										zombie:SetLastPosition(rally:GetPos())
-										zombie:SetSchedule(SCHED_FORCED_GO_RUN)
+										zombie:ForceGoto(rally:GetPos())
 									end
 								end
 							end)
@@ -86,8 +85,7 @@ if SERVER then
 							if IsValid(self) then
 								local rally = self:GetRallyEntity()
 								if IsValid(rally) then
-									zombie:SetLastPosition(rally:GetPos())
-									zombie:SetSchedule(SCHED_FORCED_GO_RUN)
+									zombie:ForceGoto(rally:GetPos())
 								end
 							end
 						end)

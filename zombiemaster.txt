@@ -6,11 +6,82 @@
 	"menusystem"	"1"
 	"workshopid"	"591300663"
 
-	"author_name"		"Forrest 'ForrestMarkX' Keller"
+	"author_name"		"ForrestMarkX"
 	"author_email"		"forrestmarkx@outlook.com"
-	"author_url"		"N/A"
+	"author_url"		"http://steamcommunity.com/id/ForrestMarkX/"
 
 	"settings"
 	{
+		1
+		{
+			"name"		"zm_physexp_forcedrop_radius"
+			"text"		"Physics Explosion Drop Radius"
+			"help"		"The max radius for a physics explosion to force the player to drop his held prop"
+			"type"		"Numeric"
+			"default"	"128"
+		}
+		
+		2
+		{
+			"name"		"zm_debug_nozombiemaster"
+			"text"		"[Debug] No ZombieMaster"
+			"help"		"Do not have a Zombie Master (Used for debugging)"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
+		
+		3
+		{
+			"name"		"zm_roundlimit"
+			"text"		"Round Limit"
+			"help"		"How many rounds that will be played"
+			"type"		"Numeric"
+			"default"	"2"
+		}
+		
+		4
+		{
+			"name"		"zm_nocollideplayers"
+			"text"		"Players Don't Collide"
+			"help"		"Should players not collide with each other?"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
+		
+		5
+		{
+			"name"		"zm_trap_triggerrange"
+			"text"		"Trap Trigger Range"
+			"help"		"How close a player has to be before a trap is triggered"
+			"type"		"Numeric"
+			"default"	"96"
+		}
+		
+		6
+		{
+			"name"		"zm_incometime"
+			"text"		"Income Rate"
+			"help"		"How much time in seconds before the ZM receives income"
+			"type"		"Numeric"
+			"default"	"5"
+		}
+		
+		7
+		{
+			"name"		"zm_resourcegainperplayerdeathmin"
+			"text"		"Minimum Resource Gain"
+			"help"		"Min resources that can be added on a players death"
+			"type"		"Numeric"
+			"default"	"50"
+		}
+		
+		8
+		{
+			"name"		"zm_resourcegainperplayerdeathmax"
+			"text"		"Maximum Resource Gain"
+			"help"		"Max resources that can be added on a players death"
+			"type"		"Numeric"
+			"default"	"100"
+		}
 	}
 }

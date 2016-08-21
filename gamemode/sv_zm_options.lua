@@ -2,11 +2,6 @@ CreateConVar("zm_physexp_forcedrop_radius", "128", FCVAR_NOTIFY, "Radius in whic
 CreateConVar("zm_loadout_disable", "0", FCVAR_NOTIFY, "If set to 1, any info_loadout entity will not hand out weapons. Not recommended unless you're intentionally messing with game balance and playing on maps that support this move.")
 
 CreateConVar("zm_debug_nozombiemaster", "0", FCVAR_NOTIFY, "Used for debug, will not cause players to become the ZM.")
-cvars.AddChangeCallback( "zm_debug_nozombiemaster", function( convar_name, value_old, value_new )
-	gamemode.Call("PreRestartRound")
-	gamemode.Call("RestartRound")
-end )
-
 CreateConVar("zm_roundlimit","2", FCVAR_NOTIFY, "Sets the number of rounds before the server changes map\n" )
 CreateConVar("zm_nocollideplayers","0", FCVAR_NOTIFY, "Should players not collide with each other?" )
 CreateConVar("zm_banshee_limit", "-1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Sets maximum number of banshees per survivor that the ZM is allowed to have active at once. Set to 0 or lower to remove the cap. Disabled by default since new population system was introduced that in practice includes a banshee limit.")
@@ -53,12 +48,12 @@ local function ZM_Power_KillZombies(ply)
 	if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) then return end
 	
 	for _, ent in pairs(ents.FindByClass("npc_*")) do
-		if ent:GetNWBool("selected") then
+		if ent:GetSharedBool("selected") then
 			local dmginfo = DamageInfo()
 			dmginfo:SetDamage(ent:Health())
 			dmginfo:SetDamageType(DMG_REMOVENORAGDOLL)
 			
-			ent:TakeDamageInfo(dmginfo)
+			ent:TakeDamageInfo(dmginfo) 
 		end
 	end
 	
@@ -110,8 +105,8 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 	for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
 		if IsValid(pl) then
 			local pos = pl:GetPos()
-			local nearest = vecHeadTarget
-			if WorldVisible(pos, nearest) then
+			local nearest = pl:NearestPoint(vecHeadTarget)
+			if TrueVisible(pos, nearest) then
 				visible = true
 			end
 			
@@ -152,6 +147,7 @@ local function ZM_Drop_Ammo(ply)
 	for class, name in pairs(GAMEMODE.AmmoClass) do
 		if ammotype == name then
 			ammoclass = class
+			break
 		end
 	end
 	
@@ -167,11 +163,6 @@ local function ZM_Drop_Ammo(ply)
 		ent.AmmoAmount = amount
 		ent.AmmoType = GAMEMODE.AmmoClass[ammoclass]
 		ent.ClassName = ammoclass
-	
-		ent:SetPos(vecSrc)
-		ent:Spawn()
-		
-		ent.ThrowTime = CurTime() + 1
 		
 		local pObj = ent:GetPhysicsObject()
 		
@@ -182,6 +173,11 @@ local function ZM_Drop_Ammo(ply)
 		else
 			ent:SetVelocity(vecVelocity)
 		end
+	
+		ent:SetPos(vecSrc)
+		ent:Spawn()
+		
+		ent.ThrowTime = CurTime() + 1
 
 		ply:RemoveAmmo(amount, ammotype)
 	end
@@ -219,7 +215,7 @@ local function ZM_TraceSelect(ply, command, arguments)
 
 		for _, entity in ipairs(entities) do
 			if entity:IsNPC() then
-				entity:SetNWBool("selected", true)
+				entity:SetSharedBool("selected", true)
 			end
 		end
 	end
@@ -232,19 +228,19 @@ local function ZM_Select(ply, command, arguments)
 		
 		if not ply:KeyDown(IN_DUCK) then
 			for _, npc in pairs(ents.FindByClass("npc_*")) do
-				if npc:GetNWBool("selected") then
-					npc:SetNWBool("selected", false)
+				if npc:GetSharedBool("selected") then
+					npc:SetSharedBool("selected", false)
 				end
 			end
 		end
 	
 		if IsValid(entity) and entity:IsNPC() then
-			local selected = entity:GetNWBool("selected")
+			local selected = entity:GetSharedBool("selected")
 			
 			if selected then
-				entity:SetNWBool("selected", false)
+				entity:SetSharedBool("selected", false)
 			else
-				entity:SetNWBool("selected", true)
+				entity:SetSharedBool("selected", true)
 			end
 		end
 	end
@@ -257,10 +253,8 @@ local function ZM_Command_NPC(ply, command, arguments)
 		local position = Vector(vec[1], vec[2], vec[3])
 		
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
-			if IsValid(entity) and entity:GetNWBool("selected", false) and entity:IsNPC() then
-				entity:SetLastPosition(position)
-				entity:SetSchedule(SCHED_FORCED_GO_RUN)
-				
+			if IsValid(entity) and entity:GetSharedBool("selected", false) and entity:IsNPC() then
+				entity:ForceGoto(position)
 				entity.isMoving = true
 			end
 		end
@@ -271,7 +265,7 @@ concommand.Add("zm_command_npcgo", ZM_Command_NPC, nil, "Marks the position the 
 local function ZM_Deselect(ply)
 	if ply:IsZM() then
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
-			entity:SetNWBool("selected", false)
+			entity:SetSharedBool("selected", false)
 		end
 	end
 end
@@ -291,8 +285,8 @@ end)
 concommand.Add("zm_selectall_zombies", function(ply, command, arguments)
 	if ply:IsZM() then
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
-			if entity.isZombie and entity:IsNPC() then
-				entity:SetNWBool("selected", true)
+			if entity:IsNPC() and entity:Classify() == CLASS_ZOMBIE then
+				entity:SetSharedBool("selected", true)
 			end
 		end
 		
@@ -383,7 +377,7 @@ concommand.Add("zm_creategroup", function(ply, command, arguments)
 		
 		local groupadd = GAMEMODE.groups[currentmaxgroup]
 		for _, npc in pairs(ents.FindByClass("npc_*")) do
-			if npc:GetNWBool("selected", false) then
+			if npc:GetSharedBool("selected", false) then
 				table.insert(groupadd, npc)
 			end
 		end
@@ -425,7 +419,7 @@ concommand.Add("zm_selectgroup", function(ply, command, arguments)
 		local selection = GAMEMODE.groups[GAMEMODE.selectedgroup] or {}
 		for i, npc in pairs(selection) do
 			if IsValid(npc) and npc:IsNPC() then
-				npc:SetNWBool("selected", true)
+				npc:SetSharedBool("selected", true)
 			end
 		end
 		
@@ -436,7 +430,7 @@ end)
 concommand.Add("zm_switch_to_defense", function(ply, command, arguments)
 	if ply:IsZM() then
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
-			if IsValid(entity) and entity:GetNWBool("selected", false) and entity:IsNPC() then
+			if IsValid(entity) and entity:GetSharedBool("selected", false) and entity:IsNPC() then
 				entity:SetSchedule(SCHED_AMBUSH)
 				entity.isMoving = false
 			end
@@ -448,11 +442,32 @@ end)
 concommand.Add("zm_switch_to_offense", function(ply, command, arguments)
 	if ply:IsZM() then
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
-			if IsValid(entity) and entity:GetNWBool("selected", false) and entity:IsNPC() then
+			if IsValid(entity) and entity:GetSharedBool("selected", false) and entity:IsNPC() then
 				entity:SetSchedule(SCHED_ALERT_WALK)
 				entity.isMoving = true
 			end
 		end
 		ply:PrintMessage(HUD_PRINTTALK, "Selected zombies are now in offensive mode")
+	end
+end)
+
+concommand.Add("zm_debug_spawn_zombie", function(ply)
+	if not ply:IsSuperAdmin() then return end
+	
+	local tr = util.TraceLine(util.GetPlayerTrace(ply))
+	if not tr.Hit then return end
+	
+	local ent = ents.Create("npc_zombie")
+	if IsValid(ent) then
+		ent:SetPos(tr.HitPos)
+		ent:Spawn()
+		ent:Activate()
+	end
+end)
+
+concommand.Add("zm_player_ready", function(sender, command, arguments)
+	if not sender.IsReady then
+		sender.IsReady = true
+		hook.Call("InitClient", GAMEMODE, sender)
 	end
 end)

@@ -1,3 +1,7 @@
+function GM:ForceDermaSkin()
+	return "zm_skin"
+end
+
 local SKIN = {}
 
 SKIN.bg_color 					= Color(51, 52, 54, 255)
@@ -65,8 +69,4 @@ SKIN.colButtonBorderHighlight	= Color( 255, 255, 255, 50 )
 SKIN.colButtonBorderShadow		= Color( 0, 0, 0, 100 )
 SKIN.fontButton					= "Default"
 
-derma.DefineSkin("zm_skin", "Zombie Master Derma Skin", SKIN)
-
-function GM:ForceDermaSkin()
-	return "zm_skin"
-end
+derma.DefineSkin("zm_skin", "Zombie Master Derma Skin", SKIN, "Default")

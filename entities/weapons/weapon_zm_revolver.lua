@@ -32,8 +32,6 @@ SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 1.2
 SWEP.Primary.Cone 				= 0.0200
 
-SWEP.ReloadDelay = 0.4
-
 SWEP.Primary.Automatic   		= false
 SWEP.Primary.Ammo         		= "revolver"
 
@@ -45,17 +43,8 @@ SWEP.Secondary.Ammo = "dummy"
 
 function SWEP:Think()
 	if self.firing and self.firetimer < CurTime() then
-		local owner = self.Owner
-		owner:DoAttackEvent()
-		self:EmitSound(self.Primary.Sound)
-		
-		if not self.InfiniteAmmo then
-			self:TakePrimaryAmmo(1)
-		end
-		owner:FireBullets({Num = self.Primary.NumShots, Src = owner:GetShootPos(), Dir = owner:GetAimVector(), Spread = Vector(self.Primary.Cone, self.Primary.Cone, 0), Tracer = 1, TracerName = self.TracerName, Force = self.Primary.Damage * 0.1, Damage = self.Primary.Damage, Callback = self.BulletCallback})
-		if owner:IsValid() then
-			owner:ViewPunch( Angle(-8, math.Rand(-2, 2), 0) )
-		end
+		self:PlayPrimaryFireSound()
+		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
 		
 		self.firing = false
 		self.firetimer = 0
@@ -69,28 +58,26 @@ end
 
 function SWEP:SecondaryAttack()
 	if not self:CanPrimaryAttack() then return end
-	local owner = self.Owner
+	
 	self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
-
-	self:EmitSound(self.Primary.Sound)
-	if not self.InfiniteAmmo then
-		self:TakePrimaryAmmo(1)
-	end
+	
+	self:PlayPrimaryFireSound()
 	self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
-	owner:FireBullets({Num = self.Primary.NumShots, Src = owner:GetShootPos(), Dir = owner:GetAimVector(), Spread = Vector(self.Primary.Cone, self.Primary.Cone, 0), Tracer = 1, TracerName = self.TracerName, Force = self.Primary.Damage * 0.1, Damage = self.Primary.Damage, Callback = self.BulletCallback})
-	if owner:IsValid() then
-		owner:ViewPunch( Angle(-8, math.Rand(-2, 2), 0) )
-	end
+	self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
+	
 	self:SetNextIdle(CurTime() + self:SequenceDuration())
 end
 
 function SWEP:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
+	
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	self.firing = true
 	self.firetimer = CurTime() + 0.38
+	
 	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	self.Owner:DoAttackEvent()
+	
 	self:SetNextIdle(CurTime() + self:SequenceDuration())
 end
 
@@ -103,4 +90,9 @@ function SWEP:Reload()
 			timer.Simple(1.5, function() self:EmitSound(self.ReloadSound) end)
 		end
 	end
+end
+
+function SWEP:ShootBullet(dmg, numbul, cone)
+	BaseClass.ShootBullet(self, dmg, numbul, cone)
+	self.Owner:ViewPunch(Angle(-8, math.Rand(-2, 2), 0))
 end

@@ -5,7 +5,9 @@ ENT.Type = "brush"
 local valid = {
 	"prop_physics",
 	"func_physbox",
-	"prop_physics_override"
+	"prop_physics_override",
+	"prop_physics_multiplayer",
+	"func_physbox_multiplayer"
 }
 local function PassesFlag(entity)
 	local class = entity:GetClass()

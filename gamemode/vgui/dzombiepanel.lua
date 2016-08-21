@@ -89,7 +89,7 @@ function PANEL:Init()
 	self.removeOne.Paint = PaintButton
 	self.removeOne.Think = ThinkButton
 	self.removeOne.DoClick = function()
-		if MySelf:IsZM() then
+		if LocalPlayer():IsZM() then
 			if #self.queue:GetItems() > 0 then
 				self:UpdateQueue()
 				RunConsoleCommand("zm_rqueue", self:GetCurrent())
@@ -106,7 +106,7 @@ function PANEL:Init()
 	self.clearQueue.Paint = PaintButton
 	self.clearQueue.Think = ThinkButton
 	self.clearQueue.DoClick = function()
-		if MySelf:IsZM() then
+		if LocalPlayer():IsZM() then
 			if #self.queue:GetItems() > 0 then
 				self.queue:Clear()
 				RunConsoleCommand("zm_rqueue", self:GetCurrent(), "1")
@@ -122,7 +122,7 @@ function PANEL:Init()
 	self.placeRally:SetTextColor(color_white)
 	self.placeRally.Paint = PaintButton
 	self.placeRally.DoClick = function()
-		if MySelf:IsZM() then
+		if LocalPlayer():IsZM() then
 			gamemode.Call("CreateGhostEntity", false, self:GetCurrent())
 			self:Close()
 		end
@@ -136,7 +136,7 @@ function PANEL:Init()
 	self.closebut:SetTextColor(color_white)
 	self.closebut.Paint = PaintButton
 	self.closebut.DoClick = function()
-		if MySelf:IsZM() then
+		if LocalPlayer():IsZM() then
 			self:Close()
 		end
 	end

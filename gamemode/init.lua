@@ -9,17 +9,21 @@ AddCSLuaFile("cl_dermaskin.lua")
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_zombie.lua")
 
+AddCSLuaFile("sh_networking.lua")
+
 AddCSLuaFile("sh_weapons.lua")
 AddCSLuaFile("sh_players.lua")
 AddCSLuaFile("sh_entites.lua")
+AddCSLuaFile("sh_npc.lua")
 
 AddCSLuaFile("sh_sounds.lua")
 AddCSLuaFile("sh_zm_globals.lua")
 AddCSLuaFile("sh_utility.lua")
+AddCSLuaFile("sh_zm_options.lua")
 
 AddCSLuaFile("cl_zm_options.lua")
-AddCSLuaFile("sh_zm_options.lua")
 AddCSLuaFile("cl_targetid.lua")
+AddCSLuaFile("cl_entites.lua")
 
 AddCSLuaFile("vgui/dpingmeter.lua")
 AddCSLuaFile("vgui/dteamcounter.lua")
@@ -32,11 +36,12 @@ AddCSLuaFile("vgui/dexroundedframe.lua")
 
 include("sv_zm_options.lua")
 include("sh_players.lua")
+include("sv_players.lua")
+include("sv_entites.lua")
 include("shared.lua")
 
 GM.RoundsPlayed = 0
 GM.UnReadyPlayers = {}
-GM.ConnectingPlayers = {}
 GM.DeadPlayers = {}
 GM.ReadyTimer = 0
 
@@ -46,17 +51,11 @@ end
 
 function GM:InitPostEntity()
 	RunConsoleCommand("mapcyclefile", "mapcycle_zombiemaster.txt")
-	
-	self:SetRoundStartTime(5)
-	self:SetRoundStart(true)
-	self:SetRoundActive(false)
-	
 	hook.Call("InitPostEntityMap", self)
 end
 
 function GM:InitPostEntityMap()
 	self:SetupAmmo()
-	self:SetupSpawnPoints()
 	
 	if not self.DontConvertProps then
 		for _, ent in pairs(ents.FindByClass("prop_physics")) do
@@ -89,20 +88,14 @@ function GM:SetupAmmo()
 				ent.AmmoType = ammotype
 				ent:Spawn()
 				
-				self.AmmoModels[ammo:GetClass()] = ammo:GetModel()
+				if not self.AmmoModels[ammo:GetClass()] then
+					self.AmmoModels[ammo:GetClass()] = ammo:GetModel()
+				end
 				
 				ammo:Remove()
 			end
 		end
 	end
-end
-
-function GM:SetupSpawnPoints()
-	local z_spawn = ents.FindByClass( "info_player_zombiemaster" )
-	local h_spawn = ents.FindByClass( "info_player_deathmatch" )
-	
-	team.SetSpawnPoint( TEAM_SURVIVOR, z_spawn )
-	team.SetSpawnPoint( TEAM_ZOMBIEMASTER, h_spawn )
 end
 
 local ShamblerModels = {
@@ -148,7 +141,7 @@ function GM:OnEntityCreated(ent)
 				end
 			end
 			
-			gamemode.Call("SetupNPCZombieModels", ent)
+			hook.Call("SetupNPCZombieModels", self, ent)
 			ent:SetShouldServerRagdoll(false)
 		end)
 		
@@ -193,7 +186,7 @@ end
 
 function GM:CanPlayerSuicide(ply)
 	if ply:IsZM() and not self:GetRoundEnd() then	
-		gamemode.Call("TeamVictorious", true, "The Zombie Master has submitted.\n")
+		hook.Call("TeamVictorious", self, true, "The Zombie Master has submitted.\n")
 	end
 	
 	return ply:IsSurvivor()
@@ -208,29 +201,22 @@ function GM:PlayerInitialSpawn(pl)
 	
 	if self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and not NotifiedRestart then
 		PrintMessage(HUD_PRINTTALK, "The round is restarting...\n" )
-		timer.Simple(2, function() gamemode.Call("PreRestartRound") end)
-		timer.Simple(5, function() gamemode.Call("RestartRound") end)
+		timer.Simple(2, function() hook.Call("PreRestartRound", self) end)
+		timer.Simple(5, function() hook.Call("RestartRound", self) end)
 		NotifiedRestart = true
 	end
 	
 	pl.NextPainSound = 0
-	pl.IsReady = false
 	
-	if self.ReadyTimer == 0 and not zm_timer_started then
-		zm_timer_started = true
-		self.ReadyTimer = CurTime() + 10
+	if not zm_start_round and not self:GetRoundActive() then
+		zm_start_round = true
 	end
 	
-	table.RemoveByValue(self.ConnectingPlayers, pl:Name())
 	table.insert(self.UnReadyPlayers, pl)
 	
 	net.Start("zm_mapinfo")
 		net.WriteString(self.MapInfo)
 	net.Send(pl)
-end
-
-function GM:PlayerConnect(name, ip)
-	table.insert(self.ConnectingPlayers, name)
 end
 
 local VoiceSetTranslate = {}
@@ -247,13 +233,9 @@ VoiceSetTranslate["models/player/monk.mdl"] = "monk"
 VoiceSetTranslate["models/player/mossman.mdl"] = "female"
 VoiceSetTranslate["models/player/odessa.mdl"] = "male"
 VoiceSetTranslate["models/player/police.mdl"] = "combine"
-VoiceSetTranslate["models/player/brsp.mdl"] = "female"
-VoiceSetTranslate["models/player/moe_glados_p.mdl"] = "female"
-VoiceSetTranslate["models/grim.mdl"] = "combine"
-VoiceSetTranslate["models/jason278-players/gabe_3.mdl"] = "monk"
 function GM:PlayerSpawn(ply)
 	if ply:IsSpectator() or ply:Team() == TEAM_UNASSIGNED then
-		gamemode.Call("PlayerSpawnAsSpectator", ply)
+		hook.Call("PlayerSpawnAsSpectator", self, ply)
 		return
 	end
 	
@@ -309,7 +291,7 @@ function GM:PlayerSpawn(ply)
 	
 	ply:SetNoTarget(not ply:IsSurvivor())
 	
-	hook.Call("PlayerLoadout", GAMEMODE, ply)
+	hook.Call("PlayerLoadout", self, ply)
 end
 
 function GM:IncreaseResources(pZM)
@@ -389,12 +371,12 @@ function GM:PlayerDeath(ply, inflictor, attacker)
 	self.BaseClass.PlayerDeath(self, ply, inflictor, attacker)
 end
 
-local LastHumanDied = false	
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	local plteam = ply:Team()
 	local suicide = attacker == ply or attacker:IsWorld()
 	
 	ply:Freeze(false)
+	ply:DropAllAmmo()
 	
 	self.DeadPlayers[ply:SteamID()] = true
 	
@@ -417,7 +399,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 		local income = math.random(GetConVar("zm_resourcegainperplayerdeathmin"):GetInt(), GetConVar("zm_resourcegainperplayerdeathmax"):GetInt())
 		
 		pZM:AddZMPoints(income)
-		pZM:SetZMPointIncome(income)
+		pZM:SetZMPointIncome(pZM:GetZMPointIncome() + 10)
 	end
 	
 	local hands = ply:GetHands()
@@ -427,15 +409,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	
 	ply:PlayDeathSound()
 	
-	timer.Simple(0.1, function() 
-		gamemode.Call("PlayerSpawnAsSpectator", ply)
-		
-		if not self:GetRoundEnd() and self:GetRoundActive() then
-			if team.NumPlayers(TEAM_SURVIVOR) == 0 then
-				gamemode.Call("TeamVictorious", false, "Undeath has prevailed!\n")
-			end
-		end
-	end)
+	hook.Call("PlayerSpawnAsSpectator", self, ply)
 end
 
 function GM:PostPlayerDeath(ply)
@@ -446,6 +420,12 @@ function GM:PostPlayerDeath(ply)
 			ply:Spectate(OBS_MODE_ROAMING)
 		end
 	end)
+	
+	if not self:GetRoundEnd() and self:GetRoundActive() then
+		if team.NumPlayers(TEAM_SURVIVOR) == 0 then
+			hook.Call("TeamVictorious", self, false, "Undeath has prevailed!\n")
+		end
+	end
 end
 
 function GM:PlayerHurt(victim, attacker, healthremaining, damage)
@@ -474,19 +454,13 @@ function GM:RestartLua()
 	zm_zm_left = false
 	NotifiedRestart = false
 	zm_timer_started = false
-	LastHumanDied = false
+	zm_start_round = false
 	self.ReadyTimer = 0
 	income_time = 0
 	
 	table.Empty(self.groups)
 	self.currentmaxgroup = 0
 	self.selectedgroup = 0
-	
-	self:SetRoundStart(false)
-	self:SetRoundActive(false)
-	self:SetRoundEnd(false)
-	self:SetRoundStartTime(1)
-	self.RoundStarted = 0
 	
 	self:SetCurZombiePop(0)
 end
@@ -495,8 +469,14 @@ function GM:DoRestartGame()
 	game.CleanUpMap(false)
 	
 	self:SetRoundStart(true)
+	self:SetRoundActive(false)
+	self:SetRoundEnd(false)
+	self:SetRoundStartTime(5)
+	self.RoundStarted = 0
+	
+	zm_start_round = true
+	
 	table.Empty(self.UnReadyPlayers)
-	table.Empty(self.ConnectingPlayers)
 	table.Empty(self.DeadPlayers)
 end
 
@@ -508,7 +488,7 @@ function GM:RestartGame()
 			pl:SetDeaths(0)
 			pl:SetZMPoints(0)
 			
-			gamemode.Call("PlayerSpawnAsSpectator", pl)
+			hook.Call("PlayerSpawnAsSpectator", self, pl)
 		end
 	end
 
@@ -605,15 +585,21 @@ function GM:CreateGibs(pos, headoffset)
 		if ent:IsValid() then
 			ent:SetPos(pos + VectorRand() * 12)
 			ent:SetAngles(VectorRand():Angle())
-			ent:SetGibType(math.random(3, #GAMEMODE.HumanGibs))
+			ent:SetGibType(math.random(3, #self.HumanGibs))
 			ent:Spawn()
 		end
 	end
 end
 
 function GM:TeamVictorious(won, message)
+	local winscore = Either(won, HUMAN_WIN_SCORE, HUMAN_LOSS_SCORE)
+	local winningteam = Either(won, TEAM_SURVIVOR, TEAM_ZOMBIEMASTER)
+	for _, ply in pairs(team.GetPlayers(winningteam)) do
+		ply:AddFrags(winscore)
+	end
+	
 	self:SetRoundEnd(true)
-	gamemode.Call("IncrementRoundCount")
+	hook.Call("IncrementRoundCount", self)
 	
 	if won then
 		game.SetTimeScale(0.25)
@@ -624,23 +610,23 @@ function GM:TeamVictorious(won, message)
 	if self.RoundsPlayed > rounds then
 		timer.Simple(3, function() hook.Call("LoadNextMap", self) end)
 	else
-		timer.Simple(2, function() gamemode.Call("PreRestartRound") end)
-		timer.Simple(5, function() gamemode.Call("RestartRound") end)
+		timer.Simple(2, function() hook.Call("PreRestartRound", self) end)
+		timer.Simple(3, function() hook.Call("RestartRound", self) end)
 	end
 	
 	PrintMessage(HUD_PRINTTALK, message)
 	
-	gamemode.Call("FinishingRound", won, rounds)
+	hook.Call("FinishingRound", self, won, rounds)
 end
 
 function GM:IncrementRoundCount()
 	self.RoundsPlayed = self.RoundsPlayed + 1
 end
 
-function GM:InitialSpawnRound(ply)
+function GM:SetupPlayer(ply)
 	ply:ChangeTeam(TEAM_SURVIVOR)
 	
-	ply:SetCustomCollisionCheck(true)
+	--ply:SetCustomCollisionCheck(true)
 	ply:SetAvoidPlayers(true)
 	ply:UnSpectate()
 	ply:Spawn()
@@ -661,30 +647,28 @@ function GM:InitialSpawnRound(ply)
 	end
 end
 
-function GM:PlayerReady(pl)
-	gamemode.Call("PlayerReadyRound", pl)
-end
-
-function GM:PlayerReadyRound(pl)
+function GM:InitClient(pl)
 	if not pl:IsValid() then return end
 	table.RemoveByValue(self.UnReadyPlayers, pl)
 	
+	if self.ReadyTimer == 0 and not zm_timer_started then
+		zm_timer_started = true
+		self.ReadyTimer = CurTime() + 15
+	end
+	
 	pl:SendLua("GAMEMODE:MakePreferredMenu()")
 	
-	if self:GetRoundActive() then
-		if (self.RoundStarted or 0) + 10 <= CurTime() and not self.DeadPlayers[ply:SteamID()] then
-			gamemode.Call("InitialSpawnRound", pl)
+	if self.RoundStarted and self.RoundStarted ~= 0 and self:GetRoundActive() then
+		if self.RoundStarted + 15 >= CurTime() and not self.DeadPlayers[pl:SteamID()] then
+			hook.Call("SetupPlayer", self, pl)
 		end
 	end
+	
+	hook.Call("InitPostClient", self, pl)
 end
 
-concommand.Add("initpostentity", function(sender, command, arguments)
-	if not sender.DidInitPostEntity then
-		sender.DidInitPostEntity = true
-
-		gamemode.Call("PlayerReady", sender)
-	end
-end)
+function GM:InitPostClient(pl)
+end
 
 function GM:ConvertEntTo(prop, convertto)
 	if convertto == "" or convertto == nil then return end
@@ -772,7 +756,7 @@ function GM:EntityTakeDamage(ent, dmginfo)
 	
 	if ent:IsNPC() then
 		if ent:Health() <= damage then
-			dmginfo:SetDamageType(DMG_REMOVENORAGDOLL)
+			dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_REMOVENORAGDOLL))
 		end
 		
 		local atkowner = attacker.OwnerClass
@@ -781,6 +765,15 @@ function GM:EntityTakeDamage(ent, dmginfo)
 			dmginfo:SetDamage(0)
 			dmginfo:ScaleDamage(0)
 			return
+		end
+	end
+	
+	if attacker:IsNPC() and string.sub(ent:GetClass(), 1, 12) == "prop_physics" then
+		local phys = ent:GetPhysicsObject()
+		if IsValid(phys) then
+			if phys:IsMotionEnabled() then
+				ent:SetPhysicsAttacker(attacker)
+			end
 		end
 	end
 	
@@ -826,6 +819,10 @@ end
 
 local income_time = 0
 function GM:PlayerPostThink(pl)
+	if pl:IsZM() and pl:IsOnFire() then
+		pl:Extinguish()
+	end
+	
 	if income_time ~= 0 and income_time <= CurTime() then
 		if pl:IsZM() then
 			pl:AddZMPoints(pl:GetZMPointIncome())
@@ -936,17 +933,12 @@ end
 local NextTick = 0
 function GM:Think()
 	local time = CurTime()
-	local players = player.GetAll()
-	
-	if #self.ConnectingPlayers > 0 and CurTime() >= self.ReadyTimer then
-		table.Empty(self.ConnectingPlayers)
-	end
-	
+
 	-- Originally from TTT
 	local humans = team.GetPlayers(TEAM_SURVIVOR)
 	for i= 1, #humans do
 		local ply = humans[i]
-        if ply:WaterLevel() == 3 then
+		if ply:WaterLevel() == 3 then
 			if ply:IsOnFire() then
 				ply:Extinguish()
 			end
@@ -962,52 +954,73 @@ function GM:Think()
 
 					ply.drowning = CurTime() + 1
 				end
-            else
+			else
 				ply.drowning = CurTime() + 30
-            end
-         else
+			end
+		else
 			ply.drowning = nil
-         end
+		end
 	end
 	
-	if #players > 0 then
-		if #self.UnReadyPlayers == 0 and #self.ConnectingPlayers == 0 and self:GetRoundStart() and not zm_selection_started then
-			PrintMessage(HUD_PRINTCENTER, "All players are ready, choosing a Zombie Master!")
-			zm_selection_started = true
-			timer.Simple(self:GetRoundStartTime(), function()
-				gamemode.Call("ZombieMasterVolunteers")
-				for _, ent in pairs(ents.FindByClass("info_loadout")) do
-					ent:Distribute()
+	for k, v in ipairs(ents.FindByClass("npc_*")) do
+		if v:IsNPC() then
+			if not IsValid(v:GetEnemy()) then
+				local nearest_ply
+				local dist = 0
+				for i, j in ipairs(humans) do
+					local dist2 = j:GetPos():Distance(v:GetPos())
+					if dist2 < dist then
+						dist = dist2
+						nearest_ply = j
+					end
 				end
-			end)
+				v:SetEnemy(nearest_ply)
+			end
 		end
 	end
 	
 	if NextTick <= time then
 		NextTick = time + 1
 		
+		local entstocheck = table.Add(ents.FindByClass("prop_physics*"), ents.FindByClass("func_physbox*"))
+		for _, ent in pairs(entstocheck) do
+			local phys = ent:GetPhysicsObject()
+			if IsValid(phys) then
+				if phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) and ent:GetCollisionGroup() ~= COLLISION_GROUP_WEAPON then
+					ent._OldCG = ent:GetCollisionGroup()
+					ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+				elseif ent:GetCollisionGroup() == COLLISION_GROUP_WEAPON then
+					ent:SetCollisionGroup(ent._OldCG or COLLISION_GROUP_NONE)
+					ent._OldCG = nil
+				end
+			end
+		end
+		
+		if self.ReadyTimer ~= 0 and CurTime() > self.ReadyTimer then
+			table.Empty(self.UnReadyPlayers)
+			self.ReadyTimer = 0
+		end
+		
+		if zm_start_round then
+			if #self.UnReadyPlayers == 0 and self:GetRoundStart() and not zm_selection_started then
+				self:SetZMSelection(true)
+				zm_selection_started = true
+				zm_start_round = false
+				timer.Simple(self:GetRoundStartTime(), function()
+					hook.Call("ZombieMasterVolunteers", self)
+					for _, ent in pairs(ents.FindByClass("info_loadout")) do
+						ent:Distribute()
+					end
+				end)
+			end
+		end
+		
+		local players = player.GetAll()
 		if #players > 20 then
 			for _, ply in pairs(players) do
 				ply:SetAvoidPlayers(false)
 				if not ply:GetNoCollideWithTeammates() then 
 					ply:SetNoCollideWithTeammates(true) 
-				end
-			end
-		end
-		
-		for k, v in ipairs(ents.FindByClass("npc_*")) do
-			if v:IsNPC() then
-				if not IsValid(v:GetEnemy()) then
-					local nearest_ply
-					local dist = 0
-					for i, j in ipairs(team.GetPlayers(TEAM_SURVIVOR)) do
-						local dist2 = j:GetPos():Distance(v:GetPos())
-						if dist2 < dist then
-							dist = dist2
-							nearest_ply = j
-						end
-					end
-					v:SetEnemy(nearest_ply)
 				end
 			end
 		end
@@ -1025,9 +1038,9 @@ end
 function GM:PlayerDisconnected(ply)
 	if self:GetRoundActive() then
 		if ply:IsZM() then
-			gamemode.Call("TeamVictorious", true, "The Zombie Master has left!\n")
+			hook.Call("TeamVictorious", self, true, "The Zombie Master has left!\n")
 		elseif team.NumPlayers(TEAM_SURVIVOR) <= 0 then
-			gamemode.Call("TeamVictorious", false, "All the humans have left!\n")
+			hook.Call("TeamVictorious", self, false, "All the humans have left!\n")
 		end
 		
 		if ply:IsSurvivor() then
@@ -1093,8 +1106,7 @@ function GM:ZombieMasterVolunteers()
 			util.PrintMessageC(pl, "To move around as the ZM hold down shift or your +speed key and or if you need help press F1 >> Help.", Color(255, 0, 0))
 			
 			pl:SetZMPoints(425)
-			pl:SetZMPointIncome(GetConVar("zm_maxresource_increase"):GetInt())
-			gamemode.Call("IncreaseResources", pl)
+			hook.Call("IncreaseResources", self, pl)
 			
 			income_time = CurTime() + GetConVar("zm_incometime"):GetInt()
 			
@@ -1108,6 +1120,7 @@ function GM:ZombieMasterVolunteers()
 		end
 	end
 	
+	self:SetZMSelection(false)
 	self:SetRoundStart(false)
 	self:SetRoundActive(true)
 	self.RoundStarted = CurTime()
@@ -1122,7 +1135,7 @@ function GM:ZombieMasterVolunteers()
 	game.CleanUpMap(false)
 	
 	for _, ply in pairs(team.GetPlayers(TEAM_SPECTATOR)) do
-		gamemode.Call("InitialSpawnRound", ply)
+		hook.Call("SetupPlayer", self, ply)
 	end
 end
 
@@ -1130,7 +1143,7 @@ function GM:AllowPlayerPickup(pl, ent)
 	if ent:IsPlayerHolding() then return false end
 	
 	local entclass = ent:GetClass()
-	if string.sub(entclass, 1, 12) == "prop_physics" or string.sub(entclass, 1, 12) == "func_physbox" or entclass == "item_zmmo_zm" or string.sub(entclass, 1 , 10) == "weapon_zm_" and pl:IsSurvivor() and pl:Alive() and ent:GetMoveType() == MOVETYPE_VPHYSICS and ent:GetPhysicsObject():IsValid() and ent:GetPhysicsObject():GetMass() <= CARRY_MASS and ent:GetPhysicsObject():IsMoveable() and ent:OBBMins():Length() + ent:OBBMaxs():Length() <= CARRY_VOLUME then
+	if string.sub(entclass, 1, 12) == "prop_physics" or string.sub(entclass, 1, 12) == "func_physbox" and pl:IsSurvivor() and pl:Alive() and ent:GetMoveType() == MOVETYPE_VPHYSICS and ent:GetPhysicsObject():IsValid() and ent:GetPhysicsObject():GetMass() <= CARRY_MASS and ent:GetPhysicsObject():IsMoveable() and ent:OBBMins():Length() + ent:OBBMaxs():Length() <= CARRY_VOLUME then
 		return true
 	end
 	
@@ -1141,19 +1154,24 @@ function GM:PlayerCanHearPlayersVoice(listener, talker)
 	return true, false
 end
 
-function GM:KeyPress(pl, key)
-    if key == IN_USE then
-        if pl:IsSurvivor() and pl:Alive() then
-			local tr = util.TraceLine({
-				start = pl:EyePos(),
-				endpos = pl:EyePos() + pl:EyeAngles():Forward() * 64,
-				filter = player.GetAll()
-			})
-			local ent = tr.Entity
-
-			gamemode.Call("PlayerUse", pl, ent)
-        end
+function GM:FindUseEntity(ply, defaultEnt)
+	if not IsValid(defaultEnt) then
+		local tr = util.TraceHull({
+			start = ply:EyePos(),
+			endpos = ply:EyePos() + ply:EyeAngles():Forward() * 64,
+			mins = Vector(-8, -8, -8),
+			maxs = Vector(8, 8, 8),	
+			mask = bit.bor(MASK_SHOT, CONTENTS_GRATE)
+			filter = player.GetAll()
+		})
+		local ent = tr.Entity
+		
+		if IsValid(ent) then 
+			return ent 
+		end
 	end
+	
+	return defaultEnt
 end
 
 function GM:PlayerUse(pl, ent)
@@ -1167,19 +1185,19 @@ function GM:PlayerUse(pl, ent)
 			return false
 		end
 		ent.m_AntiDoorSpam = CurTime() + 0.85
-	elseif pl:IsSurvivor() then
-		if string.sub(entclass, 1 , 12) == "prop_physics" or string.sub(entclass, 1 , 12) == "func_physbox" then
-			if gamemode.Call("AllowPlayerPickup", pl, ent) and not ent:IsPlayerHolding() then
+    elseif pl:IsSurvivor() then
+        if string.sub(entclass, 1 , 12) == "prop_physics" or string.sub(entclass, 1 , 12) == "func_physbox" then
+            if hook.Call("AllowPlayerPickup", self, pl, ent) and not ent:IsPlayerHolding() then
 				pl:DropObject()
 				
-				local phys = ent:GetPhysicsObject()
-				if IsValid(phys) then
-					if phys:IsMotionEnabled() then
-						pl:PickupObject(ent)
-					end
-				end
-			end
-		end
+                local phys = ent:GetPhysicsObject()
+                if IsValid(phys) then
+                    if phys:IsMotionEnabled() then
+                        pl:PickupObject(ent)
+                    end
+                end
+            end
+        end
 	end
 
 	return true
@@ -1199,8 +1217,14 @@ function GM:PlayerCanPickupWeapon(pl, ent)
 		if ent.ThrowTime and ent.ThrowTime > CurTime() then return false end
 
 		if pl:HasWeapon(ent:GetClass()) then 
-			if ent.WeaponIsAmmo then
-				return gamemode.Call("PlayerCanPickupItem", pl, ent)
+			if ent.WeaponIsAmmo and hook.Call("PlayerCanPickupItem", self, pl, ent) then
+				local primaryammo = wep.Primary and wep.Primary.Ammo or ""
+				local ammoamount = wep.Primary and wep.Primary.ClipSize or 1
+				
+				pl:GiveAmmo(ammoamount, primaryammo)
+				ent:Remove()
+				
+				return false
 			end
 			
 			return false 
@@ -1266,8 +1290,24 @@ function GM:PlayerCanPickupItem(pl, item)
 	return pl:IsSurvivor()
 end
 
+function GM:SetZMSelection(value)
+	SetSharedBool("zm_zmselection_start", value)
+end
+
 function GM:SetCurZombiePop(amount)
-	SetGlobalInt("m_iZombiePopCount", amount)
+	SetSharedInt("m_iZombiePopCount", amount)
+end
+
+function GM:SetRoundActive(active)
+    SetSharedBool("zm_round_active", active)
+end
+
+function GM:SetRoundStart(active)
+    SetSharedBool("zm_round_start", active)
+end
+
+function GM:SetRoundEnd(active)
+    SetSharedBool("zm_round_ended", active)
 end
 
 function GM:AddCurZombiePop(amount)
@@ -1279,7 +1319,7 @@ function GM:TakeCurZombiePop(amount)
 end
 
 function GM:SpawnZombie(pZM, entname, origin, angles, cost)
-	local popcost = gamemode.Call("GetPopulationCost", entname)
+	local popcost = hook.Call("GetPopulationCost", self, entname)
 	if (self:GetCurZombiePop() + popcost) > self:GetMaxZombiePop() then
 		pZM:PrintMessage(HUD_PRINTCENTER, "Failed to spawn zombie: population limit reached!/n")
 		return NULL
@@ -1289,7 +1329,7 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 
 	if IsValid(pZombie) then
 		pZombie:SetKeyValue("spawnflags", bit.bor(SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK))
-		pZombie:SetKeyValue("crabcount", -1)
+		pZombie:SetKeyValue("crabcount", 0)
 		
 		pZombie:SetPos(origin)
 		pZombie:SetOwner(pZM)
@@ -1309,7 +1349,7 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 		angles.z = 0.0
 		pZombie:SetAngles(angles)
 	
-		gamemode.Call("SetupNPCZombieModels", pZombie)
+		hook.Call("SetupNPCZombieModels", self, pZombie)
 
 		pZombie:Spawn()
 		pZombie:Activate()
@@ -1317,11 +1357,8 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 		pZombie:CapabilitiesAdd(bit.bor(CAP_FRIENDLY_DMG_IMMUNE, CAP_SQUAD, CAP_OPEN_DOORS, CAP_AUTO_DOORS))
 		pZombie:SetBloodColor(BLOOD_COLOR_RED)
 		
-		pZombie:AddRelationship("npc_burnzombie D_LI 99")
-		pZombie:AddRelationship("npc_dragzombie D_LI 99")
-		
 		pZM:TakeZMPoints(cost)
-		GAMEMODE:AddCurZombiePop(popcost)
+		self:AddCurZombiePop(popcost)
 
 		return pZombie
 	end

@@ -33,7 +33,6 @@ SWEP.TracerType                 = "Tracer"
 SWEP.InfiniteAmmo               = false
 SWEP.DeploySpeed                = 1
 
-SWEP.Primary.BulletForce	    = "5"
 SWEP.Primary.Sound				= "Weapon_AK47.Single"
 SWEP.Primary.NumShots			= 1
 SWEP.Primary.Recoil				= 0
@@ -44,6 +43,9 @@ SWEP.IsMelee					= false
 SWEP.Primary.ClipSize			= -1
 SWEP.Primary.DefaultClip		= -1
 SWEP.Primary.Ammo			    = "smg1"
+SWEP.Primary.RandomPitch		= false
+SWEP.Primary.MinPitch			= 100
+SWEP.Primary.MaxPitch			= 100
 
 SWEP.Secondary.ClipSize			= -1
 SWEP.Secondary.DefaultClip		= -1
@@ -83,9 +85,17 @@ function SWEP:Initialize()
     self:SetDeploySpeed(self.DeploySpeed)
 end
 
+function SWEP:PlayPrimaryFireSound()
+	self:EmitSound(self.Primary.Sound, 140, Either(self.Primary.RandomPitch, math.random(self.Primary.MinPitch, self.Primary.MaxPitch), 100))
+end
+
+function SWEP:PlayReloadSound()
+	self:EmitSound(self.ReloadSound)
+end
+
 function SWEP:Reload()
 	if self:DefaultReload(ACT_VM_RELOAD) then
-		self:EmitSound(self.ReloadSound)
+		self:PlayReloadSound()
 		self:SetNextIdle(CurTime() + self:SequenceDuration())
 	end
 end
@@ -96,8 +106,8 @@ function SWEP:PrimaryAttack()
 	self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	
-	self:EmitSound(self.Primary.Sound)
-	
+	self:PlayPrimaryFireSound()
+	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
 	
 	if not self.InfiniteAmmo then
@@ -105,11 +115,14 @@ function SWEP:PrimaryAttack()
 	end
 end
 
-function SWEP:DefaultBulletCallback(attacker, tr, dmginfo)
-	if tr.Hit then
-		local ent = tr.Entity
-		if IsValid(ent) and ent:IsNPC() and dmginfo:GetDamage() >= ent:Health() then
-			ent:SetBulletForce(dmginfo:GetDamageForce(), tr.PhysicsBone)
+function SWEP:BulletCallback(tr, dmginfo, attacker)
+	attacker = attacker or self.Owner
+	
+	local ent = tr.Entity
+	if IsValid(ent) then
+		local phys = ent:GetPhysicsObject()
+		if ent:GetMoveType() == MOVETYPE_VPHYSICS and IsValid(phys) and phys:IsMoveable() then
+			ent:SetPhysicsAttacker(attacker)
 		end
 	end
 end
@@ -125,9 +138,9 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	bullet.Spread 	= Vector(cone, cone, 0)
 	bullet.Tracer	= self.TracerFreq
 	bullet.TracerName = self.TracerType
-	bullet.Force	= self.Primary.BulletForce
+	bullet.Force	= dmg * 0.1
 	bullet.Damage	= dmg
-	bullet.Callback = self.DefaultBulletCallback
+	bullet.Callback = self.BulletCallback
 
 	local PlayerPos = self.Owner:GetShootPos()
 	local PlayerAim = self.Owner:GetAimVector()
@@ -144,7 +157,6 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	end
 
 	self.Owner:FireBullets(bullet)
-	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	self.Owner:DoAttackEvent()
 	
 	self:SetNextIdle(CurTime() + self:SequenceDuration())

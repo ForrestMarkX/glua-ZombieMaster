@@ -32,8 +32,6 @@ SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 0.1
 SWEP.Primary.Cone 				= 0.028
 
-SWEP.ReloadDelay = 0.4
-
 SWEP.Primary.Automatic   		= true
 SWEP.Primary.Ammo         		= "smg1"
 
