@@ -16,7 +16,7 @@ if SERVER then
 	NPC.SpawnFlags = bit.bor(SF_ZOMBIE_WANDER_ON_IDLE, SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK, SF_NPC_NO_PLAYER_PUSHAWAY)
 	NPC.Capabilities = nil
 
-	NPC.Friends = {"npc_zombie", "npc_poisonzombie", "npc_burnzie", "npc_dragzombie"}
+	NPC.Friends = {"npc_zombie", "npc_poisonzombie", "npc_burnzombie", "npc_dragzombie"}
 end
 
 function NPC:OnSpawned(npc)
