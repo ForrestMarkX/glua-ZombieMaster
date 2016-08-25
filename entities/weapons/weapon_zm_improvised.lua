@@ -15,9 +15,9 @@ SWEP.Slot = 2
 
 SWEP.HoldType = "melee"
 
-SWEP.Primary.Damage = 20
+SWEP.Primary.Damage = 30
 SWEP.Primary.Force = SWEP.Primary.Damage
-SWEP.Primary.Reach = 40
+SWEP.Primary.Reach = 65
 SWEP.Primary.HitSound = "Weapon_Crowbar.Melee_HitWorld"
 SWEP.Primary.HitFleshSound = "Weapon_Crowbar.Melee_Hit"
 SWEP.Primary.MissSound = "Weapon_Crowbar.Single"

@@ -50,52 +50,25 @@ if SERVER then
 				local resources, population = data.ply:GetZMPoints(), GAMEMODE:GetCurZombiePop()
 
 				if population + data.popCost < GAMEMODE:GetMaxZombiePop() and data.ply:CanAfford(data.cost) then
-					local spawnPoint, node = self:FindValidSpawnPoint()
+					local spawnPoint = self:FindValidSpawnPoint()
+					if spawnPoint:IsZero() then return end
 					
-					if not node then
-						local trace  = {}
-						trace.start  = spawnPoint
-						trace.endpos = trace.start + Vector(0, 0, 1)
-						trace.mask 	 = MASK_NPCSOLID
+					local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
 					
-						local tr = util.TraceLine(trace)
-
-						if tr.Fraction >= 1 then
-							local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
-							
-							timer.Simple(0.5, function()
-								if IsValid(self) then
-									local rally = self:GetRallyEntity()
-									if IsValid(rally) then
-										zombie:ForceGoto(rally:GetPos())
-									end
-								end
-							end)
-						
-							net.Start("zm_remove_queue")
-								net.WriteInt(self:EntIndex(), 32)
-							net.Send(data.ply)
-						
-							table.remove(self.query, 1)
-						end
-					else
-						local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
-						
-						timer.Simple(0.5, function()
-							if IsValid(self) then
-								local rally = self:GetRallyEntity()
-								if IsValid(rally) then
-									zombie:ForceGoto(rally:GetPos())
-								end
+					timer.Simple(0.25, function()
+						if IsValid(self) then
+							local rally = self:GetRallyEntity()
+							if IsValid(rally) then
+								zombie:ForceGoto(rally:GetPos())
 							end
-						end)
-					
-						net.Start("zm_remove_queue")
-							net.WriteInt(self:EntIndex(), 32)
-						net.Send(data.ply)
-					
-						table.remove(self.query, 1)
-					end
+						end
+					end)
+				
+					net.Start("zm_remove_queue")
+						net.WriteInt(self:EntIndex(), 32)
+					net.Send(data.ply)
+				
+					table.remove(self.query, 1)
 				end
 			end
 		end
@@ -123,6 +96,7 @@ if SERVER then
 		end
 	end
 	
+	--[[
 	function ENT:GetSuitableVector()
 		local vector = Vector(0, 0, 0)
 		repeat
@@ -139,20 +113,23 @@ if SERVER then
 			vector.y = vector.y + yDeviation
 		until util.IsInWorld(vector)
 		
-		local entities = ents.FindInBox(vector + Vector(-16, -16, 0), vector + Vector(16, 16, 64))
-		for k, v in pairs(entities) do
-			if IsValid(v) and v:IsNPC() then
-				return self:GetSuitableVector()
-			end
+		local tr = util.TraceHull({
+			start = vSpawnPoint,
+			endpos = vSpawnPoint + Vector( 0, 0, 1 ),
+			maxs = Vector(13, 13, 72),
+			mins = Vector(-13, -13, 0),
+			mask = MASK_NPCSOLID
+		})
+		if tr.fraction ~= 1.0 then
+			return vector:Zero()
 		end
 		
 		return vector
 	end
+	--]]
 
 	local nodePoints = {}
 	function ENT:FindValidSpawnPoint()
-		local isNode = false
-		
 		if not self.m_bDidSpawnSetup then
 			table.Empty(nodePoints)
 			
@@ -167,30 +144,54 @@ if SERVER then
 			self.m_bDidSpawnSetup = true
 		end
 
-		local vSpawnPoint = Vector(0,0,0)
+		local vForward = self:GetAngles():Forward()
+		local vSpawnPoint = Vector(0, 0, 0)
+		
+		local untried_nodes = table.Copy(nodePoints)
+		local max_attempts = math.max(25, #untried_nodes)
+		
+		for i=1, max_attempts do
+			local node_idx = -1
 
-		for _, node in pairs(nodePoints) do
-			local taken  = false
-			local entities = ents.FindByClass("npc_*")
-			
-			for k, v in pairs(entities) do
-				if IsValid(v) and node:GetPos():Distance(v:GetPos() + Vector(0, 0, 25)) < 40 then
-					taken = true
+			if #untried_nodes > 0 then
+				local idx = math.random(0, #untried_nodes - 1)
+				local node = untried_nodes[idx]
+
+				if node then
+					vSpawnPoint = node:GetPos()
+					node_idx = idx
 				end
 			end
+
+			if node_idx == -1 then
+				local xDeviation = math.random(-128, 128)
+				local yDeviation = math.random(-128, 128)
+
+				vSpawnPoint = self:GetPos() + (vForward * 64)
+				vSpawnPoint.x = vSpawnPoint.x + xDeviation
+				vSpawnPoint.y = vSpawnPoint.y + yDeviation
+			end
+
+			local tr = util.TraceHull({
+				start = vSpawnPoint,
+				endpos = vSpawnPoint + Vector( 0, 0, 1 ),
+				maxs = Vector(13, 13, 72),
+				mins = Vector(-13, -13, 0),
+				mask = MASK_NPCSOLID
+			})
 			
-			if not taken then
-				vSpawnPoint = node:GetPos()
-				isNode = true
+			if tr.Fraction ~= 1.0 then
+				if node_idx ~= -1 then
+					table.remove(untried_nodes, node_idx)
+				end
+
+				vSpawnPoint:Zero()
+			else 
 				break
 			end
 		end
-		
-		if vSpawnPoint:IsZero() then
-			vSpawnPoint = self:GetSuitableVector()
-		end
 
-		return vSpawnPoint, isNode
+		return vSpawnPoint
 	end
 	
 	function ENT:InputToggle()
@@ -248,15 +249,15 @@ if SERVER then
 
 		if data and #self.query < 18 then
 			local zombieFlags = self:GetZombieFlags() or 0
-			local allowed = gamemode.Call("CanSpawnZombie", zombieFlags)
-			if allowed and type(allowed) == "table" and not allowed[data.flag] then return end
+			local allowed = gamemode.Call("CanSpawnZombie", data.Flag or 0, zombieFlags)
+			if not allowed then return end
 			
 			if amount > 1 and amount < 19 then
 				for i = 1, amount do
 					if #self.query == 18 then
-						ply:PrintMessage(HUD_PRINTTALK, "Queue is full!")
+						ply:PrintTranslatedMessage(HUD_PRINTTALK, "queue_is_full")
 					else
-						table.insert(self.query, {type = zombietype, cost = data.cost, ply = ply, popCost = data.popCost})
+						table.insert(self.query, {type = zombietype, cost = data.Cost, ply = ply, popCost = data.PopCost})
 					
 						net.Start("zm_queue")
 							net.WriteString(zombietype)
@@ -265,7 +266,7 @@ if SERVER then
 					end
 				end
 			else
-				table.insert(self.query, {type = zombietype, cost = data.cost, ply = ply, popCost = data.popCost})
+				table.insert(self.query, {type = zombietype, cost = data.Cost, ply = ply, popCost = data.PopCost})
 			
 				net.Start("zm_queue")
 					net.WriteString(zombietype)
@@ -273,7 +274,7 @@ if SERVER then
 				net.Send(ply)
 			end
 		else
-			ply:PrintMessage(HUD_PRINTTALK, "Queue is full!")
+			ply:PrintTranslatedMessage(HUD_PRINTTALK, "queue_is_full")
 		end
 	end
 

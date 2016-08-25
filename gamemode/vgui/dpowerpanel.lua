@@ -33,9 +33,9 @@ function PANEL:Init()
 	self.button1.alpha = 100
 	
 	self.button1.buttons = {
-		{image = "VGUI/miniselectall", func = function() RunConsoleCommand("zm_selectall_zombies") end, tooltip = "Select all: Select all your zombies."},
-		{image = "VGUI/minishield", func = function() RunConsoleCommand("zm_switch_to_defense") end, tooltip = "Defend: Order selected units to defend their current location."},
-		{image = "VGUI/minicrosshair", func = function() RunConsoleCommand("zm_switch_to_offense") end, tooltip = "Attack: Order selected units to attack any humans they see."}
+		{image = "VGUI/miniselectall", func = function() RunConsoleCommand("zm_selectall_zombies") end, tooltip = translate.Get("tooltip_select_all")},
+		{image = "VGUI/minishield", func = function() RunConsoleCommand("zm_switch_to_defense") end, tooltip = translate.Get("tooltip_defend")},
+		{image = "VGUI/minicrosshair", func = function() RunConsoleCommand("zm_switch_to_offense") end, tooltip = translate.Get("tooltip_attack")}
 	}
 	
 	self.button1.Image = image1
@@ -83,11 +83,14 @@ function PANEL:Init()
 				self.toollab:Center()
 				self.toolpan:Center()
 				self.toolpan:AlignBottom(10)
+				
+				GAMEMODE.ToolPan_Center_Tip = self.toolpan
 			end
 			
 			button.OnCursorExited = function(self)
 				if self.toolpan then
 					self.toolpan:Remove()
+					GAMEMODE.ToolPan_Center_Tip = nil
 				end
 			end
 			
@@ -126,10 +129,10 @@ function PANEL:Init()
 	self.button2.alpha = 100
 	
 	self.button2.buttons = {
-		{image = "VGUI/minieye", func = function() RunConsoleCommand("zm_power_nightvision") end, tooltip = "Nightvision: Toggles your nightvision."},
-		{image = "VGUI/minishockwave", func = function() RunConsoleCommand("zm_power_physexplode") end, tooltip = "Explosion: Click in the world to blast objects away. (Costs "..GetConVar("zm_physexp_cost"):GetInt()..")."},
-		{image = "VGUI/minideletezombies", func = function() RunConsoleCommand("zm_power_killzombies") end, tooltip = "Expire: Relinquish your control of the currently selected units."},
-		{image = "VGUI/minispotcreate", func = function() RunConsoleCommand("zm_power_spotcreate") end, tooltip = "Hidden Summon: Click in the world to create a Shambler. Only works out of sight of the humans (Costs "..GetConVar("zm_spotcreate_cost"):GetInt()..")."}
+		{image = "VGUI/minieye", func = function() RunConsoleCommand("zm_power_nightvision") end, tooltip = translate.Get("tooltip_nightvision")},
+		{image = "VGUI/minishockwave", func = function() RunConsoleCommand("zm_power_physexplode") end, tooltip = translate.Format("tooltip_explosion_cost_x", GetConVar("zm_physexp_cost"):GetInt())},
+		{image = "VGUI/minideletezombies", func = function() RunConsoleCommand("zm_power_killzombies") end, tooltip = translate.Get("tooltip_expire_zombies")},
+		{image = "VGUI/minispotcreate", func = function() RunConsoleCommand("zm_power_spotcreate") end, tooltip = translate.Format("tooltip_hidden_zombie_cost_x", GetConVar("zm_spotcreate_cost"):GetInt())}
 	}
 	
 	self.button2.Image = image2
@@ -145,17 +148,15 @@ function PANEL:Init()
 	self.button3.OnMousePressed = self.button1.OnMousePressed
 	
 	self.button3.buttons = {
-		{image = "VGUI/minigroupadd", func = function() RunConsoleCommand("zm_creategroup") end, tooltip = "Create squad: Create a squad from selected units."},
-		{image = "VGUI/minigroupselect", func = function() RunConsoleCommand("zm_selectgroup") end, tooltip = "Select squad: Select the chosen squad. The units in this squad will be selected."}
+		{image = "VGUI/minigroupadd", func = function() RunConsoleCommand("zm_creategroup") end, tooltip = translate.Get("tooltip_create_squad")},
+		{image = "VGUI/minigroupselect", func = function() RunConsoleCommand("zm_selectgroup") end, tooltip = translate.Get("tooltip_select_squad")}
 	}
 	
 	self.button3.Image = image3
 	self.button3.Paint = ButtonPaint
 end
 
-function PANEL:Paint()
-	local w, h = self:GetSize()
-	
+function PANEL:Paint(w, h)
 	draw.DrawSimpleRect(0, 32, w, h - 32, Color(60, 0, 0, 200))
 	draw.DrawSimpleOutlined(0, 32, w, h - 32, color_black)
 end

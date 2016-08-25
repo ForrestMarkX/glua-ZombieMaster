@@ -1,12 +1,12 @@
-CreateClientConVar("zm_preference", "0", true, true)
-CreateClientConVar("zm_nopreferredmenu", "0", true, false)
+CreateClientConVar("zm_preference", "0", true, true, "What is your Zombie Master preference? (0 = Survivor, 1 = Zombie Master)")
+CreateClientConVar("zm_nopreferredmenu", "0", true, false, "Toggles the preference menu to appear or not.")
 
 local function ZM_Power_PhysExplode(ply)
 	if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) then
 		return
 	end
 	
-	ply:PrintMessage(HUD_PRINTTALK, "Entered explosion mode...")
+	ply:PrintTranslatedMessage(HUD_PRINTTALK, "enter_explosion_mode")
 	
 	GAMEMODE:SetPlacingShockwave(true)
 end
@@ -17,7 +17,7 @@ local function ZM_Power_SpotCreate(ply)
 		return
 	end
 	
-	ply:PrintMessage(HUD_PRINTTALK, "Entered hidden spawn mode...")
+	ply:PrintTranslatedMessage(HUD_PRINTTALK, "enter_hidden_mode")
 	
 	GAMEMODE:SetPlacingSpotZombie(true)
 end
@@ -27,7 +27,7 @@ local function ZM_Power_NightVision(ply)
 	if ply:IsZM() then
 		GAMEMODE.nightVision = not GAMEMODE.nightVision
 		
-		ply:PrintMessage(HUD_PRINTTALK, "Nightvision toggled")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "toggled_nightvision")
 		
 		if not GAMEMODE.nightVision then
 			GAMEMODE.nightVisionCur = 0.5

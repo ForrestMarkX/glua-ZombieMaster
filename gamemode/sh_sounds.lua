@@ -465,7 +465,7 @@ sound.Add( {
 	volume = 0.600,
 	level = 75,
 	pitch = {95, 105},
-	sound = "npc/banshee/test.wav"
+	sound = "npc/banshee/leap1.wav"
 } )
 
 sound.Add( {
@@ -474,7 +474,7 @@ sound.Add( {
 	volume = 0.600,
 	level = 75,
 	pitch = {95, 105},
-	sound = "npc/banshee/test.wav"
+	sound = "npc/banshee/leap1.wav"
 } )
 
 sound.Add( {
@@ -537,7 +537,7 @@ sound.Add( {
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = "npc/banshee/fz_scream1.wav"
+	sound = {"npc/banshee/fz_scream1.wav", "npc/banshee/fz_scream2.wav", "npc/banshee/fz_scream3.wav"}
 } )
 
 sound.Add( {
@@ -546,7 +546,7 @@ sound.Add( {
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = "npc/banshee/leap_begin.wav"
+	sound = "npc/banshee/leap1.wav"
 } )
 
 sound.Add( {
@@ -555,7 +555,7 @@ sound.Add( {
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = {"npc/banshee/fz_frenzy1.wav", "npc/banshee/fz_frenzy2.wav", "npc/banshee/fz_frenzy3.wav", "npc/banshee/fz_frenzy4.wav", "npc/banshee/fz_frenzy5.wav", "npc/banshee/fz_frenzy6.wav", "npc/banshee/fz_frenzy7.wav"}
+	sound = "npc/banshee/fz_frenzy1.wav"
 } )
 
 sound.Add( {

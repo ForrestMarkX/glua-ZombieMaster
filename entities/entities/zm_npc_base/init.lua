@@ -70,40 +70,18 @@ function ENT:PlayVoiceSound(sounds)
 	return output
 end
 
-function ENT:SpawnRagdoll()
-	net.Start("zm_spawnclientragdoll")
-		net.WriteEntity(self)
-	net.Broadcast()
-end
-
 function ENT:Death(killer)
-	if not self.computedDeath then
-		if IsValid(killer) and killer:IsPlayer() then
-			killer:AddFrags(1)
-		end
-
-		local owner = self:GetOwner()
-
-		if IsValid(owner) and owner:IsPlayer() then
-			local popCost = GAMEMODE:GetPopulationCost(self:GetClass())
-			local population = GAMEMODE:GetCurZombiePop()
-
-			popCost = popCost or 1
-
-			GAMEMODE:TakeCurZombiePop(popCost)
-		end
-
-		self.computedDeath = true
-	end
-	
+	gamemode.Call("OnNPCKilled", self, killer, killer)
 	self:PlayVoiceSound(self.deathSounds)
 	
 	self:SetSchedule(SCHED_FALL_TO_GROUND)
-	self:SpawnRagdoll()
 	self:Remove()
 end
 
 function ENT:OnTakeDamage(dmginfo)
+	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
+	if GAMEMODE:CallZombieFunction(self:GetClass(), "OnTakeDamage", self, attacker, inflictor, dmginfo) then return true end
+	
 	local damage = dmginfo:GetDamage()
 	local position = dmginfo:GetDamagePosition()
 	

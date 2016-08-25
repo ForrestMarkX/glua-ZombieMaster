@@ -1,7 +1,12 @@
 CreateConVar("zm_physexp_forcedrop_radius", "128", FCVAR_NOTIFY, "Radius in which players are forced to drop what they carry so that the physexp can affect the objects.")
 CreateConVar("zm_loadout_disable", "0", FCVAR_NOTIFY, "If set to 1, any info_loadout entity will not hand out weapons. Not recommended unless you're intentionally messing with game balance and playing on maps that support this move.")
 
-CreateConVar("zm_debug_nozombiemaster", "0", FCVAR_NOTIFY, "Used for debug, will not cause players to become the ZM.")
+CreateConVar("zm_debug_nozombiemaster", "0", FCVAR_NOTIFY + FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE, "Used for debug, will not cause players to become the ZM.")
+cvars.AddChangeCallback("zm_debug_nozombiemaster", function(convar_name, value_old, value_new)
+	timer.Simple(2, function() hook.Call("PreRestartRound", GAMEMODE) end)
+	timer.Simple(3, function() hook.Call("RestartRound", GAMEMODE) end)
+end)
+
 CreateConVar("zm_roundlimit","2", FCVAR_NOTIFY, "Sets the number of rounds before the server changes map\n" )
 CreateConVar("zm_nocollideplayers","0", FCVAR_NOTIFY, "Should players not collide with each other?" )
 CreateConVar("zm_banshee_limit", "-1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Sets maximum number of banshees per survivor that the ZM is allowed to have active at once. Set to 0 or lower to remove the cap. Disabled by default since new population system was introduced that in practice includes a banshee limit.")
@@ -20,14 +25,14 @@ local function ZM_Power_PhysExplode_SV(ply, command, arguments)
 	local mousepos = Vector(vec[1], vec[2], vec[3])
 	local tr = util.TraceLine({start = ply:EyePos(), endpos = ply:EyePos() + mousepos * (75 ^ 2), filter = player.GetAll(), mask = MASK_SOLID})
 	if not tr.Hit then
-		ply:PrintMessage(HUD_PRINTTALK, "Couldn't find a surface to place the explosion.")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "invalid_surface_for_explosion")
 		return
 	end
 	
 	local location = tr.HitPos
 	
 	if not ply:CanAfford(GetConVar("zm_physexp_cost"):GetInt()) then
-		ply:PrintMessage(HUD_PRINTTALK, "Insufficient resources.\n")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "not_enough_resources")
 		return
 	end
 	
@@ -39,7 +44,7 @@ local function ZM_Power_PhysExplode_SV(ply, command, arguments)
 		ent:SetPos(location)
 		ent:Activate()
 		ent:DelayedExplode( ZM_PHYSEXP_DELAY )
-		ply:PrintMessage(HUD_PRINTTALK, "Explosion created.")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "explosion_created")
 	end
 end
 concommand.Add("_place_physexplode_zm", ZM_Power_PhysExplode_SV)
@@ -57,7 +62,7 @@ local function ZM_Power_KillZombies(ply)
 		end
 	end
 	
-	ply:PrintMessage(HUD_PRINTTALK, "Expiring selected zombies...")
+	ply:PrintTranslatedMessage(HUD_PRINTTALK, "killed_all_zombies")
 end
 concommand.Add("zm_power_killzombies", ZM_Power_KillZombies, nil, "Kills all selected zombies")
 
@@ -71,19 +76,20 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 	local tr = util.TraceLine({start = ply:EyePos(), endpos = ply:EyePos() + mousepos * (75 ^ 2), filter = player.GetAll(), mask = MASK_SOLID})
 	local location = tr.HitPos
 
-	local tr_floor = util.TraceHull({start = location + Vector(0, 0, 25), endpos = location - Vector(0, 0, 25), filter = player.GetAll(), mins = Vector(-64, -64, 0), maxs = Vector(64, 64, 24), mask = MASK_NPCSOLID})
+	local tr_floor = util.TraceHull({start = location + Vector(0, 0, 25), endpos = location - Vector(0, 0, 25), filter = player.GetAll(), mins = Vector(-13, -13, 0), maxs = Vector(13, 13, 72), mask = MASK_NPCSOLID})
 	if tr_floor.Fraction == 1.0 then
-		ply:PrintMessage(HUD_PRINTCENTER, "The zombie does not fit in that location!\n")
+		ply:PrintTranslatedMessage(HUD_PRINTCENTER, "zombie_does_not_fit")
 		return
 	end
 
 	location = tr_floor.HitPos
 
 	if not ply:CanAfford(GetConVar("zm_spotcreate_cost"):GetInt()) then
-		ply:PrintMessage(HUD_PRINTTALK, "Insufficient resources.\n")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "not_enough_resources")
 		return
 	end
 
+	local vecSpot = Vector(0,0,0)
 	local vecHeadTarget = location
 
 	vecHeadTarget.z = vecHeadTarget.z + 64
@@ -94,7 +100,7 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 				local vecMins = v:OBBMins()
 				local vecMaxs = v:OBBMaxs()
 				if vecMins.x <= location.x and vecMins.y <= location.y and vecMins.z <= location.z and vecMaxs.x >= location.x and vecMaxs.y >= location.y and vecMaxs.z >= location.z then
-					ply:PrintMessage( HUD_PRINTTALK, "No hidden zombie may be created there\n" )
+					ply:PrintTranslatedMessage( HUD_PRINTTALK, "zombie_cant_be_created" )
 					return
 				end
 			end
@@ -104,14 +110,33 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 	local visible = false
 	for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
 		if IsValid(pl) then
-			local pos = pl:GetPos()
-			local nearest = pl:NearestPoint(vecHeadTarget)
-			if TrueVisible(pos, nearest) then
+			vecSpot = pl:GetPos()
+			
+			local tr = util.TraceLine( {
+				start = location,
+				endpos = vecSpot,
+				filter = player.GetAll(),
+				mask = MASK_OPAQUE
+			} )
+
+			local visible = false
+			if tr.fraction == 1.0 then
+				visible = true
+			end
+
+			local tr = util.TraceLine( {
+				start = vecHeadTarget,
+				endpos = vecSpot,
+				filter = player.GetAll(),
+				mask = MASK_OPAQUE
+			} )
+
+			if tr.fraction == 1.0 then
 				visible = true
 			end
 			
 			if visible then
-				ply:PrintMessage(HUD_PRINTCENTER, "One of the survivors can see this location!\n" )
+				ply:PrintTranslatedMessage(HUD_PRINTCENTER, "human_can_see_location" )
 				return
 			end
 		end
@@ -119,7 +144,7 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 	
 	local pZombie = gamemode.Call("SpawnZombie", ply, "npc_zombie", location, ply:EyeAngles(), GetConVar("zm_spotcreate_cost"):GetInt())
 	if IsValid(pZombie) then
-		ply:PrintMessage(HUD_PRINTTALK, "Hidden zombie spawned.")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "hidden_zombie_spawned")
 	end
 end
 concommand.Add("_place_zombiespot_zm", ZM_Power_SpotCreate_SV)
@@ -251,11 +276,40 @@ local function ZM_Command_NPC(ply, command, arguments)
 	if ply:IsZM() then
 		local vec = string.Explode(" ", arguments[1])
 		local position = Vector(vec[1], vec[2], vec[3])
+		local ent = nil
+		
+		if arguments[2] ~= "" then
+			ent = Entity(tonumber(arguments[2]))
+		end
 		
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
 			if IsValid(entity) and entity:GetSharedBool("selected", false) and entity:IsNPC() then
-				entity:ForceGoto(position)
-				entity.isMoving = true
+				if IsValid(ent) then
+					if position:Distance(entity:GetPos()) <= 45 and not ent:IsPlayer() then
+						if entity.NextMeleeClick and entity.NextMeleeClick > CurTime() then
+							return
+						end
+						
+						entity.NextMeleeClick = CurTime() + 2
+						entity:SetSchedule(SCHED_COMBAT_FACE)
+						
+						timer.Simple(0, function() 
+							if not IsValid(entity) then return end
+							
+							if not entity:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then
+								entity:SetSchedule(SCHED_MELEE_ATTACK1)
+							end
+						end)
+						
+						return
+					end
+					
+					entity:ForceGoto(position)
+					entity.isMoving = true
+				else
+					entity:ForceGoto(position)
+					entity.isMoving = true
+				end
 			end
 		end
 	end
@@ -290,7 +344,7 @@ concommand.Add("zm_selectall_zombies", function(ply, command, arguments)
 			end
 		end
 		
-		ply:PrintMessage(HUD_PRINTTALK, "Selected all zombies")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "all_zombies_selected")
 	end
 end)
 
@@ -308,7 +362,7 @@ concommand.Add("zm_placetrigger", function(ply, command, arguments)
 		
 			ply:TakeZMPoints(cost)
 			
-			ply:PrintMessage(HUD_PRINTTALK, "Creating trap trigger...")
+			ply:PrintTranslatedMessage(HUD_PRINTTALK, "trap_created")
 		end
 	end
 end)
@@ -358,7 +412,7 @@ concommand.Add("zm_placerally", function(ply, command, arguments)
 
 			entity:SetRallyEntity(rallyPoint)
 			
-			ply:PrintMessage(HUD_PRINTTALK, "Creating rally point...")
+			ply:PrintTranslatedMessage(HUD_PRINTTALK, "rally_created")
 		end
 	end
 end)
@@ -384,7 +438,7 @@ concommand.Add("zm_creategroup", function(ply, command, arguments)
 		
 		GAMEMODE.selectedgroup = currentmaxgroup
 		
-		ply:PrintMessage(HUD_PRINTTALK, "Creating group...")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "group_created")
 
 		net.Start("zm_sendcurrentgroups")
 			net.WriteTable(GAMEMODE.groups)
@@ -423,7 +477,7 @@ concommand.Add("zm_selectgroup", function(ply, command, arguments)
 			end
 		end
 		
-		ply:PrintMessage(HUD_PRINTTALK, "Selecting group...")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "group_selected")
 	end
 end)
 
@@ -435,7 +489,7 @@ concommand.Add("zm_switch_to_defense", function(ply, command, arguments)
 				entity.isMoving = false
 			end
 		end
-		ply:PrintMessage(HUD_PRINTTALK, "Selected zombies are now in defensive mode")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "set_zombies_to_defensive_mode")
 	end
 end)
 
@@ -447,7 +501,7 @@ concommand.Add("zm_switch_to_offense", function(ply, command, arguments)
 				entity.isMoving = true
 			end
 		end
-		ply:PrintMessage(HUD_PRINTTALK, "Selected zombies are now in offensive mode")
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "set_zombies_to_offensive_mode")
 	end
 end)
 

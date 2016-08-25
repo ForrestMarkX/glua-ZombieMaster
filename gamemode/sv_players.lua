@@ -2,10 +2,12 @@ local meta = FindMetaTable("Player")
 if not meta then return end
 
 function meta:SetZMPoints(points)
+	if points < 0 then points = 0 end
 	self:SetDTInt(1, points)
 end
 
 function meta:SetZMPointIncome(amount)
+	if amount < 0 then amount = 0 end
 	self:SetDTInt(2, amount)
 end
 
@@ -45,6 +47,8 @@ end
 function meta:DropAllAmmo()
 	local ammotbl = {}
 	for _, wep in pairs(self:GetWeapons()) do
+		if wep.WeaponIsAmmo then continue end
+		
 		local ammotype = wep.Primary and wep.Primary.Ammo or ""
 		if ammotype ~= "" and ammotype ~= "none" and not ammotbl[ammotype] then
 			ammotbl[ammotype] = self:GetAmmoCount(ammotype)

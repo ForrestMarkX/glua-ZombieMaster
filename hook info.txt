@@ -6,7 +6,7 @@ Hook. Called by scoreboard to draw a special icon for a player
 GM:IsSpecialPerson(Player ply, Panel image)
 
 Hook. Used to determine if the spawn node can spawn the zombie class
-GM:CanSpawnZombie(int flags)
+GM:CanSpawnZombie(int flag, int zombieflags)
 
 Hook. Called when the round restarts
 GM:RestartRound()

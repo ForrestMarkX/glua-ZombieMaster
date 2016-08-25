@@ -5,13 +5,22 @@ GM.Website = "http://steamcommunity.com/id/ForrestMarkX/"
 GM.TeamBased = true
 
 GM.Credits = {
-	{"Forrest Mark X", "http://steamcommunity.com/id/ForrestMarkX/", "Progammer"},
+	{"Forrest Mark X", "http://steamcommunity.com/id/ForrestMarkX/", "Programmer"},
 	{"William \"JetBoom\" Moodhe", "www.noxiousnet.com", "Code snippets from Zombie Survival"},
 	{"Chewgum", "", "Vestige gamemode code"},
-	{"Mka0207", "http://steamcommunity.com/id/mka0207/myworkshopfiles", "Building the base and icon work"}
+	{"Mka0207", "http://steamcommunity.com/id/mka0207/myworkshopfiles", "Building the base and icon work"},
+	{"Kigen", "", "Providing the shared networking library"},
+	{"xyzzy", "", "Some bits of code from iNPC to make the engine NPCs less stupid"},
+	
+	{"AzoNa, Gabil", "", "French translation"},
+	{"FoxHound", "", "English (UK) translation"},
+	{"plianes766", "", "Chinese (Traditional) translation"},
+	{"Navi", "", "Korean translation"},
+	{"Kit Ballard, RS689", "", "German translation"}
 }
 
 include("sh_networking.lua")
+include("sh_translate.lua")
 include("sh_sounds.lua")
 include("sh_zm_globals.lua")
 include("sh_utility.lua")
@@ -22,7 +31,7 @@ include("sh_zm_options.lua")
 include("sh_weapons.lua")
 include("sh_players.lua")
 include("sh_entites.lua")
-include("sh_npc.lua")
+include("sh_zombies.lua")
 
 function GM:Initialize()
 	for name, mdl in pairs(player_manager.AllValidModels()) do
@@ -38,66 +47,6 @@ function GM:Initialize()
 	game.AddAmmoType({name = "unused"})
 	
 	hook.Call("BuildZombieDataTable", self)
-	
-	if CLIENT then
-		local screenscale = BetterScreenScale()
-		
-		surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = screenscale * 120, weight = 500, blursize = 0, scanlines = 0, antialias = true, additive = false})
-		surface.CreateFont("zm_hud_font", {font = "Consolas", size = 20, weight = 700, antialias = true, additive = false})
-		surface.CreateFont("zm_hud_font2", {font = "Consolas", size = 16, weight = 700, antialias = true, additive = false})
-		
-		surface.CreateFont("ZMHUDFontTiny", {font = "Consolas", size = screenscale * 16, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMHUDFontSmallest", {font = "Consolas", size = screenscale * 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMHUDFontSmaller", {font = "Consolas", size = screenscale * 22, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMHUDFontSmall", {font = "Consolas", size = screenscale * 28, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMHUDFont", {font = "Consolas", size = screenscale * 42, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMHUDFontBig", {font = "Consolas", size = screenscale * 72, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMHUDFontTinyBlur", {font = "Consolas", size = screenscale * 16, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-		surface.CreateFont("ZMHUDFontSmallerBlur", {font = "Consolas", size = screenscale * 22, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-		surface.CreateFont("ZMHUDFontSmallBlur", {font = "Consolas", size = screenscale * 28, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-		surface.CreateFont("ZMHUDFontBlur", {font = "Consolas", size = screenscale * 42, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-		surface.CreateFont("ZMHUDFontBigBlur", {font = "Consolas", size = screenscale * 72, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-		
-		surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = 32, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMScoreBoardSubTitle", {font = "Verdana", size = 22, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana", size = 16, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana", size = 24, weight = 0, antialias = true, additive = false, shadow = false, outline = false})
-		surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-		
-		surface.CreateFont("DefaultFontVerySmall", {font = "Consolas", size = 10, weight = 0, antialias = false})
-		surface.CreateFont("DefaultFontSmall", {font = "Consolas", size = 11, weight = 0, antialias = false})
-		surface.CreateFont("DefaultFontSmallDropShadow", {font = "Consolas", size = 11, weight = 0, shadow = true, antialias = false})
-		surface.CreateFont("DefaultFont", {font = "Consolas", size = 13, weight = 500, antialias = false})
-		surface.CreateFont("DefaultFontBold", {font = "Consolas", size = 13, weight = 1000, antialias = false})
-		surface.CreateFont("DefaultFontLarge", {font = "Consolas", size = 16, weight = 0, antialias = false})
-	else
-		self:SetRoundStartTime(5)
-		self:SetRoundStart(true)
-		self:SetRoundActive(false)
-		
-		self:AddResources()
-
-		util.AddNetworkString("PlayerKilledByNPC")
-		
-		util.AddNetworkString("zm_gamemodecall")
-		util.AddNetworkString("zm_trigger")
-		util.AddNetworkString("zm_mapinfo")	
-		util.AddNetworkString("zm_queue")
-		util.AddNetworkString("zm_remove_queue")
-		util.AddNetworkString("zm_sendcurrentgroups")
-		util.AddNetworkString("zm_sendselectedgroup")
-		util.AddNetworkString("zm_spawnclientragdoll")
-		util.AddNetworkString("zm_coloredprintmessage")
-		
-		game.ConsoleCommand("fire_dmgscale 1\nmp_falldamage 1\nsv_gravity 600\n")
-		
-		local mapinfo = "maps/"..game.GetMap()..".txt"
-		if file.Exists(mapinfo, "GAME") then
-			self.MapInfo = file.Read(mapinfo, "GAME")
-		else
-			self.MapInfo = "No objectives found!"
-		end
-	end
 end
 
 function GM:CreateTeams()
@@ -113,100 +62,8 @@ function GM:CreateTeams()
 	team.SetSpawnPoint(TEAM_SPECTATOR, {"info_player_deathmatch", "info_player_zombiemaster", "worldspawn"})
 end
 
-function GM:GetPopulationCost(type)
-	if type == "npc_fastzombie" then
-		return GetConVar("zm_popcost_banshee"):GetInt()
-	elseif type == "npc_zombie" then
-		return GetConVar("zm_popcost_shambler"):GetInt()
-	elseif type == "npc_poisonzombie" then
-		return GetConVar("zm_popcost_hulk"):GetInt()
-	elseif type == "npc_burnzombie" then
-		return GetConVar("zm_popcost_immolator"):GetInt()
-	elseif type == "npc_dragzombie" then
-		return GetConVar("zm_popcost_drifter"):GetInt()
-	end
-	
-	return 0
-end
-
-function GM:GetResourceCost(type)
-	if type == "npc_zm_fastzombie" then
-		return GetConVar("zm_cost_banshee"):GetInt()
-	elseif type == "npc_zm_zombie" then
-		return GetConVar("zm_cost_shambler"):GetInt()
-	elseif type == "npc_zm_poisonzombie" then
-		return GetConVar("zm_cost_hulk"):GetInt()
-	elseif type == "npc_burnzombie" then
-		return GetConVar("zm_cost_immolator"):GetInt()
-	elseif type == "npc_dragzombie" then
-		return GetConVar("zm_cost_drifter"):GetInt()
-	end
-	
-	return 0
-end
-
 function GM:PlayerIsAdmin(pl)
 	return pl:IsAdmin()
-end
-
---[[
-	- Angry Lawyer: April 17, 2007 -
-	
-	Note about ZombieFlags 
-	These are set by adding the following numbers together: 
-
-	0 - Everything 
-	1 - Shamblers 
-	2 - Banshees 
-	4 - Hulks 
-	8 - Drifters
-	16 - Immolators
-	
-	Max: 31
-]]
-
-function GM:CanSpawnZombie(flag)
-	local allowed = {}
-	allowed[1] = false
-	allowed[2] = false
-	allowed[4] = false
-	allowed[8] = false
-	allowed[16] = false
-	
-	if flag == 0 then
-		return true
-	else
-		for i = 1, 5 do
-			if (flag - 16) >= 0 then
-				flag = flag -16
-				allowed[16] = true
-			end
-
-			if (flag - 8) >= 0 then
-				flag = flag -8
-				allowed[8] = true
-			end
-
-			if (flag - 4) >= 0 then
-				flag = flag -4
-				allowed[4] = true
-			end
-
-			if (flag - 2) >= 0 then
-				flag = flag -2
-				allowed[2] = true
-			end
-
-			if (flag - 1) >= 0 then
-				flag = flag -1
-				allowed[1] = true
-			end
-		end
-		
-		return allowed
-	end
-	
-	return false
 end
 
 function GM:FindZM()
@@ -242,20 +99,17 @@ function GM:IsSpecialPerson(pl, image)
 	local steamid = pl:SteamID()
 
 	if steamid == "STEAM_0:0:18807892" then
-		img = "icon16/application_xp_terminal.png"
+		img = "icon16/page_white_cplusplus.png"
 		tooltip = "ForrestMarkX\nDeveloper!"
-	elseif steamid == "STEAM_0:1:3307510" then
-		img = "icon16/heart.png"
-		tooltip = "JetBoom\nContributor!"
-	elseif steamid == "STEAM_0:0:8232794" then
-		img = "icon16/heart.png"
-		tooltip = "Chewgum\nContributor!"
-	elseif steamid == "STEAM_0:0:18000855" then
-		img = "icon16/heart.png"
-		tooltip = "Mka0207\nContributor!"	
 	elseif pl:IsAdmin() then
 		img = "icon16/shield.png"
 		tooltip = "Admin"
+	end
+	
+	local contributor = self.ContributorList[steamid]
+	if contributor then
+		img = "icon16/heart.png"
+		tooltip = contributor.."\nContributor!"
 	end
 
 	if img then
@@ -286,97 +140,10 @@ function GM:GetRoundEnd()
     return GetSharedBool("zm_round_ended", false)
 end
 
-function GM:GetCurZombiePop()
-	return GetSharedInt("m_iZombiePopCount", 0)
-end
-
-function GM:GetMaxZombiePop()
-	return GetConVar("zm_zombiemax"):GetInt()
-end
-
 function GM:ShouldCollide(enta, entb)
 	if enta.ShouldNotCollide and enta:ShouldNotCollide(entb) or entb.ShouldNotCollide and entb:ShouldNotCollide(enta) then
 		return false
 	end
 
 	return true
-end
-
-local zombieData = {}
-function GM:AddZombieType(data)
-	table.insert(zombieData, data)
-end
-
-function GM:GetZombieTable()
-	return zombieData
-end
-
-function GM:GetZombieData(class)
-	for _, data in ipairs(zombieData) do
-		if data.class == class then
-			return data
-		end
-	end
-end
-
-function GM:BuildZombieDataTable()
-	-- Shambler.
-	local shambler = {}
-	shambler.class = "npc_zombie"
-	shambler.name = "Shambler"
-	shambler.description = "Weak and slow, but packs a punch and smashes barricades."
-	shambler.icon = "VGUI/zombies/info_shambler"
-	shambler.flag = 1
-	shambler.cost = hook.Call("GetResourceCost", self, shambler.class)
-	shambler.popCost = hook.Call("GetPopulationCost", self, shambler.class)
-
-	self:AddZombieType(shambler)
-
-	-- Banshee.
-	local banshee = {}
-	banshee.class = "npc_fastzombie"
-	banshee.name = "Banshee"
-	banshee.description = "A fast zombie, it's faster than the rest. But it can't take that much damage."
-	banshee.icon = "VGUI/zombies/info_banshee"
-	banshee.flag = 2
-	banshee.cost = hook.Call("GetResourceCost", self, banshee.class)
-	banshee.popCost = hook.Call("GetPopulationCost", self, banshee.class)
-
-	self:AddZombieType(banshee)
-
-	-- Hulk.
-	local hulk = {}
-	hulk.class = "npc_poisonzombie"
-	hulk.name = "Hulk"
-	hulk.description = "Big. Strong. Hulks smash humans to bits."
-	hulk.icon = "VGUI/zombies/info_hulk"
-	hulk.flag = 4
-	hulk.cost = hook.Call("GetResourceCost", self, hulk.class)
-	hulk.popCost = hook.Call("GetPopulationCost", self, hulk.class)
-
-	self:AddZombieType(hulk)
-
-	-- Drifter.
-	local drifter = {}
-	drifter.class = "npc_dragzombie"
-	drifter.name = "Drifter"
-	drifter.description = "Spits disorienting acid over a short distance."
-	drifter.icon = "VGUI/zombies/info_drifter"
-	drifter.flag = 8
-	drifter.cost = hook.Call("GetResourceCost", self, drifter.class)
-	drifter.popCost = hook.Call("GetPopulationCost", self, drifter.class)
-
-	self:AddZombieType(drifter)
-
-	-- Immolator.
-	local immolator = {}
-	immolator.class = "npc_burnzombie"
-	immolator.name = "Immolator"
-	immolator.description = "Burns itself and everything around it in combat."
-	immolator.icon = "VGUI/zombies/info_immolator"
-	immolator.flag = 16
-	immolator.cost = hook.Call("GetResourceCost", self, immolator.class)
-	immolator.popCost = hook.Call("GetPopulationCost", self, immolator.class)
-
-	self:AddZombieType(immolator)
 end

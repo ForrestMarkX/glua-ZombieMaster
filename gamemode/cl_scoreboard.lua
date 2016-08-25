@@ -103,9 +103,13 @@ function PANEL:Think()
 	end
 	
 	if self.Player:Team() ~= self._LastTeam then
+		g_Scoreboard.SurvivorsList:InvalidateLayout()
+		g_Scoreboard.ZombieMasterList:InvalidateLayout()
+		g_Scoreboard.SpectatorsList:InvalidateLayout()
+		
 		self._LastTeam = self.Player:Team()
-		self:SetZPos(9999)
 		self:SetParent(self._LastTeam == TEAM_SURVIVOR and g_Scoreboard.SurvivorsList or self._LastTeam == TEAM_ZOMBIEMASTER and g_Scoreboard.ZombieMasterList or g_Scoreboard.SpectatorsList)
+		self:SetZPos(9999)
 	end
 
 	self:SetZPos((self.NumKills * -50) + self.NumDeaths + self.Player:EntIndex())
@@ -172,31 +176,31 @@ function PANEL:Init()
 	self.NameCol:SetFont("ZMScoreBoardPlayer")
 	self.NameCol:DockMargin(85, 0, 0, 0)
 	self.NameCol:SetColor(color_white)
-	self.NameCol:SetText("Name")
+	self.NameCol:SetText(translate.Get("scoreboard_name"))
 
 	self.PingCol = self.HeadersPan:Add("DLabel")
 	self.PingCol:Dock(RIGHT)
 	self.PingCol:SetFont("ZMScoreBoardPlayer")
 	self.PingCol:SetColor(color_white)
-	self.PingCol:SetText("Ping")
+	self.PingCol:SetText(translate.Get("scoreboard_ping"))
 	
 	self.MuteCol = self.HeadersPan:Add("DLabel")
 	self.MuteCol:Dock(RIGHT)
 	self.MuteCol:SetFont("ZMScoreBoardPlayer")
 	self.MuteCol:SetColor(color_white)
-	self.MuteCol:SetText("Mute")
+	self.MuteCol:SetText(translate.Get("scoreboard_mute"))
 
 	self.DeathsCol = self.HeadersPan:Add("DLabel")
 	self.DeathsCol:Dock(RIGHT)
 	self.DeathsCol:SetFont("ZMScoreBoardPlayer")
 	self.DeathsCol:SetColor(color_white)
-	self.DeathsCol:SetText("Deaths")
+	self.DeathsCol:SetText(translate.Get("scoreboard_deaths"))
 
 	self.KillsCol = self.HeadersPan:Add("DLabel")
 	self.KillsCol:Dock(RIGHT)
 	self.KillsCol:SetFont("ZMScoreBoardPlayer")
 	self.KillsCol:SetColor(color_white)
-	self.KillsCol:SetText("Kills")
+	self.KillsCol:SetText(translate.Get("scoreboard_kills"))
 	
 	self.PlayerList = self:Add("DScrollPanel")
 	self.PlayerList:SetPos(0, 84)

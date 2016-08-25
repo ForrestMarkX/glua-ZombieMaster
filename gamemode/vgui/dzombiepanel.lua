@@ -56,7 +56,7 @@ function PANEL:Init()
 	self.imageBackground:SetPos(146, 30)
 	self.imageBackground.Paint = function() 
 		surface.SetDrawColor(Color(52, 0, 0, 250))
-		surface.DrawRect(0, 0, w - 5, h - 5)
+		surface.DrawRect(0, 0, ScrW() - 5, ScrH() - 5)
 	end
 	
 	self.buttons = vgui.Create("DPanelList", self)
@@ -145,23 +145,23 @@ end
 function PANEL:Populate()
 	local zombieData = GAMEMODE:GetZombieTable()
 	
-	for k, data in ipairs(zombieData) do
+	for k, data in SortedPairsByMemberValue(zombieData, "Cost", false) do
 		local buttonBase = vgui.Create("DPanel")
 		buttonBase:SetTall(28)
 		buttonBase.Paint = function() end
 		
 		local buttonSingle = vgui.Create("DButton", buttonBase)
 		buttonSingle:SetSize(75, 28)
-		buttonSingle:SetText(data.name)
+		buttonSingle:SetText(data.Name)
 		buttonSingle.Paint = PaintButton
 		buttonSingle.Think = ThinkButtonZombie
 		buttonSingle.DoClick = function()
-			RunConsoleCommand("zm_spawnzombie", self:GetCurrent(), data.class, 1)
+			RunConsoleCommand("zm_spawnzombie", self:GetCurrent(), data.Class, 1)
 		end
 		
 		buttonSingle.OnCursorEntered = function()
 			self.image = vgui.Create("DImage", self)
-			self.image:SetImage(data.icon)
+			self.image:SetImage(data.Icon)
 			self.image:SetPos(146, 30)
 			self.image:SetSize(142, 142)
 
@@ -170,13 +170,13 @@ function PANEL:Populate()
 			self.base:SetSize(200, 106)
 			self.base.Paint = function() end
 			
-			self.costLabel = EasyLabel(self.base, "Resources: " .. data.cost, "DefaultFontBold", color_white)
+			self.costLabel = EasyLabel(self.base, "Resources: " .. data.Cost, "DefaultFontBold", color_white)
 			self.costLabel:SetPos(5, 20)
 			
-			self.popLabel = EasyLabel(self.base, "Population: " .. data.popCost, "DefaultFontBold", color_white)
+			self.popLabel = EasyLabel(self.base, "Population: " .. data.PopCost, "DefaultFontBold", color_white)
 			self.popLabel:SetPos(5, 40)
 			
-			self.desc = EasyLabel(self.base, data.description, "DefaultFontBold", color_white)
+			self.desc = EasyLabel(self.base, data.Description, "DefaultFontBold", color_white)
 			self.desc:SetPos(5, 60)
 			self.desc:DockMargin(5, 60, 12, 0)
 			self.desc:Dock(FILL)
@@ -200,15 +200,12 @@ function PANEL:Populate()
 		buttonFive.Paint = PaintButton
 		buttonFive.Think = ThinkButtonZombie
 		buttonFive.DoClick = function()
-			RunConsoleCommand("zm_spawnzombie", self:GetCurrent(), data.class, 5)
+			RunConsoleCommand("zm_spawnzombie", self:GetCurrent(), data.Class, 5)
 		end
 		
 		buttonFive:MoveRightOf(buttonSingle, 5)
 		
-		local zombieFlags = self:GetZombieflags()
-		local allowed = gamemode.Call("CanSpawnZombie", zombieFlags)
-		
-		if allowed and type(allowed) == "table" and not allowed[data.flag] then
+		if not gamemode.Call("CanSpawnZombie", data.Flag or 0, self:GetZombieflags()) then
 			buttonSingle:SetDisabled(true)
 			buttonFive:SetDisabled(true)
 		end
@@ -222,7 +219,7 @@ end
 
 function PANEL:AddQueue(type)
 	local data = GAMEMODE:GetZombieData(type)
-	local smallImage = "VGUI/zombies/queue_"..string.lower(data.name)
+	local smallImage = "VGUI/zombies/queue_"..string.lower(data.Name)
 	
 	local image = vgui.Create("DImage")
 	image:SetImage(smallImage)

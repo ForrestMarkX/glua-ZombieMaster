@@ -93,11 +93,50 @@ function GM:PostClientInit()
 end
 
 function GM:OnReloaded()
+	hook.Call("BuildZombieDataTable", self)
 	hook.Call("PostClientInit", self)
 end
 
 function GM:InitPostEntity()
 	hook.Call("PostClientInit", self)
+end
+
+function GM:PostGamemodeLoaded()
+	language.Add("revolver_ammo", "Revolver Ammo")
+	language.Add("molotov_ammo", "Molotov Ammo")
+	
+	local screenscale = BetterScreenScale()
+	
+	surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = screenscale * 120, weight = 500, blursize = 0, scanlines = 0, antialias = true, additive = false})
+	surface.CreateFont("zm_hud_font", {font = "Consolas", size = 20, weight = 700, antialias = true, additive = false})
+	surface.CreateFont("zm_hud_font2", {font = "Consolas", size = 16, weight = 700, antialias = true, additive = false})
+	
+	surface.CreateFont("ZMHUDFontTiny", {font = "Consolas", size = screenscale * 16, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMHUDFontSmallest", {font = "Consolas", size = screenscale * 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMHUDFontSmaller", {font = "Consolas", size = screenscale * 22, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMHUDFontSmall", {font = "Consolas", size = screenscale * 28, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMHUDFont", {font = "Consolas", size = screenscale * 42, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMHUDFontBig", {font = "Consolas", size = screenscale * 72, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMHUDFontTinyBlur", {font = "Consolas", size = screenscale * 16, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+	surface.CreateFont("ZMHUDFontSmallerBlur", {font = "Consolas", size = screenscale * 22, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+	surface.CreateFont("ZMHUDFontSmallBlur", {font = "Consolas", size = screenscale * 28, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+	surface.CreateFont("ZMHUDFontBlur", {font = "Consolas", size = screenscale * 42, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+	surface.CreateFont("ZMHUDFontBigBlur", {font = "Consolas", size = screenscale * 72, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+	
+	surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = 32, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMScoreBoardSubTitle", {font = "Verdana", size = 22, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana", size = 16, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana", size = 24, weight = 0, antialias = true, additive = false, shadow = false, outline = false})
+	surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	
+	surface.CreateFont("ZSHUDFontSmallestNS", {font = "Verdana", size = screenscale * 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
+	
+	surface.CreateFont("DefaultFontVerySmall", {font = "Consolas", size = 10, weight = 0, antialias = false})
+	surface.CreateFont("DefaultFontSmall", {font = "Consolas", size = 11, weight = 0, antialias = false})
+	surface.CreateFont("DefaultFontSmallDropShadow", {font = "Consolas", size = 11, weight = 0, shadow = true, antialias = false})
+	surface.CreateFont("DefaultFont", {font = "Consolas", size = 13, weight = 500, antialias = false})
+	surface.CreateFont("DefaultFontBold", {font = "Consolas", size = 13, weight = 1000, antialias = false})
+	surface.CreateFont("DefaultFontLarge", {font = "Consolas", size = 16, weight = 0, antialias = false})
 end
 
 function GM:_PrePlayerDraw(ply)
@@ -336,12 +375,12 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			end
 		elseif mouseCode == MOUSE_RIGHT then
 			if placingShockwave then
-				LocalPlayer():PrintMessage(HUD_PRINTTALK, "Exited explosion mode...")
+				LocalPlayer():PrintTranslatedMessage(HUD_PRINTTALK, "exit_explosion_mode")
 				placingShockwave = false
 				zm_placedpoweritem = false
 				return
 			elseif placingZombie then
-				LocalPlayer():PrintMessage(HUD_PRINTTALK, "Exited hidden spawn mode...")
+				LocalPlayer():PrintTranslatedMessage(HUD_PRINTTALK, "exit_hidden_mode")
 				placingZombie = false
 				zm_placedpoweritem = true
 				return
@@ -357,14 +396,14 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			
 			click_delta = CurTime()
 
-			local tr = TraceLongDistance(aimVector, true)
+			local tr = TraceLongDistance(aimVector)
 			zm_ring_pos = tr.HitPos
 			zm_ring_ang = tr.HitNormal:Angle()
 			zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
 			
 			zm_rightclicked = true
 			
-			RunConsoleCommand("zm_command_npcgo", tostring(zm_ring_pos))
+			RunConsoleCommand("zm_command_npcgo", tostring(tr.HitPos), tr.Entity and tr.Entity:EntIndex() or "")
 		end
 	end
 end
@@ -522,6 +561,7 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 		ragdoll:SetModel(ent:GetModel())
 		ragdoll.fadeAlpha = 255
 		
+		local entname = tostring(ent)
 		local fadetime = instantfade and 0 or GetConVar("zm_ragdoll_fadetime"):GetInt()
 		timer.Simple(fadetime, function()
 			if not IsValid(ragdoll) then return end
@@ -529,17 +569,28 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 			ragdoll:SetRenderMode(RENDERMODE_TRANSALPHA)
 			
 			local col = Color(255, 255, 255)
-			local timername = "FadeRagdoll_"..tostring(ent).."_"..entnum
+			local timername = "FadeRagdoll_"..entname.."_"..entnum
 			entnum = entnum + 1
 			timer.Create(timername, 0, 0, function()
 				if not IsValid(ragdoll) then timer.Destroy(timername) end
+				if ragdoll.fadeAlpha == nil then ragdoll.fadeAlpha = 255 end
 				
-				if ragdoll.fadeAlpha <= 0 then
+				if ragdoll.fadeAlpha and ragdoll.fadeAlpha <= 0 then
 					entnum = entnum - 1
 					
 					timer.Destroy(timername)
 					ragdoll:Remove()
+					
+					if IsValid(ent) then
+						ent:Remove()
+					end
+					
 					return
+				elseif not ragdoll.fadeAlpha then
+					ragdoll:Remove()
+					if IsValid(ent) then
+						ent:Remove()
+					end
 				end
 				
 				ragdoll.fadeAlpha = ragdoll.fadeAlpha - (255 * FrameTime())
@@ -700,6 +751,10 @@ function GM:RestartRound()
 	
 	if IsValid(self.powerMenu) then
 		self.powerMenu:Remove()
+		
+		if IsValid(self.ToolPan_Center_Tip) then
+			self.ToolPan_Center_Tip:Remove()
+		end
 	end
 	
 	GAMEMODE.ZombieGroups = nil
@@ -760,7 +815,7 @@ net.Receive("PlayerKilled", function(length)
 	if not IsValid(victim) then return end
 	
 	local inflictor	= net.ReadString()
-	local attacker = "Something"
+	local attacker = translate.Get("killmessage_something")
 	
 	GAMEMODE:AddDeathNotice(attacker, TEAM_UNASSIGNED, inflictor, victim:Name(), victim:Team())
 end)

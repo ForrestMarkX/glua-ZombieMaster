@@ -17,9 +17,9 @@ function GM:_HUDPaint()
 	
 	if not self:GetRoundActive() then
 		if not self:GetZMSelection() then
-			draw.SimpleText("Waiting for all players to be ready.", "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
+			draw.SimpleText(translate.Get("waiting_on_players"), "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
 		else
-			draw.SimpleText("All players are ready, choosing a Zombie Master!", "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
+			draw.SimpleText(translate.Get("players_ready"), "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
 		end
 	end
 	
@@ -47,7 +47,7 @@ function GM:HumanHUD(screenscale)
 	local health = LocalPlayer():Health()
 	local healthCol = health <= 10 and Color(185, 0, 0, 255) or health <= 30 and Color(150, 50, 0) or health <= 60 and Color(255, 200, 0) or color_white
 	draw.SimpleTextBlurry(LocalPlayer():Health(), "ZMHUDFontBig", x + wid * 0.75, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	draw.SimpleTextBlurry("Health", "ZMHUDFontSmall", x + wid * 0.27, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	draw.SimpleTextBlurry("#Valve_Hud_HEALTH", "ZMHUDFontSmall", x + wid * 0.27, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 function GM:ZombieMasterHUD(scale)
@@ -228,7 +228,7 @@ local pPlayerModel
 local function SwitchPlayerModel(self)
 	surface.PlaySound("buttons/button14.wav")
 	RunConsoleCommand("cl_playermodel", self.m_ModelName)
-	chat.AddText(COLOR_LIMEGREEN, "You've changed your desired player model to "..tostring(self.m_ModelName))
+	chat.AddText(COLOR_LIMEGREEN, translate.Format("changed_player_model", tostring(self.m_ModelName)))
 
 	pPlayerModel:Close()
 end
@@ -241,7 +241,7 @@ function MakepPlayerModel()
 
 	pPlayerModel = vgui.Create("DFrame")
 	pPlayerModel:SetSkin("Default")
-	pPlayerModel:SetTitle("Player model selection")
+	pPlayerModel:SetTitle(translate.Get("title_playermodels"))
 	pPlayerModel:SetSize(wid, hei)
 	pPlayerModel:Center()
 	pPlayerModel:SetDeleteOnClose(true)
@@ -305,7 +305,7 @@ function MakepPlayerColor()
 	label:SetPos((pPlayerColor:GetWide() - label:GetWide()) / 2, y)
 	y = y + label:GetTall() + 8
 
-	local lab = EasyLabel(pPlayerColor, "Player color")
+	local lab = EasyLabel(pPlayerColor, translate.Get("title_playercolor"))
 	lab:SetPos(8, y)
 	y = y + lab:GetTall()
 
@@ -324,7 +324,7 @@ function MakepPlayerColor()
 	colpicker:SetPos(8, y)
 	y = y + colpicker:GetTall()
 
-	local lab = EasyLabel(pPlayerColor, "Weapon color")
+	local lab = EasyLabel(pPlayerColor, translate.Get("title_weaponcolor"))
 	lab:SetPos(8, y)
 	y = y + lab:GetTall()
 
@@ -362,6 +362,10 @@ local function DrawZMButton(self, w, h)
 	draw.RoundedBox(4, 2, 2, w - 4, h - 4, surfacecolor)
 end
 function GM:ShowOptions()
+	if self.OptionsMenu and self.OptionsMenu:Valid() then
+		self.OptionsMenu:Remove()
+	end
+	
 	local menu = vgui.Create("Panel")
 	menu:SetSize(BetterScreenScale() * 420, ScrH() * 0.35)
 	menu:Center()
@@ -369,16 +373,15 @@ function GM:ShowOptions()
 		draw.RoundedBox(8, 0, 0, w, h, Color(150, 0, 0))
 		draw.RoundedBox(4, 4, 4, w - 7, h - 7, Color(60, 0, 0))
 	end
-	menu.Created = SysTime()
 
 	local header = EasyLabel(menu, self.Name, "ZMHUDFont")
 	header:SetContentAlignment(8)
-	header:DockMargin(0, 10, 0, 64)
+	header:DockMargin(0, 12, 0, 24)
 	header:Dock(TOP)
 	
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
-	but:SetText("Help")
+	but:SetText(translate.Get("button_help"))
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
@@ -389,7 +392,7 @@ function GM:ShowOptions()
 	
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
-	but:SetText("Player Model")
+	but:SetText(translate.Get("button_playermodel"))
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
@@ -400,7 +403,7 @@ function GM:ShowOptions()
 
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
-	but:SetText("Player Color")
+	but:SetText(translate.Get("button_playercolor"))
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
@@ -411,7 +414,7 @@ function GM:ShowOptions()
 
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
-	but:SetText("Credits")
+	but:SetText(translate.Get("button_credits"))
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
@@ -422,7 +425,7 @@ function GM:ShowOptions()
 
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
-	but:SetText("Close")
+	but:SetText(translate.Get("button_close"))
 	but:SetTall(32)
 	but:DockMargin(12, 24, 12, 0)
 	but:DockPadding(0, 12, 0, 12)
@@ -431,7 +434,12 @@ function GM:ShowOptions()
 	but:SetTextColor(color_white)
 	but.Paint = DrawZMButton
 
+	menu:InvalidateLayout(true)
+	menu:SizeToChildren(false, true)
+	menu:SetSize(menu:GetWide(), menu:GetTall() + 12)
 	menu:MakePopup()
+	
+	self.OptionsMenu = menu
 end
 
 function GM:ShowHelp()
@@ -462,7 +470,7 @@ function GM:ShowHelp()
 		draw.RoundedBox(8, 0, 0, w, h, Color(24, 24, 24))
 	end
 	
-	local label = EasyLabel(frame, "Objectives!", "ZMHUDFont", color_white)
+	local label = EasyLabel(frame, translate.Get("title_objectives"), "ZMHUDFont", color_white)
 	label:AlignLeft(frame:GetWide() * 0.1)
 	label:AlignTop(frame:GetTall() * 0.01)
 	
@@ -479,7 +487,7 @@ function GM:ShowHelp()
 	local hoverColor = Color(0, 0, 0)
 	local but = vgui.Create("DButton", frame)
 	but:SetFont("ZMHUDFontSmaller")
-	but:SetText("Okay")
+	but:SetText(translate.Get("button_okay"))
 	but:SetTall(frame:GetTall() * 0.05)
 	but:SetWide(frame:GetWide() * 0.13)
 	but:AlignBottom(frame:GetTall() * 0.012)
@@ -533,7 +541,7 @@ function GM:MakePreferredMenu()
 	local label = vgui.Create("DLabel", frame)
 	label:AlignTop(45)
 	label:SetFont("ZMHUDFontSmaller")
-	label:SetText("Choose your playstyle.")
+	label:SetText(translate.Get("preferred_playstyle"))
 	label:SetTextColor(color_white)
 	label:SizeToContents()
 	label:CenterHorizontal()
@@ -542,7 +550,7 @@ function GM:MakePreferredMenu()
 	but:AlignTop(95)
 	but:SetWide(250)
 	but:SetTall(30)
-	but:SetText("Willing to be the Zombie Master (RTS).")
+	but:SetText(translate.Get("preferred_willing_zm"))
 	but:CenterHorizontal()
 	but:SetTextColor(color_white)
 	but.DoClick = function(self)
@@ -566,7 +574,7 @@ function GM:MakePreferredMenu()
 	but:AlignTop(165)
 	but:SetWide(250)
 	but:SetTall(30)
-	but:SetText("Prefer being a Survivor (FPS).")
+	but:SetText(translate.Get("preferred_prefer_survivor"))
 	but:CenterHorizontal()
 	but:SetTextColor(color_white)
 	but.DoClick = function(self)
@@ -589,7 +597,7 @@ function GM:MakePreferredMenu()
 	local check = vgui.Create("DCheckBoxLabel", frame)
 	check:AlignTop(270)
 	check:CenterHorizontal()
-	check:SetText("Don't ask again.")
+	check:SetText(translate.Get("preferred_dont_ask"))
 	check:SetConVar("zm_nopreferredmenu")
 	check:SetTextColor(color_white)
 	check:SizeToContents()
@@ -662,7 +670,7 @@ function GM:SpawnTrapMenu(class, ent)
 		activate:SetTall(32)
 		activate:SetWide(250)
 		activate:SetTextColor(color_white)
-		activate:SetText("Activate for "..cost)
+		activate:SetText(translate.Format("trap_activate_for_x", cost))
 		activate:SetEnabled(true)
 		activate.bActive = true
 		activate.Paint = trapMenuPaint
@@ -703,7 +711,7 @@ function GM:SpawnTrapMenu(class, ent)
 		setTrigger:SetTall(32)
 		setTrigger:SetWide(250)
 		setTrigger:SetTextColor(color_white)
-		setTrigger:SetText("Create trap for "..trapCost)
+		setTrigger:SetText(translate.Format("trap_create_for_x", trapCost))
 		setTrigger:SetEnabled(true)
 		setTrigger.bActive = true
 		setTrigger.Paint = trapMenuPaint
@@ -746,7 +754,7 @@ function GM:SpawnTrapMenu(class, ent)
 		cancel:SetTall(32)
 		cancel:SetWide(250)
 		cancel:SetTextColor(color_white)
-		cancel:SetText("Cancel")
+		cancel:SetText(translate.Get("button_cancel"))
 		cancel.bActive = true
 		cancel.Paint = trapMenuPaint
 		cancel.DoClick = function(self)
@@ -766,7 +774,7 @@ function GM:SpawnTrapMenu(class, ent)
 			
 			local newMenu = vgui.Create("zm_zombiemenu")
 			newMenu:SetZombieflags(zombieFlags)
-			newMenu:SetTitle("Spawn Menu")
+			newMenu:SetTitle(translate.Get("title_spawn_menu"))
 			newMenu:SetCurrent(ent:EntIndex())
 			newMenu:Populate()
 			newMenu:AlignTop(10)
@@ -791,12 +799,6 @@ function GM:HUDDrawPickupHistory()
 	local wide = 0
 
 	for k, v in pairs(self.PickupHistory) do
-		if v.name == "#revolver_ammo" then
-			v.name = "Revolver Ammo"
-		elseif v.name == "#molotov_ammo" then
-			v.name = "Molotov Ammo"
-		end
-		
 		if not istable(v) then
 			Msg(tostring(v) .."\n")
 			PrintTable(self.PickupHistory)

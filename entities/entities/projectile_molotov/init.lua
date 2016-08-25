@@ -41,7 +41,7 @@ end
 function ENT:OnRemove()
     for _, v in pairs(ents.FindInSphere(self:GetPos(), 128)) do
         if v:IsWorld() or v:IsWeapon() or not IsValid(v) then return end
-		if IsValid(ent) and ent:IsPlayer() and ent ~= self.Owner then return end
+		if IsValid(v) and v:IsPlayer() and v ~= self.Owner then return end
         
         if string.find(v:GetClass(), "prop_") then
             local phys = v:GetPhysicsObject()
@@ -51,7 +51,7 @@ function ENT:OnRemove()
         end
         
         if string.find(v:GetClass(), "info_") then return end
-		if ent:IsPlayer() and ent:IsZM() then return end
+		if v:IsPlayer() and v:IsZM() then return end
         
 		v:Ignite(100)
     end

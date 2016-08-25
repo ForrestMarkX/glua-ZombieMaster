@@ -14,8 +14,8 @@ SWEP.CSMuzzleFlashes 			= false
 SWEP.UseHands				 	= true
 SWEP.DrawCrosshair 				= true
 
-SWEP.Author	 					= "ForrestMarkX"
-SWEP.Contact 					= "forrestmarkx@outlook.com"
+SWEP.Author	 					= "???"
+SWEP.Contact 					= ""
 SWEP.Purpose 					= ""
 SWEP.Instructions 				= ""
 
@@ -178,6 +178,11 @@ end
 
 function SWEP:Equip(NewOwner)
 	self.Dropped = false
+	NewOwner:EmitSound("items/ammo_pickup.wav", 75, math.random(95, 105), 0.8, CHAN_ITEM)
+end
+
+function SWEP:EquipAmmo(ply)
+	ply:EmitSound("items/ammo_pickup.wav", 75, 100, 0.8, CHAN_ITEM)
 end
 
 if not CLIENT then return end

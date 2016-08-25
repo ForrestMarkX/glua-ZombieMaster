@@ -18,9 +18,9 @@ function ENT:AcceptInput(name, caller, activator, arg)
 end
 
 function ENT:InputHumanWin()
-	gamemode.Call("TeamVictorious", true, "The living have prevailed!\n")
+	gamemode.Call("TeamVictorious", true, "humans_have_won")
 end
 
 function ENT:InputHumanLose()
-	gamemode.Call("TeamVictorious", false, "The living have failed their objectives!\n")
+	gamemode.Call("TeamVictorious", false, "humans_failed_obj")
 end

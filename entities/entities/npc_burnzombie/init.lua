@@ -77,8 +77,6 @@ function ENT:Think()
 end
 
 function ENT:OnRemove()
-	self:SpawnRagdoll()
-	
 	for i = 1, 5 do
 		local fire = ents.Create("env_fire")
 		fire:SetPos(self:GetPos() + Vector(math.random(-40, 40), math.random(-40, 40), 0))

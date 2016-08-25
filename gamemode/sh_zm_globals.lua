@@ -2,14 +2,35 @@ ZM_PHYSEXP_DAMAGE = 17500
 ZM_PHYSEXP_RADIUS = 222
 ZM_PHYSEXP_DELAY = 7.4
 
+FL_SPAWN_SHAMBLER_ALLOWED = 1
+FL_SPAWN_BANSHEE_ALLOWED = 2
+FL_SPAWN_HULK_ALLOWED = 4
+FL_SPAWN_DRIFTER_ALLOWED = 8
+FL_SPAWN_IMMOLATOR_ALLOWED = 16
+
 SF_PHYSEXPLOSION_NODAMAGE = 1
 SF_PHYSEXPLOSION_PUSH_PLAYER = 2
 SF_PHYSEXPLOSION_PUSH_RADIALLY = 4
 SF_PHYSEXPLOSION_TESTLOS = 8
 SF_PHYSEXPLOSION_DISORIENT_PLAYER = 16
 
+SF_ZOMBIE_WANDER_ON_IDLE = 32
+
 HUMAN_WIN_SCORE = 50
 HUMAN_LOSS_SCORE = 50
+
+GM.ContributorList = {}
+GM.ContributorList["STEAM_0:1:3307510"]  = "JetBoom"
+GM.ContributorList["STEAM_0:0:8232794"] = "Chewgum"
+GM.ContributorList["STEAM_0:0:18000855"] = "Mka0207"
+GM.ContributorList["STEAM_0:0:8169277"] = "AzoNa"
+GM.ContributorList["STEAM_0:0:54424319"] = "FoxHound"
+GM.ContributorList["STEAM_0:1:77685948"] = "plianes766"
+GM.ContributorList["STEAM_0:0:78650013"] = "Gabil"
+GM.ContributorList["STEAM_0:1:19573596"] = "Navi"
+GM.ContributorList["STEAM_0:1:43090758"] = "Kit Ballard"
+GM.ContributorList["STEAM_0:1:21671914"] = "xyzzy"
+GM.ContributorList["STEAM_0:0:18209215"] = "RS689"
 
 GM.AmmoClass = {}
 GM.AmmoClass["item_ammo_357"] = "357"
@@ -76,8 +97,4 @@ for name, mdl in pairs(playermodels) do
 	if not GM.RestrictedPMs[name] then
 		table.insert(GM.RandomPlayerModels, name)
 	end
-end
-
-function gamemode.Call(func, ...)
-	return hook.Call(func, GAMEMODE or gmod.GetGamemode(), ...)
 end
