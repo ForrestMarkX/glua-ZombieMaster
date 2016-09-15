@@ -1,4 +1,4 @@
-translate.AddLanguage("zh", "Chinese")
+translate.AddLanguage("zh-TW", "Chinese (Traditional)")
 
 LANGUAGE.waiting_on_players                 = "正在等待所有玩家做好準備。"
 LANGUAGE.players_ready                      = "所有玩家都準備好了，正在挑選一位殭屍大師！"

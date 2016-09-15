@@ -16,8 +16,17 @@ GM.Credits = {
 	{"FoxHound", "", "English (UK) translation"},
 	{"plianes766", "", "Chinese (Traditional) translation"},
 	{"Navi", "", "Korean translation"},
-	{"Kit Ballard, RS689", "", "German translation"}
+	{"Kit Ballard, RS689", "", "German translation"},
+	{"Brendan Tan", "", "Chinese (Simplified) translation"},
+	{"Marco", "", "Swedish translation"},
+	{"Der eisenballs", "", "Hebrew translation"},
+	{"Comic King", "", "Croatian & Serbian translation"}
 }
+
+include("player_class/player_zm.lua")
+include("player_class/player_survivor.lua")
+include("player_class/player_zombiemaster.lua")
+include("player_class/player_spectator.lua")
 
 include("sh_networking.lua")
 include("sh_translate.lua")
@@ -70,28 +79,8 @@ function GM:FindZM()
 	return team.GetPlayers(TEAM_ZOMBIEMASTER)[1]
 end
 
-function GM:GetHandsModel(pl)
-    local simplemodel = player_manager.TranslateToPlayerModelName( pl:GetModel() )
-    return player_manager.TranslatePlayerHands(simplemodel)
-end
-
 function GM:PlayerShouldTakeDamage(pl, attacker)
-	if attacker.PBAttacker and attacker.PBAttacker:IsValid() and CurTime() < attacker.NPBAttacker then -- Protection against prop_physbox team killing. physboxes don't respond to SetPhysicsAttacker()
-		attacker = attacker.PBAttacker
-	end
-	
-	if IsValid(attacker) then
-		local attowner = attacker.Team
-		if type(attowner) ~= "function" and IsValid(attowner) then
-			if attacker:GetClass() == "env_fire" and attowner and pl:Team() == attowner then
-				return false
-			end
-		end
-	end
-
-	if attacker:IsPlayer() and attacker ~= pl and not attacker.AllowTeamDamage and not pl.AllowTeamDamage and attacker:Team() == pl:Team() then return false end
-
-	return pl:IsSurvivor()
+	return player_manager.RunClass(pl, "ShouldTakeDamage", attacker)
 end
 
 function GM:IsSpecialPerson(pl, image)

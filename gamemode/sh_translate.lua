@@ -29,6 +29,20 @@ if CLIENT then
 			RunConsoleCommand("gmod_language_rep", CurrentLanguage)
 		end
 	end)
+	
+	cvars.AddChangeCallback("gmod_language_rep", function(convar_name, value_old, value_new)
+		timer.Simple(0.1, function()
+			if g_Scoreboard then
+				g_Scoreboard:Remove()
+			end
+			
+			if GAMEMODE.powerMenu then
+				GAMEMODE.powerMenu:Remove()
+				GAMEMODE.powerMenu = vgui.Create("zm_powerpanel")
+				GAMEMODE.powerMenu:SetVisible(true)
+			end
+		end)
+	end)
 end
 
 function translate.GetLanguages()

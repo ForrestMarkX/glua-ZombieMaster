@@ -17,6 +17,22 @@ function meta:IsSpectator()
 	return self:Team() == TEAM_SPECTATOR
 end
 
+meta.OldSpectate = meta.OldSpectate or meta.Spectate
+function meta:Spectate(obsmode)
+	self:SetNoTarget(true)
+	if obsmode == OBS_MODE_ROAMING then
+		self:SetMoveType(MOVETYPE_NOCLIP)
+	end
+	
+	self:OldSpectate(obsmode)
+end
+
+meta.OldUnSpectate = meta.OldUnSpectate or meta.UnSpectate
+function meta:UnSpectate()
+	self:SetNoTarget(false)
+	self:OldUnSpectate()
+end
+
 function meta:CanAfford(cost)
 	return self:GetZMPoints() > cost
 end

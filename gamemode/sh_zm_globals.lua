@@ -31,6 +31,8 @@ GM.ContributorList["STEAM_0:1:19573596"] = "Navi"
 GM.ContributorList["STEAM_0:1:43090758"] = "Kit Ballard"
 GM.ContributorList["STEAM_0:1:21671914"] = "xyzzy"
 GM.ContributorList["STEAM_0:0:18209215"] = "RS689"
+GM.ContributorList["STEAM_0:1:52431091"] = "Brendan Tan"
+GM.ContributorList["STEAM_0:0:7621671"] = "Marco"
 
 GM.AmmoClass = {}
 GM.AmmoClass["item_ammo_357"] = "357"

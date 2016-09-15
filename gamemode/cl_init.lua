@@ -63,38 +63,12 @@ local function TraceLongDistanceFilter(vector, filter)
 	return util.TraceLine(data)
 end
 
-function GM:HUDShouldDraw()
-end
-
-function GM:HUDPaint()
-end
-
-function GM:PostPlayerDraw()
-end
-
-function GM:PrePlayerDraw()
-end
-
-function GM:PostDrawOpaqueRenderables()
-end
-
-function GM:CreateMove()
-end
-
 function GM:PostClientInit()
 	RunConsoleCommand("zm_player_ready")
-
-	self.HUDShouldDraw = self._HUDShouldDraw
-	self.HUDPaint = self._HUDPaint
-	self.PostPlayerDraw = self._PostPlayerDraw
-	self.PrePlayerDraw = self._PrePlayerDraw
-	self.PostDrawOpaqueRenderables = self._PostDrawOpaqueRenderables
-	self.CreateMove = self._CreateMove
 end
 
 function GM:OnReloaded()
 	hook.Call("BuildZombieDataTable", self)
-	hook.Call("PostClientInit", self)
 end
 
 function GM:InitPostEntity()
@@ -139,29 +113,12 @@ function GM:PostGamemodeLoaded()
 	surface.CreateFont("DefaultFontLarge", {font = "Consolas", size = 16, weight = 0, antialias = false})
 end
 
-function GM:_PrePlayerDraw(ply)
-	return not ply:IsSurvivor()
+function GM:PrePlayerDraw(ply)
+	if not player_manager.RunClass(LocalPlayer(), "PreDraw", ply) then return true end
 end
 
-function GM:_PostPlayerDraw(pl)
-	if LocalPlayer():IsZM() and pl:IsSurvivor() and pl:Alive() then
-		local plHealth, plMaxHealth = pl:Health(), pl:GetMaxHealth()
-		local pos = pl:GetPos() + Vector(0, 0, 2)
-		local colour = Color(0, 0, 0, 125)
-		local healthfrac = math.max(plHealth, 0) / plMaxHealth
-		
-		colour.r = math.Approach(255, 20, math.abs(255 - 20) * healthfrac)
-		colour.g = math.Approach(0, 255, math.abs(0 - 255) * healthfrac)
-		colour.b = math.Approach(0, 20, math.abs(0 - 20) * healthfrac)
-		
-		render.SetMaterial(healthcircleMaterial)
-		render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
-		render.DrawQuadEasy(pos, Vector(0, 0, -1), 40, 40, colour)
-		
-		render.SetMaterial(healtheffect)
-		render.DrawQuadEasy(pos, Vector(0, 0, 1), 38, 28, Color(255, 255, 255))
-		render.DrawQuadEasy(pos, Vector(0, 0, -1), 38, 28, Color(255, 255, 255))
-	end
+function GM:PostPlayerDraw(pl)
+	if not player_manager.RunClass(LocalPlayer(), "PostDraw", pl) then return true end
 end
 
 local startVal = 0
@@ -242,21 +199,21 @@ end
 function GM:OnPlayerChat( player, strText, bTeamOnly, bPlayerIsDead )
 	local tab = {}
 
-	if ( bTeamOnly ) then
-		table.insert( tab, Color( 30, 160, 40 ) )
-		table.insert( tab, "(TEAM) " )
+	if bTeamOnly then
+		table.insert(tab, Color(30, 160, 40))
+		table.insert(tab, "(TEAM) ")
 	end
 
-	if ( IsValid( player ) ) then
-		table.insert( tab, player )
+	if IsValid(player) then
+		table.insert(tab, player)
 	else
-		table.insert( tab, "Console" )
+		table.insert(tab, "Console")
 	end
 
-	table.insert( tab, Color( 255, 255, 255 ) )
-	table.insert( tab, ": " .. strText )
+	table.insert(tab, Color(255, 255, 255))
+	table.insert(tab, ": " .. strText)
 
-	chat.AddText( unpack(tab) )
+	chat.AddText(unpack(tab))
 
 	return true
 end
@@ -408,78 +365,8 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 	end
 end
 
-function GM:_CreateMove( cmd )
-	if LocalPlayer():IsZM() then
-		if not isDragging and vgui.CursorVisible() then
-			local menuopen = hook.Call("IsMenuOpen", self)
-			if not menuopen then
-				local x, y = gui.MousePos()
-				if x ~= 0 or y ~= 0 then
-					if x < 3 then
-						mouseonedge = true
-						mouseonedgex = true
-						mouseonedgey = false
-					elseif x > ScrW() - 3 then
-						mouseonedge = true
-						mouseonedgex = true
-						mouseonedgey = false
-					elseif y < 3 then
-						mouseonedge = true
-						mouseonedgex = false
-						mouseonedgey = true
-					elseif y > ScrH() - 3 then
-						mouseonedge = true
-						mouseonedgex = false
-						mouseonedgey = true
-					elseif mouseonedge then
-						mouseonedge = false
-						mouseonedgex = false
-						mouseonedgey = false
-					end
-					
-					if mouseonedge then
-						local mouse_vect = gui.ScreenToVector(x, y)
-						
-						if not keepoldz then
-							old_mouse_vect = mouse_vect
-						end
-						
-						if mouseonedgex then
-							mouse_vect.z = old_mouse_vect.z
-							keepoldz = true
-						elseif mouseonedgey then
-							mouse_vect.x = 0
-							keepoldz = false
-						end
-						
-						local oldang = cmd:GetViewAngles()
-						local newang = (mouse_vect - EyePos()):Angle()
-						oldang.pitch = math.ApproachAngle(oldang.pitch, newang.pitch, FrameTime() * math.max(45, math.abs(math.AngleDifference(oldang.pitch, newang.pitch)) ^ 1.05))
-						oldang.yaw = math.ApproachAngle(oldang.yaw, newang.yaw, FrameTime() * math.max(45, math.abs(math.AngleDifference(oldang.yaw, newang.yaw)) ^ 1.05))
-						cmd:SetViewAngles(oldang)
-					end
-				end
-			end
-		end
-	end
-end
-
 function GM:PlayerBindPress(ply, bind, pressed)
-	if bind == "+menu" then
-		if pressed and ply:IsSurvivor() then
-			RunConsoleCommand("zm_dropweapon")
-		end
-		return true
-	elseif bind == "+menu_context" then
-		if pressed and ply:IsSurvivor() then
-			RunConsoleCommand("zm_dropammo")
-		end
-		return true
-	elseif bind == "impulse 100" then
-		if pressed and ply:IsZM() then
-			RunConsoleCommand("zm_power_nightvision")
-		end
-	end
+	if player_manager.RunClass(ply, "BindPress", bind, pressed) then return true end
 end
 
 function GM:CreateGhostEntity(trap, rallyID)
@@ -491,13 +378,13 @@ function GM:CreateGhostEntity(trap, rallyID)
 	end
 end
 
-function GM:KeyPress( ply, key )
+function GM:KeyPress(ply, key)
 	if ply:IsZM() and key == IN_SPEED then
 		gui.EnableScreenClicker(false)
 	end
 end
 
-function GM:KeyRelease( ply, key )
+function GM:KeyRelease(ply, key)
 	if ply:IsZM() and key == IN_SPEED then
 		gui.EnableScreenClicker(true)
 	end
@@ -648,7 +535,7 @@ function GM:Think()
 	--]]
 end
 
-function GM:_PostDrawOpaqueRenderables()
+function GM:PostDrawOpaqueRenderables()
 	if LocalPlayer():IsZM() then
 		cam.Start3D()
 			local zombies = ents.FindByClass("npc_*")

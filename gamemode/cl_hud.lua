@@ -4,7 +4,7 @@ local selection_color_outline = Color(255, 0, 0, 255)
 local selection_color_box 	  = Color(120, 0, 0, 80)
 local h, w = ScrH(), ScrW()
 
-function GM:_HUDPaint()
+function GM:HUDPaint()
 	local myteam = LocalPlayer():Team()
 	local screenscale = BetterScreenScale()
 	local wid, hei = 225 * screenscale, 72 * screenscale
@@ -28,13 +28,7 @@ function GM:_HUDPaint()
 	hook.Run( "DrawDeathNotice", 0.85, 0.04 )
 end
 
-function GM:_HUDShouldDraw(name)
-	local wep = LocalPlayer():GetActiveWeapon()
-	if wep.HUDShouldDraw then
-		local ret = wep:HUDShouldDraw(name)
-		if ret ~= nil then return ret end
-	end
-
+function GM:HUDShouldDraw(name)
 	return name ~= "CHudHealth" and name ~= "CHudBattery" and name ~= "CHudAmmo" and name ~= "CHudSecondaryAmmo"
 end
 

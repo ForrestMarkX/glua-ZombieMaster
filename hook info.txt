@@ -96,3 +96,6 @@ GM:InitPostClient(player ply)
 
 Hook. Used to set the base NPC models such as npc_zombie
 GM:SetupNPCZombieModels()
+
+Hook. Called when the player class is being changed
+GM:OnPlayerClassChanged(player pl, string classname)

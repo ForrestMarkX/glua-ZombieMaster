@@ -1,6 +1,8 @@
 local meta = FindMetaTable("Player")
 if not meta then return end
 
+meta.m_iZMPriority = 0
+
 function meta:SetZMPoints(points)
 	if points < 0 then points = 0 end
 	self:SetDTInt(1, points)
@@ -26,6 +28,14 @@ function meta:ChangeTeam(teamid)
 	self:SetTeam(teamid)
 	if oldteam ~= teamid then
 		gamemode.Call("OnPlayerChangedTeam", self, oldteam, teamid)
+	end
+end
+
+function meta:SetClass(class)
+	local oldclass = player_manager.GetPlayerClass(self)
+	player_manager.SetPlayerClass(self, class)
+	if oldclass ~= class then
+		gamemode.Call("OnPlayerClassChanged", self, class)
 	end
 end
 
