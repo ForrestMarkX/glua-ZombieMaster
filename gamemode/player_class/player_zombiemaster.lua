@@ -80,6 +80,8 @@ function PLAYER:PreDraw(ply)
 			render.DrawQuadEasy(pos, Vector(0, 0, -1), 38, 28, Color(255, 255, 255))
 		end
 	end
+	
+	return BaseClass.PreDraw(self, ply)
 end
 
 function PLAYER:BindPress(bind, pressed)
