@@ -687,8 +687,6 @@ function GM:Tick()
 end
 
 local NextTick = 0
-local StopZMCheck = 0
-local bNoZM = true
 function GM:Think()
 	local time = CurTime()
 
@@ -702,8 +700,6 @@ function GM:Think()
 	
 	if NextTick <= time then
 		NextTick = time + 1
-		
-		bNoZM = team.NumPlayers(TEAM_ZOMBIEMASTER) == 0
 		
 		if self.ReadyTimer ~= 0 and CurTime() > self.ReadyTimer then
 			table.Empty(self.UnReadyPlayers)
@@ -784,7 +780,7 @@ function GM:ZombieMasterVolunteers()
 		hook.Call("SetupPlayer", self, ply)
 	end
 	
-	while bNoZM do
+	if team.NumPlayers(TEAM_ZOMBIEMASTER) == 0 then
 		local pl = hook.Call("GetZombieMasterVolunteer", self)
 		if IsValid(pl) then
 			pl:KillSilent()
