@@ -71,3 +71,18 @@ function meta:CheckForEnemies()
 		end
 	end
 end
+
+function meta:ForceSwat(pTarget, breakable)
+	if not IsValid(pTarget) then return end
+	if self:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then return end
+	
+	if self:GetPos():Distance(pTarget:GetPos()) <= 45 then
+		self:SetEnemy(pTarget)
+		self:SetTarget(pTarget)
+		self.attack = true
+		self:SetSchedule(SCHED_COMBAT_FACE)
+		self:SetSchedule(SCHED_MELEE_ATTACK1)
+	else
+		self:ForceGotoEnemy(pTarget, pTarget:GetPos())
+	end
+end

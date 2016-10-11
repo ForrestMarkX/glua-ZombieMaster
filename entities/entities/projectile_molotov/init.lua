@@ -51,7 +51,7 @@ function ENT:OnRemove()
         end
         
         if string.find(v:GetClass(), "info_") then return end
-		if v:IsPlayer() and v:IsZM() then return end
+		if v:IsPlayer() and (v:IsZM() or v:IsSpectator()) then return end
         
 		v:Ignite(100)
     end

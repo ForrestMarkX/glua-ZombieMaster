@@ -88,11 +88,6 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 		ply:PrintTranslatedMessage(HUD_PRINTTALK, "not_enough_resources")
 		return
 	end
-
-	local vecSpot = Vector(0,0,0)
-	local vecHeadTarget = location
-
-	vecHeadTarget.z = vecHeadTarget.z + 64
 	
 	for k, v in pairs( ents.FindByClass( "trigger_blockspotcreate" ) ) do
 		if IsValid(v) then
@@ -107,35 +102,9 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 		end
 	end
 	
-	local visible = false
 	for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
 		if IsValid(pl) then
-			vecSpot = pl:GetPos()
-			
-			local tr = util.TraceLine( {
-				start = location,
-				endpos = vecSpot,
-				filter = player.GetAll(),
-				mask = MASK_OPAQUE
-			} )
-
-			local visible = false
-			if tr.fraction == 1.0 then
-				visible = true
-			end
-
-			local tr = util.TraceLine( {
-				start = vecHeadTarget,
-				endpos = vecSpot,
-				filter = player.GetAll(),
-				mask = MASK_OPAQUE
-			} )
-
-			if tr.fraction == 1.0 then
-				visible = true
-			end
-			
-			if visible then
+			if TrueVisible(location, pl:EyePos()) then
 				ply:PrintTranslatedMessage(HUD_PRINTCENTER, "human_can_see_location" )
 				return
 			end
@@ -276,45 +245,38 @@ local function ZM_Command_NPC(ply, command, arguments)
 	if ply:IsZM() then
 		local vec = string.Explode(" ", arguments[1])
 		local position = Vector(vec[1], vec[2], vec[3])
-		local ent = nil
-		
-		if arguments[2] ~= "" then
-			ent = Entity(tonumber(arguments[2]))
-		end
 		
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
 			if IsValid(entity) and entity:GetSharedBool("selected", false) and entity:IsNPC() then
-				if IsValid(ent) then
-					if position:Distance(entity:GetPos()) <= 45 and not ent:IsPlayer() then
-						if entity.NextMeleeClick and entity.NextMeleeClick > CurTime() then
-							return
-						end
-						
-						entity.NextMeleeClick = CurTime() + 2
-						entity:SetSchedule(SCHED_COMBAT_FACE)
-						
-						timer.Simple(0, function() 
-							if not IsValid(entity) then return end
-							
-							if not entity:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then
-								entity:SetSchedule(SCHED_MELEE_ATTACK1)
-							end
-						end)
-						
-						return
-					end
-					
-					entity:ForceGoto(position)
-					entity.isMoving = true
-				else
-					entity:ForceGoto(position)
-					entity.isMoving = true
-				end
+				entity:ForceGoto(position)
+				entity.isMoving = true
 			end
 		end
 	end
 end
 concommand.Add("zm_command_npcgo", ZM_Command_NPC, nil, "Marks the position the selected NPCs should go")
+
+local function ZM_NPC_Target_Object(ply, command, arguments)
+	if ply:IsZM() then
+		local vec = string.Explode(" ", arguments[1])
+		local position = Vector(vec[1], vec[2], vec[3])
+		local ent = Entity(tonumber(arguments[2]))
+		
+		for _, entity in pairs(ents.FindByClass("npc_*")) do
+			if IsValid(entity) and entity:GetSharedBool("selected", false) and entity:IsNPC() then
+				if IsValid(ent) then
+					local physobj = ent:GetPhysicsObject()
+					if IsValid(physobj) and physobj:IsAsleep() and physobj:IsMoveable() then
+						entity:ForceSwat(ent)
+					elseif ent:Health() > 0 then
+						entity:ForceSwat(ent, true)
+					end
+				end
+			end
+		end
+	end
+end
+concommand.Add("zm_npc_target_object", ZM_NPC_Target_Object, nil, "Commands an NPC to interact with an object")
 
 local function ZM_Deselect(ply)
 	if ply:IsZM() then

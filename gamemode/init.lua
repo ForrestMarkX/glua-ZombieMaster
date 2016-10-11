@@ -140,19 +140,29 @@ function GM:OnEntityCreated(ent)
 			ent:SetShouldServerRagdoll(false)
 		end)
 		
-		local zombie = self:GetZombieData(entname)
-		if not zombie then return end
-		
-		local zombiefriends = {}
-		for _, fri in pairs(zombie.Friends) do
-			if fri ~= ent:GetClass() then
-				table.Add(zombiefriends, ents.FindByClass(fri))
-			end
+		for _, npc in pairs(ents.FindByClass("npc_*")) do
+			hook.Call("AddNPCFriends", self, npc, ent)
 		end
-		
-		for _, zom in pairs(zombiefriends) do
-			ent:AddEntityRelationship(zom, D_LI, 99)
+	end
+end
+
+function GM:AddNPCFriends(npc, ent)
+	if not npc:IsNPC() then return end
+	if npc == ent then return end
+	if npc:Disposition(ent) == D_LI then return end
+	
+	local zombie = self:GetZombieData(npc:GetClass())
+	if not zombie then return end
+	
+	local zombiefriends = {}
+	for _, fri in pairs(zombie.Friends) do
+		if fri ~= npc:GetClass() then
+			table.Merge(zombiefriends, ents.FindByClass(fri))
 		end
+	end
+	
+	for _, zom in pairs(zombiefriends) do
+		npc:AddEntityRelationship(zom, D_LI, 99)
 	end
 end
 
@@ -667,14 +677,18 @@ function GM:PlayerPostThink(pl)
 end
 
 function GM:Tick()
+	--[[
 	for _, npc in pairs(ents.FindByClass("npc_*")) do
 		if npc:IsNPC() and npc.NPCThink then
 			npc:NPCThink()
 		end
 	end
+	--]]
 end
 
 local NextTick = 0
+local StopZMCheck = 0
+local bNoZM = true
 function GM:Think()
 	local time = CurTime()
 
@@ -688,6 +702,8 @@ function GM:Think()
 	
 	if NextTick <= time then
 		NextTick = time + 1
+		
+		bNoZM = team.NumPlayers(TEAM_ZOMBIEMASTER) == 0
 		
 		if self.ReadyTimer ~= 0 and CurTime() > self.ReadyTimer then
 			table.Empty(self.UnReadyPlayers)
@@ -749,30 +765,27 @@ function GM:IsSpawnpointSuitable(pl, spawnpointent, bMakeSuitable)
 	return true
 end
 
-function GM:ZombieMasterVolunteers()
-	if not GetConVar("zm_debug_nozombiemaster"):GetBool() then
-		if team.NumPlayers(TEAM_ZOMBIEMASTER) == 1 then return end
-		
-		local iHighest = -1
-		local ZMList = {}
-		for _, pl in pairs(player.GetAll()) do
-			if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority > iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
-				iHighest = pl.m_iZMPriority
-			end
-			
-			if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority == iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
-				table.insert(ZMList, pl)
-			end
+function GM:ZombieMasterVolunteers()	
+	self:SetZMSelection(false)
+	self:SetRoundStart(false)
+	self:SetRoundActive(true)
+	self.RoundStarted = CurTime()
+	
+	for _, ply in pairs(player.GetAll()) do
+		if IsValid(ply) then
+			if ply:IsSpectator() then continue end
+			ply.m_iZMPriority = (ply.m_iZMPriority or 0) + 10
 		end
-		
-		local pl = nil
-		if #ZMList > 0 then
-			pl = ZMList[math.random(#ZMList)]
-		else
-			local players = player.GetAll()
-			pl = players[math.random(#players)]
-		end
-		
+	end
+	
+	game.CleanUpMap(false)
+	
+	for _, ply in pairs(team.GetPlayers(TEAM_SPECTATOR)) do
+		hook.Call("SetupPlayer", self, ply)
+	end
+	
+	while bNoZM do
+		local pl = hook.Call("GetZombieMasterVolunteer", self)
 		if IsValid(pl) then
 			pl:KillSilent()
 			pl:SetFrags(0)
@@ -798,24 +811,33 @@ function GM:ZombieMasterVolunteers()
 			end
 		end
 	end
+end
+
+function GM:GetZombieMasterVolunteer()
+	if GetConVar("zm_debug_nozombiemaster"):GetBool() then return nil end
+	if team.NumPlayers(TEAM_ZOMBIEMASTER) >= 1 then return end
 	
-	self:SetZMSelection(false)
-	self:SetRoundStart(false)
-	self:SetRoundActive(true)
-	self.RoundStarted = CurTime()
-	
-	for _, ply in pairs(player.GetAll()) do
-		if IsValid(ply) then
-			if ply:IsSpectator() then continue end
-			ply.m_iZMPriority = (ply.m_iZMPriority or 0) + 10
+	local iHighest = -1
+	local ZMList = {}
+	for _, pl in pairs(player.GetAll()) do
+		if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority > iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
+			iHighest = pl.m_iZMPriority
+		end
+		
+		if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority == iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
+			table.insert(ZMList, pl)
 		end
 	end
 	
-	game.CleanUpMap(false)
-	
-	for _, ply in pairs(team.GetPlayers(TEAM_SPECTATOR)) do
-		hook.Call("SetupPlayer", self, ply)
+	local pl = nil
+	if #ZMList > 0 then
+		pl = ZMList[math.random(#ZMList)]
+	else
+		local players = player.GetAll()
+		pl = players[math.random(#players)]
 	end
+	
+	return pl
 end
 
 function GM:AllowPlayerPickup(pl, ent)

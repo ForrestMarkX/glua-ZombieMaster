@@ -56,7 +56,7 @@ function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
 	if not IsValid(npc:GetEnemy()) and IsValid(attacker) then
 		npc:ForceGotoEnemy(attacker, attacker:GetPos())
 		
-		for k, v in pairs(npcs.FindByClass("npc_*")) do
+		for k, v in pairs(ents.FindByClass("npc_*")) do
 			if IsValid(v) and v:IsNPC() and not IsValid(v:GetEnemy()) then
 				npc:ForceGotoEnemy(v, attacker:GetPos())
 			end

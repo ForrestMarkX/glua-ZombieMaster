@@ -46,21 +46,11 @@ local nightVision_ColorMod = {
 }
 
 local function TraceLongDistance(vector, nocollideall)
-	local data = {}
-	data.start = LocalPlayer():GetShootPos()
-	data.endpos = data.start + (vector * 56756)
-	data.filter = nocollideall and ents.GetAll() or LocalPlayer()
-	
-	return util.TraceLine(data)
+	return util.TraceLine({start = LocalPlayer():GetShootPos(), endpos = LocalPlayer():GetShootPos() + (vector * 56756), filter = nocollideall and ents.GetAll() or LocalPlayer()})
 end
 
 local function TraceLongDistanceFilter(vector, filter)
-	local data = {}
-	data.start = LocalPlayer():GetShootPos()
-	data.endpos = data.start + (vector * 56756)
-	data.filter = filter
-	
-	return util.TraceLine(data)
+	return util.TraceLine({start = LocalPlayer():GetShootPos(), endpos = LocalPlayer():GetShootPos() + (vector * 56756), filter = filter})
 end
 
 function GM:PostClientInit()
@@ -360,7 +350,11 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			
 			zm_rightclicked = true
 			
-			RunConsoleCommand("zm_command_npcgo", tostring(tr.HitPos), tr.Entity and tr.Entity:EntIndex() or "")
+			if tr.Fraction ~= 1.0 and tr.HitNonWorld then
+				RunConsoleCommand("zm_npc_target_object", tostring(tr.HitPos), tr.Entity:EntIndex())
+			else
+				RunConsoleCommand("zm_command_npcgo", tostring(tr.HitPos))
+			end
 		end
 	end
 end

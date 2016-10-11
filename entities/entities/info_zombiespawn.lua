@@ -5,7 +5,8 @@ ENT.Type = "anim"
 ENT.Model = Model("models/zombiespawner.mdl")
 
 if CLIENT then
-	ENT.GlowColor = Color( 237, 37, 37 )
+	ENT.GlowMat = Material("models/red2")
+	ENT.GlowColor = Color( 255, 200, 200 )
 	ENT.GlowSize = 128
 end
 

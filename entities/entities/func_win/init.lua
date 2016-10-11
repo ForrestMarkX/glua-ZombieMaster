@@ -18,9 +18,11 @@ function ENT:AcceptInput(name, caller, activator, arg)
 end
 
 function ENT:InputHumanWin()
+	if GAMEMODE:GetRoundEnd() then return end
 	gamemode.Call("TeamVictorious", true, "humans_have_won")
 end
 
 function ENT:InputHumanLose()
+	if GAMEMODE:GetRoundEnd() then return end
 	gamemode.Call("TeamVictorious", false, "humans_failed_obj")
 end

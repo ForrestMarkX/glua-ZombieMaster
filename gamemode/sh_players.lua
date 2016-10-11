@@ -2,7 +2,7 @@ local meta = FindMetaTable("Player")
 if not meta then return end
 
 function meta:ShouldNotCollide(ent)
-	return ent:IsPlayerHolding()
+	return ent:IsPlayerHolding() or (self:IsSurvivor() and ent.IsTriggerNode)
 end
 
 function meta:IsZM()

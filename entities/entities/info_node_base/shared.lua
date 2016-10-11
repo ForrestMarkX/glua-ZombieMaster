@@ -10,13 +10,14 @@ function ENT:SetupDataTables()
 end
 
 function ENT:Initialize()
-	self:SetModel( self.Model )
-	self:AddSolidFlags( FSOLID_NOT_STANDABLE )
-    self:SetSolid( SOLID_BBOX )
-	self:SetMoveType( MOVETYPE_NOCLIP )
+	self:SetModel(self.Model)
+	self:AddSolidFlags(FSOLID_NOT_STANDABLE)
+    self:SetSolid(SOLID_BBOX)
+	self:SetMoveType(MOVETYPE_NOCLIP)
 	self:SetCollisionBounds(Vector(-32, -32, -32), Vector(32, 32, 32))
 	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	self:DrawShadow(false)
+	self.IsTriggerNode = true
 	
 	if SERVER then
 		timer.Simple(1, function()

@@ -99,3 +99,9 @@ GM:SetupNPCZombieModels()
 
 Hook. Called when the player class is being changed
 GM:OnPlayerClassChanged(player pl, string classname)
+
+Hook. Gets a random player to become the Zombie Master
+GM:GetZombieMasterVolunteer()
+
+Hook. Adds all the friend relationships defined in the zombies Friends table
+GM:AddNPCFriends(Entity npc, Entity ent)

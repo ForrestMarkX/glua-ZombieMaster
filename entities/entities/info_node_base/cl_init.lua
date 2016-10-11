@@ -1,13 +1,13 @@
 include("shared.lua")
 
+ENT.GlowMat = Material("sprites/glow04_noz")
 ENT.GlowColor = Color(255, 255, 255)
 ENT.GlowSize = 128
 
-local matGlow = Material("sprites/glow04_noz")
 function ENT:DrawTranslucent()
 	if not LocalPlayer():IsZM() then return end
 	
-	render.SetMaterial(matGlow)
+	render.SetMaterial(self.GlowMat)
 	render.DrawSprite(self:GetPos(), self.GlowSize, self.GlowSize, self.GlowColor)
 end
 
