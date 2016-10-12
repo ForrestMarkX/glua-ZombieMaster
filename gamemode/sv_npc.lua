@@ -34,21 +34,45 @@ function meta:NPCThink()
 	end
 end
 
-function meta:ForceGoto(pos)
-	self:SetLastPosition(pos)
+function meta:ForceGoto(pos, bRun)
+	local eyeh = self:EyePos().z
+	if eyeh > pos.z then
+		pos.z = eyeh
+	end
+	
+	self:SetSaveValue("m_vecLastPosition", pos)
+	self:SetSaveValue("m_vecLastGoalPosition", pos)
 	self:NavSetGoal(pos)
+
 	self:SetSchedule(SCHED_FORCED_GO_RUN)
+
+	self:SetCondition(49) --COND_WAY_CLEAR
 	self:SetCondition(63) --COND_RECEIVED_ORDERS
 end
 
-function meta:ForceGotoEnemy(enemy, pos)
-	self:SetLastPosition(pos)
+function meta:ForceGotoEnemy(enemy, pos, bRun)
+	local eyeh = self:EyePos().z
+	if eyeh > pos.z then
+		pos.z = eyeh
+	end
+	
+	self:SetSaveValue("m_vecLastPosition", pos)
+	self:SetSaveValue("m_vecLastGoalPosition", pos)
+	self:NavSetGoalTarget(enemy, pos)
+	
 	self:SetTarget(enemy)
-	self:NavSetGoal(pos)
 	self:UpdateEnemyMemory(enemy, pos)
-	self:SetSchedule(SCHED_FORCED_GO_RUN)
 	self:SetEnemy(enemy)
 	self:SetNPCState(NPC_STATE_COMBAT)
+
+	if bRun then
+		self:SetSchedule(SCHED_FORCED_GO_RUN)
+	else
+		self:SetSchedule(SCHED_FORCED_GO)
+		self:SetSaveValue("m_flMoveWaitFinished", CurTime())
+	end
+
+	self:SetCondition(49) --COND_WAY_CLEAR
 	self:SetCondition(63) --COND_RECEIVED_ORDERS
 end
 
@@ -73,7 +97,7 @@ function meta:CheckForEnemies()
 end
 
 function meta:ForceSwat(pTarget, breakable)
-	if not IsValid(pTarget) then return end
+	if not pTarget then return end
 	if self:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then return end
 	
 	if self:GetPos():Distance(pTarget:GetPos()) <= 45 then

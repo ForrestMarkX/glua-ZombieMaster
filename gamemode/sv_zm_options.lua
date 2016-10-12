@@ -265,12 +265,7 @@ local function ZM_NPC_Target_Object(ply, command, arguments)
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
 			if IsValid(entity) and entity:GetSharedBool("selected", false) and entity:IsNPC() then
 				if IsValid(ent) then
-					local physobj = ent:GetPhysicsObject()
-					if IsValid(physobj) and physobj:IsAsleep() and physobj:IsMoveable() then
-						entity:ForceSwat(ent)
-					elseif ent:Health() > 0 then
-						entity:ForceSwat(ent, true)
-					end
+					entity:ForceSwat(ent, ent:Health() > 0)
 				end
 			end
 		end
