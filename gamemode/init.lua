@@ -447,7 +447,7 @@ function GM:TeamVictorious(won, message)
 	self:SetRoundEnd(true)
 	hook.Call("IncrementRoundCount", self)
 	
-	if won then
+	if not GetConVar("zm_notimeslowonwin"):GetBool() and won then
 		game.SetTimeScale(0.25)
 		timer.Simple(2, function() game.SetTimeScale(1) end)
 	end
