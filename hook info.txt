@@ -70,8 +70,11 @@ GM:LoadNextMap()
 Hook. Determines if the map should change or the round restart
 GM:FinishingRound(bool Won, int Rounds)
 
-Hook. Chooses a random person to become the ZM
-GM:ZombieMasterVolunteers()
+Hook. Zombie Master setup, gets the player and sets up various settings
+GM:SetupZombieMasterVolunteers(bool bSkipToSelection)
+
+Hook. Sets the current player to a ZM
+GM:SetPlayerToZombieMaster(player pl)
 
 Hook. Gets the population cost of the entity
 GM:GetPopulationCost(string entName)
