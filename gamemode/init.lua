@@ -727,11 +727,13 @@ function GM:ShowTeam(pl)
 end
 
 function GM:PlayerDisconnected(ply)
-	if ply:IsZM() then
-		hook.Call("TeamVictorious", self, true, "zombiemaster_left")
-	elseif team.NumPlayers(TEAM_SURVIVOR) <= 0 then
-		hook.Call("TeamVictorious", self, false, "all_humans_left")
-	end
+	timer.Simple(2, function()
+		if team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 then
+			hook.Call("TeamVictorious", self, true, "zombiemaster_left")
+		elseif team.NumPlayers(TEAM_SURVIVOR) <= 0 then
+			hook.Call("TeamVictorious", self, false, "all_humans_left")
+		end
+	end)
 	
 	self.DeadPlayers[ply:SteamID()] = true
 end
