@@ -1,13 +1,11 @@
 CreateClientConVar("zm_preference", "0", true, true, "What is your Zombie Master preference? (0 = Survivor, 1 = Zombie Master)")
 CreateClientConVar("zm_nopreferredmenu", "0", true, false, "Toggles the preference menu to appear or not.")
 
-GAMEMODE:MakePreferredMenu()
-
-local function ZM_Open_Preferred Menu(ply)
+local function ZM_Open_Preferred_Menu(ply)
 	if not IsValid(ply) then return end
 	GAMEMODE:MakePreferredMenu()
 end
-concommand.Add("zm_open_preferred menu", ZM_Open_Preferred Menu, nil, "Opens the preference menu.")
+concommand.Add("zm_open_preferred menu", ZM_Open_Preferred_Menu, nil, "Opens the preference menu.")
 
 local function ZM_Power_PhysExplode(ply)
 	if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) then
