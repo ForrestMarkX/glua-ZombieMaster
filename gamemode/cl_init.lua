@@ -453,7 +453,11 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 			local timername = "FadeRagdoll_"..entname.."_"..entnum
 			entnum = entnum + 1
 			timer.Create(timername, 0, 0, function()
-				if not IsValid(ragdoll) then timer.Destroy(timername) end
+				if not IsValid(ragdoll) then 
+					timer.Destroy(timername) 
+					return 
+				end
+				
 				if ragdoll.fadeAlpha == nil then ragdoll.fadeAlpha = 255 end
 				
 				if ragdoll.fadeAlpha and ragdoll.fadeAlpha <= 0 then
