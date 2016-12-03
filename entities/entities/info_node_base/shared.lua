@@ -18,6 +18,7 @@ function ENT:Initialize()
 	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	self:DrawShadow(false)
 	self.IsTriggerNode = true
+	self:CollisionRulesChanged()
 	
 	if SERVER then
 		timer.Simple(1, function()
