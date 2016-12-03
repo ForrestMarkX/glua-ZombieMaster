@@ -47,6 +47,8 @@ GM.RoundsPlayed = 0
 GM.UnReadyPlayers = {}
 GM.DeadPlayers = {}
 GM.ReadyTimer = 0
+GM.DontConvertProps = true
+GM.PostMapSetup = false
 
 GM.Income_Time = 0
 
@@ -71,6 +73,8 @@ function GM:InitPostEntityMap()
 			self:ConvertEntTo(ent, "func_physbox_multiplayer")
 		end
 	end
+	
+	self.PostMapSetup = true
 end
 
 function GM:SetupAmmo()
@@ -103,6 +107,30 @@ function GM:SetupAmmo()
 	end
 end
 
+function GM:ConvertAmmo(ammo)
+	if not IsValid(ammo) then return end
+	if ammo:GetClass() == "item_ammo_revolver" then return end
+
+	local ammotype = self.AmmoClass[ammo:GetClass()]
+	if ammotype then
+		local ent = ents.Create("item_zm_ammo")
+		if IsValid(ent) then
+			ent:SetPos(ammo:GetPos())
+			ent:SetAngles(ammo:GetAngles())
+			
+			ent.ClassName = ammo:GetClass()
+			ent.Model = self.AmmoModels[ammo:GetClass()]
+			ent.AmmoAmount = self.AmmoCache[ammotype]
+			ent.AmmoType = ammotype
+			ent:Spawn()
+			
+			ent:SetVelocity(ammo:GetVelocity())
+			
+			ammo:Remove()
+		end
+	end
+end
+
 function GM:SetupNPCZombieModels(ent)
 	if not IsValid(ent) then return end
 	
@@ -119,6 +147,10 @@ function GM:SetupNPCZombieModels(ent)
 end
 
 function GM:OnEntityCreated(ent)
+	if self.PostMapSetup and (string.sub(ent:GetClass(), 1, 10) == "item_ammo_" or string.sub(ent:GetClass(), 1, 9) == "item_box_") then
+		timer.Simple(0.335, function() self:ConvertAmmo(ent) end)
+	end
+	
 	if ent:IsNPC() then
 		if string.sub(ent:GetClass(), 1, 12) == "npc_headcrab" then
 			ent:Remove() 
@@ -265,8 +297,55 @@ function GM:ScaleNPCDamage(npc, hitgroup, dmginfo)
 end
 
 function GM:PlayerDeath(ply, inflictor, attacker)
-	player_manager.RunClass(ply, "PreDeath", inflictor, attacker)
-	BaseClass.PlayerDeath(self, ply, inflictor, attacker)
+	-- Don't spawn for at least 2 seconds
+	ply.NextSpawnTime = CurTime() + 2
+	ply.DeathTime = CurTime()
+	
+	if IsValid(attacker) and attacker:GetClass() == "trigger_hurt" then attacker = ply end
+	
+	if IsValid(attacker) and attacker:IsVehicle() and IsValid(attacker:GetDriver()) then
+		attacker = attacker:GetDriver()
+	end
+
+	if not IsValid(inflictor) and IsValid(attacker) then
+		inflictor = attacker
+	end
+
+	-- Convert the inflictor to the weapon that they're holding if we can.
+	-- This can be right or wrong with NPCs since combine can be holding a
+	-- pistol but kill you by hitting you with their arm.
+	if IsValid( inflictor ) and inflictor == attacker and (inflictor:IsPlayer() or inflictor:IsNPC()) then
+		inflictor = inflictor:GetActiveWeapon()
+		if ( !IsValid( inflictor ) ) then inflictor = attacker end
+	end
+	
+	if player_manager.RunClass(ply, "PreDeath", inflictor, attacker) then return end
+
+	if attacker == ply then
+		net.Start("PlayerKilledSelf")
+			net.WriteEntity(ply)
+		net.Broadcast()
+		
+		MsgAll(attacker:Nick() .. " suicided!\n")
+	return end
+
+	if attacker:IsPlayer() then
+		net.Start("PlayerKilledByPlayer")
+			net.WriteEntity(ply)
+			net.WriteString(inflictor:GetClass())
+			net.WriteEntity(attacker)
+		net.Broadcast()
+		
+		MsgAll(attacker:Nick() .. " killed " .. ply:Nick() .. " using " .. inflictor:GetClass() .. "\n")
+	return end
+	
+	net.Start("PlayerKilled")
+		net.WriteEntity(ply)
+		net.WriteString(inflictor:GetClass())
+		net.WriteString(attacker:GetClass())
+	net.Broadcast()
+	
+	MsgAll(ply:Nick() .. " was killed by " .. attacker:GetClass() .. "\n")
 end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
@@ -336,6 +415,8 @@ function GM:RestartGame()
 			hook.Call("PlayerSpawnAsSpectator", self, pl)
 		end
 	end
+	
+	self.PostMapSetup = false
 
 	timer.Simple(0.25, function() self:DoRestartGame() end)
 end
@@ -482,6 +563,7 @@ function GM:SetupPlayer(ply)
 	ply:SetCustomCollisionCheck(true)
 	ply:UnSpectate()
 	ply:Spawn()
+	ply:SetAvoidPlayers(true)
 	
 	ply:SprintDisable()
 	if ply:KeyDown(IN_WALK) then
@@ -673,13 +755,11 @@ function GM:PlayerPostThink(pl)
 end
 
 function GM:Tick()
-	--[[
 	for _, npc in pairs(ents.FindByClass("npc_*")) do
 		if npc:IsNPC() and npc.NPCThink then
 			npc:NPCThink()
 		end
 	end
-	--]]
 end
 
 local NextTick = 0
@@ -878,7 +958,6 @@ function GM:FindUseEntity(ply, defaultEnt)
 end
 
 function GM:PlayerUse(pl, ent)
-	if not IsValid(ent) then return false end
 	if not pl:Alive() or pl:IsZM() or pl:IsSpectator() then return false end
 	if ent:IsPlayerHolding() then return false end
 

@@ -45,9 +45,6 @@ function meta:ForceGoto(pos, bRun)
 	self:NavSetGoal(pos)
 
 	self:SetSchedule(SCHED_FORCED_GO_RUN)
-
-	self:SetCondition(49) --COND_WAY_CLEAR
-	self:SetCondition(63) --COND_RECEIVED_ORDERS
 end
 
 function meta:ForceGotoEnemy(enemy, pos, bRun)
@@ -69,11 +66,7 @@ function meta:ForceGotoEnemy(enemy, pos, bRun)
 		self:SetSchedule(SCHED_FORCED_GO_RUN)
 	else
 		self:SetSchedule(SCHED_FORCED_GO)
-		self:SetSaveValue("m_flMoveWaitFinished", CurTime())
 	end
-
-	self:SetCondition(49) --COND_WAY_CLEAR
-	self:SetCondition(63) --COND_RECEIVED_ORDERS
 end
 
 function meta:RefreshEnemyMemory()

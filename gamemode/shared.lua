@@ -23,11 +23,6 @@ GM.Credits = {
 	{"Comic King", "", "Croatian & Serbian translation"}
 }
 
-include("player_class/player_zm.lua")
-include("player_class/player_survivor.lua")
-include("player_class/player_zombiemaster.lua")
-include("player_class/player_spectator.lua")
-
 include("sh_networking.lua")
 include("sh_translate.lua")
 include("sh_sounds.lua")
@@ -41,6 +36,11 @@ include("sh_weapons.lua")
 include("sh_players.lua")
 include("sh_entites.lua")
 include("sh_zombies.lua")
+
+include("player_class/player_zm.lua")
+include("player_class/player_survivor.lua")
+include("player_class/player_zombiemaster.lua")
+include("player_class/player_spectator.lua")
 
 function GM:Initialize()
 	for name, mdl in pairs(player_manager.AllValidModels()) do

@@ -193,7 +193,7 @@ function PLAYER:BindPress(bind, pressed)
 end
 
 function PLAYER:PreDeath(inflictor, attacker)
-	if attacker:IsNPC() then
+	if string.find(attacker:GetClass(), "npc_") or string.find(inflictor:GetClass(), "npc_") then
 		local attackername = ""
 		
 		local pZM = GAMEMODE:FindZM()
@@ -216,7 +216,7 @@ function PLAYER:PreDeath(inflictor, attacker)
 		
 		MsgAll(self.Player:Nick() .. " was killed by " .. attackername .. "\n")
 		
-		return
+		return true
 	end
 end
 
