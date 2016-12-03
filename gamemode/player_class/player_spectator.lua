@@ -14,6 +14,10 @@ function PLAYER:PostOnDeath(inflictor, attacker)
 end
 
 function PLAYER:PostThink()
+	if self.Player:IsOnFire() then
+		self.Player:Extinguish()
+	end
+	
 	if self.Player:GetObserverMode() == OBS_MODE_ROAMING then 
 		if self.Player:KeyPressed(IN_ATTACK) then
 			self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) + 1

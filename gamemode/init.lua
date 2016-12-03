@@ -755,11 +755,13 @@ function GM:PlayerPostThink(pl)
 end
 
 function GM:Tick()
+	--[[
 	for _, npc in pairs(ents.FindByClass("npc_*")) do
 		if npc:IsNPC() and npc.NPCThink then
 			npc:NPCThink()
 		end
 	end
+	--]]
 end
 
 local NextTick = 0
