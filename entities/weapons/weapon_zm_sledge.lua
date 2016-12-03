@@ -16,7 +16,7 @@ SWEP.Slot = 2
 
 SWEP.HoldType = "melee2"
 
-SWEP.Primary.Damage = 75
+SWEP.Primary.Damage = 115
 SWEP.Primary.Force = SWEP.Primary.Damage
 SWEP.Primary.Reach = 85
 SWEP.Primary.HitSound = Sound("physics/metal/metal_canister_impact_hard1.wav")

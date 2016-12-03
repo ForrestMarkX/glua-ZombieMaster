@@ -166,7 +166,7 @@ function PLAYER:CanPickupItem(item)
 			local secondaryammo = wep.Secondary and wep.Secondary.Ammo or ""
 			local ammotype = GAMEMODE.AmmoClass[item.ClassName] or ""
 			
-			if string.lower(primaryammo) == string.lower(ammotype) or string.lower(secondaryammo) == string.lower(ammotype) then
+			if string.find(string.lower(primaryammo), string.lower(ammotype)) or string.find(string.lower(secondaryammo), string.lower(ammotype)) then
 				local ammoid = game.GetAmmoID(ammotype)
 				if self.Player:GetAmmoCount(ammotype) < game.GetAmmoMax(ammoid) then
 					return true
@@ -223,6 +223,8 @@ end
 function PLAYER:OnDeath(attacker, dmginfo)
 	BaseClass.OnDeath(self, attacker, dmginfo)
 	
+	self.Player:Flashlight(false)
+	
 	local pZM = GAMEMODE:FindZM()
 	if IsValid(pZM) then
 		local income = math.random(GetConVar("zm_resourcegainperplayerdeathmin"):GetInt(), GetConVar("zm_resourcegainperplayerdeathmax"):GetInt())
@@ -253,6 +255,11 @@ function PLAYER:ShouldTakeDamage(attacker)
 	end
 
 	if attacker:IsPlayer() and attacker ~= self.Player and not attacker.AllowTeamDamage and not self.Player.AllowTeamDamage and attacker:Team() == pl:Team() then return false end
+	
+	local entclass = attacker:GetClass()
+	if string.find(entclass, "item_") then
+		return false
+	end
 
 	return true
 end

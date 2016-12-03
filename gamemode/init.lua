@@ -564,6 +564,7 @@ function GM:SetupPlayer(ply)
 	ply:UnSpectate()
 	ply:Spawn()
 	ply:SetAvoidPlayers(true)
+	ply:SetNoCollideWithTeammates(true)
 	
 	ply:SprintDisable()
 	if ply:KeyDown(IN_WALK) then
@@ -576,7 +577,10 @@ function GM:SetupPlayer(ply)
 	
 	if GetConVar("zm_nocollideplayers"):GetBool() then
 		ply:SetAvoidPlayers(false)
-		ply:SetNoCollideWithTeammates(true)
+	else
+		timer.Simple(3, function() 
+			ply:SetNoCollideWithTeammates(false)
+		end)
 	end
 end
 
@@ -779,7 +783,7 @@ function GM:Think()
 	if NextTick <= time then
 		NextTick = time + 1
 		
-		if self:GetRoundActive() and team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 then
+		if self:GetRoundActive() and not self:GetRoundEnd() and team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 then
 			hook.Call("SetupZombieMasterVolunteers", self, true)
 		end
 		
