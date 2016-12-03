@@ -297,7 +297,7 @@ end)
 concommand.Add("zm_selectall_zombies", function(ply, command, arguments)
 	if ply:IsZM() then
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
-			if entity:IsNPC() and entity:Classify() == CLASS_ZOMBIE then
+			if entity:IsNPC() then
 				entity:SetSharedBool("selected", true)
 			end
 		end

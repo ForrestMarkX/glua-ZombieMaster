@@ -50,6 +50,77 @@ function PLAYER:OnTakeDamage(attacker, dmginfo)
 end
 
 function PLAYER:PreDeath(inflictor, attacker)
+	-- Don't spawn for at least 2 seconds
+	ply.NextSpawnTime = CurTime() + 2
+	ply.DeathTime = CurTime()
+	
+	if IsValid(attacker) and attacker:GetClass() == "trigger_hurt" then attacker = ply end
+	
+	if IsValid(attacker) and attacker:IsVehicle() and IsValid(attacker:GetDriver()) then
+		attacker = attacker:GetDriver()
+	end
+
+	if not IsValid(inflictor) and IsValid(attacker) then
+		inflictor = attacker
+	end
+
+	-- Convert the inflictor to the weapon that they're holding if we can.
+	-- This can be right or wrong with NPCs since combine can be holding a
+	-- pistol but kill you by hitting you with their arm.
+	if IsValid( inflictor ) and inflictor == attacker and (inflictor:IsPlayer() or inflictor:IsNPC()) then
+		inflictor = inflictor:GetActiveWeapon()
+		if ( !IsValid( inflictor ) ) then inflictor = attacker end
+	end
+
+	if attacker == ply then
+		net.Start("PlayerKilledSelf")
+			net.WriteEntity(ply)
+		net.Broadcast()
+		
+		MsgAll(attacker:Nick() .. " suicided!\n")
+	return end
+
+	if attacker:IsPlayer() then
+		net.Start("PlayerKilledByPlayer")
+			net.WriteEntity(ply)
+			net.WriteString(inflictor:GetClass())
+			net.WriteEntity(attacker)
+		net.Broadcast()
+		
+		MsgAll(attacker:Nick() .. " killed " .. ply:Nick() .. " using " .. inflictor:GetClass() .. "\n")
+	return end
+	
+	if attacker:IsNPC() or inflictor:IsNPC() then
+		local attackername = ""
+		
+		local pZM = GAMEMODE:FindZM()
+		if IsValid(pZM) then
+			pZM:AddFrags(1)
+		end
+		
+		for _, zombie in pairs(GAMEMODE:GetZombieTable()) do
+			if zombie.Class == attacker:GetClass() then
+				attackername = zombie.Name
+				break
+			end
+		end
+		
+		net.Start("PlayerKilledByNPC")
+			net.WriteEntity(self.Player)
+			net.WriteString(inflictor:GetClass())
+			net.WriteString(attackername)
+		net.Broadcast()
+		
+		MsgAll(self.Player:Nick() .. " was killed by " .. attackername .. "\n")
+	return end
+	
+	net.Start("PlayerKilled")
+		net.WriteEntity(ply)
+		net.WriteString(inflictor:GetClass())
+		net.WriteString(attacker:GetClass())
+	net.Broadcast()
+	
+	MsgAll(ply:Nick() .. " was killed by " .. attacker:GetClass() .. "\n")
 end
 
 function PLAYER:OnDeath(attacker, dmginfo)

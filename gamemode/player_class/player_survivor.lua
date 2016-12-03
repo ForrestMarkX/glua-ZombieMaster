@@ -192,34 +192,6 @@ function PLAYER:BindPress(bind, pressed)
 	end
 end
 
-function PLAYER:PreDeath(inflictor, attacker)
-	if attacker:IsNPC() or inflictor:IsNPC() then
-		local attackername = ""
-		
-		local pZM = GAMEMODE:FindZM()
-		if IsValid(pZM) then
-			pZM:AddFrags(1)
-		end
-		
-		for _, zombie in pairs(GAMEMODE:GetZombieTable()) do
-			if zombie.Class == attacker:GetClass() then
-				attackername = zombie.Name
-				break
-			end
-		end
-		
-		net.Start("PlayerKilledByNPC")
-			net.WriteEntity(self.Player)
-			net.WriteString(inflictor:GetClass())
-			net.WriteString(attackername)
-		net.Broadcast()
-		
-		MsgAll(self.Player:Nick() .. " was killed by " .. attackername .. "\n")
-		
-		return true
-	end
-end
-
 function PLAYER:OnDeath(attacker, dmginfo)
 	BaseClass.OnDeath(self, attacker, dmginfo)
 	
