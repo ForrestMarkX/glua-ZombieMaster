@@ -777,6 +777,10 @@ function GM:Think()
 	if NextTick <= time then
 		NextTick = time + 1
 		
+		if self:GetRoundActive() and team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 then
+			hook.Call("SetupZombieMasterVolunteers", self, true)
+		end
+		
 		if self.ReadyTimer ~= 0 and CurTime() > self.ReadyTimer then
 			table.Empty(self.UnReadyPlayers)
 			self.ReadyTimer = 0
