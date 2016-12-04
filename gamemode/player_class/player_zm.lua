@@ -27,6 +27,7 @@ function PLAYER:Spawn()
 		col = Vector(0.001, 0.001, 0.001)
 	end
 	self.Player:SetWeaponColor(col)
+	self.Player:Flashlight(false)
 end
 
 function PLAYER:ShouldDrawLocal() 
@@ -51,10 +52,10 @@ end
 
 function PLAYER:PreDeath(inflictor, attacker)
 	-- Don't spawn for at least 2 seconds
-	ply.NextSpawnTime = CurTime() + 2
-	ply.DeathTime = CurTime()
+	self.Player.NextSpawnTime = CurTime() + 2
+	self.Player.DeathTime = CurTime()
 	
-	if IsValid(attacker) and attacker:GetClass() == "trigger_hurt" then attacker = ply end
+	if IsValid(attacker) and attacker:GetClass() == "trigger_hurt" then attacker = self.Player end
 	
 	if IsValid(attacker) and attacker:IsVehicle() and IsValid(attacker:GetDriver()) then
 		attacker = attacker:GetDriver()
@@ -72,9 +73,9 @@ function PLAYER:PreDeath(inflictor, attacker)
 		if ( !IsValid( inflictor ) ) then inflictor = attacker end
 	end
 
-	if attacker == ply then
+	if attacker == self.Player then
 		net.Start("PlayerKilledSelf")
-			net.WriteEntity(ply)
+			net.WriteEntity(self.Player)
 		net.Broadcast()
 		
 		MsgAll(attacker:Nick() .. " suicided!\n")
@@ -82,12 +83,12 @@ function PLAYER:PreDeath(inflictor, attacker)
 
 	if attacker:IsPlayer() then
 		net.Start("PlayerKilledByPlayer")
-			net.WriteEntity(ply)
+			net.WriteEntity(self.Player)
 			net.WriteString(inflictor:GetClass())
 			net.WriteEntity(attacker)
 		net.Broadcast()
 		
-		MsgAll(attacker:Nick() .. " killed " .. ply:Nick() .. " using " .. inflictor:GetClass() .. "\n")
+		MsgAll(attacker:Nick() .. " killed " .. self.Player:Nick() .. " using " .. inflictor:GetClass() .. "\n")
 	return end
 	
 	if attacker:IsNPC() or inflictor:IsNPC() then
@@ -115,12 +116,12 @@ function PLAYER:PreDeath(inflictor, attacker)
 	return end
 	
 	net.Start("PlayerKilled")
-		net.WriteEntity(ply)
+		net.WriteEntity(self.Player)
 		net.WriteString(inflictor:GetClass())
 		net.WriteString(attacker:GetClass())
 	net.Broadcast()
 	
-	MsgAll(ply:Nick() .. " was killed by " .. attacker:GetClass() .. "\n")
+	MsgAll(self.Player:Nick() .. " was killed by " .. attacker:GetClass() .. "\n")
 end
 
 function PLAYER:OnDeath(attacker, dmginfo)

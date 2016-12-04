@@ -515,8 +515,6 @@ function GM:SetupPlayer(ply)
 	ply:SetCustomCollisionCheck(true)
 	ply:UnSpectate()
 	ply:Spawn()
-	ply:SetAvoidPlayers(true)
-	ply:SetNoCollideWithTeammates(true)
 	
 	ply:SprintDisable()
 	if ply:KeyDown(IN_WALK) then
@@ -526,14 +524,6 @@ function GM:SetupPlayer(ply)
 	ply:ResetHull()
 	ply:SetCanWalk(false)
 	ply:SetCanZoom(false)
-	
-	if GetConVar("zm_nocollideplayers"):GetBool() then
-		ply:SetAvoidPlayers(false)
-	else
-		timer.Simple(3, function() 
-			ply:SetNoCollideWithTeammates(false)
-		end)
-	end
 end
 
 function GM:InitClient(pl)
@@ -660,7 +650,7 @@ function GM:EntityTakeDamage(ent, dmginfo)
 		end
 	end
 	
-	if string.find(ent:GetModel(), "explosive") and ent:IsPlayerHolding() then
+	if ent:GetModel() ~= nil and string.find(ent:GetModel(), "explosive") and ent:IsPlayerHolding() then
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
 		return

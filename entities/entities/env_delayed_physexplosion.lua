@@ -34,12 +34,16 @@ function ENT:Think()
 			entity:SetPos( self:GetPos() )
 			entity:SetKeyValue( "magnitude", ZM_PHYSEXP_DAMAGE )
 			entity:SetKeyValue( "radius", ZM_PHYSEXP_RADIUS )
+			entity:Spawn()
+			
 			local spawnflags = bit.bor(SF_PHYSEXPLOSION_NODAMAGE, SF_PHYSEXPLOSION_DISORIENT_PLAYER)
 			entity:SetKeyValue( "spawnflags", spawnflags )
-			entity:Spawn( )
 			entity:Activate()
-			entity:Fire( "Explode", "", 0 )
-			entity:Fire( "Kill", "", 0.5 )
+			
+			timer.Simple(0.1, function()
+				entity:Fire( "Explode", "", 0 )
+				entity:Fire( "Kill", "", 0.5 )
+			end)
 		end
 			
 		//another run for good measure

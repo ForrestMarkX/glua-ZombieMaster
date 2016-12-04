@@ -115,6 +115,16 @@ function SWEP:PrimaryAttack()
 	end
 end
 
+function SWEP:DefaultCallBack(tr, dmginfo)
+	local ent = tr.Entity
+	if IsValid(ent) and not ent:IsPlayer() then
+		local phys = ent:GetPhysicsObject()
+		if ent:GetMoveType() == MOVETYPE_VPHYSICS and IsValid(phys) and phys:IsMoveable() then
+			ent:SetPhysicsAttacker(dmginfo:GetAttacker())
+		end
+	end
+end
+
 function SWEP:ShootBullet(dmg, numbul, cone)
 	numbul 	= numbul or 1
 	cone 	= cone or 0.01
@@ -128,6 +138,7 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	bullet.TracerName = self.TracerType
 	bullet.Force	= dmg * 0.1
 	bullet.Damage	= dmg
+	bullet.Callback = self.DefaultCallBack
 
 	local PlayerPos = self.Owner:GetShootPos()
 	local PlayerAim = self.Owner:GetAimVector()

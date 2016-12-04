@@ -350,7 +350,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			
 			zm_rightclicked = true
 			
-			if tr.Fraction ~= 1.0 and tr.HitNonWorld then
+			if IsValid(tr.Entity) and not tr.Entity:IsWorld() then
 				RunConsoleCommand("zm_npc_target_object", tostring(tr.HitPos), tr.Entity:EntIndex())
 			else
 				RunConsoleCommand("zm_command_npcgo", tostring(tr.HitPos))

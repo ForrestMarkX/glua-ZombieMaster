@@ -55,7 +55,7 @@ function ENT:Think()
 		
 		timer.Simple(3, function()
 			if IsValid(self) then
-				util.BlastDamage(self, enemy, self:GetPos(), 128, math.random(10, 20))
+				util.BlastDamageEx(self, enemy, self:GetPos(), 128, math.random(10, 20), DMG_BURN)
 				
 				local effect = EffectData()
 					effect:SetOrigin(self:GetPos())

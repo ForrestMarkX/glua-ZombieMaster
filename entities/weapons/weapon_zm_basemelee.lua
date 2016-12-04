@@ -46,6 +46,7 @@ function SWEP:PrimaryAttack()
 		bullet.Tracer = 0
 		bullet.Force  = self.Primary.Force
 		bullet.Damage = self.Primary.Damage
+		bullet.Callback = self.DefaultCallBack
 		
 		owner:FireBullets(bullet)
 		

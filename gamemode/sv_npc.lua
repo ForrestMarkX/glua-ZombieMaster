@@ -93,7 +93,7 @@ function meta:ForceSwat(pTarget, breakable)
 	if not pTarget then return end
 	if self:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then return end
 	
-	if self:GetPos():Distance(pTarget:GetPos()) <= 45 then
+	if self:GetPos():Distance(pTarget:GetPos()) <= 75 then
 		self:SetEnemy(pTarget)
 		self:SetTarget(pTarget)
 		self.attack = true

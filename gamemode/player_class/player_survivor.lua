@@ -7,7 +7,7 @@ PLAYER.WalkSpeed 			= 170
 PLAYER.RunSpeed				= 170
 PLAYER.CrouchedWalkSpeed	= 0.65
 
-PLAYER.DropWeaponOnDie		= true
+PLAYER.AvoidPlayers			= false
 PLAYER.TeammateNoCollide	= false
 
 function PLAYER:Spawn()
@@ -21,6 +21,14 @@ function PLAYER:Spawn()
 	if self.Player:GetMaterial() ~= "" then
 		self.Player:SetMaterial("")
 	end
+	
+	self.Player:SetNoCollideWithTeammates(true)
+	timer.Simple(3, function() 
+		self.Player:SetNoCollideWithTeammates(false)
+		timer.Simple(0.35, function() 
+			self.Player:CheckStuck()
+		end)
+	end)
 end
 
 local VoiceSetTranslate = {}
@@ -197,6 +205,12 @@ function PLAYER:OnDeath(attacker, dmginfo)
 	
 	self.Player:Flashlight(false)
 	
+	for _, wep in pairs(self.Player:GetWeapons()) do
+		if IsValid(wep) and not wep.Undroppable then
+			self.Player:DropWeapon(wep)
+		end
+	end
+	
 	local pZM = GAMEMODE:FindZM()
 	if IsValid(pZM) then
 		local income = math.random(GetConVar("zm_resourcegainperplayerdeathmin"):GetInt(), GetConVar("zm_resourcegainperplayerdeathmax"):GetInt())
@@ -209,6 +223,13 @@ end
 function PLAYER:OnHurt(attacker, healthremaining, damage)
 	if 0 < healthremaining then
 		self.Player:PlayPainSound()
+	end
+end
+
+function PLAYER:OnTakeDamage(attacker, dmginfo)
+	local inflictor = dmginfo:GetInflictor()
+	if attacker:GetClass() == "projectile_molotov" or inflictor:GetClass() == "projectile_molotov" then
+		return true
 	end
 end
 
