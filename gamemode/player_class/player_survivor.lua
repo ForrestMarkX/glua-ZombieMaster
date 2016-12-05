@@ -174,7 +174,7 @@ function PLAYER:CanPickupItem(item)
 			local secondaryammo = wep.Secondary and wep.Secondary.Ammo or ""
 			local ammotype = GAMEMODE.AmmoClass[item.ClassName] or ""
 			
-			if string.find(string.lower(primaryammo), string.lower(ammotype)) or string.find(string.lower(secondaryammo), string.lower(ammotype)) then
+			if string.lower(primaryammo) == string.lower(ammotype) or string.lower(secondaryammo) == string.lower(ammotype) then
 				local ammoid = game.GetAmmoID(ammotype)
 				if self.Player:GetAmmoCount(ammotype) < game.GetAmmoMax(ammoid) then
 					return true

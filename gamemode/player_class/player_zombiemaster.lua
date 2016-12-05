@@ -91,14 +91,16 @@ function PLAYER:BindPress(bind, pressed)
 	end
 end
 
-function PLAYER:PostThink()
-	if self.Player:IsOnFire() then
-		self.Player:Extinguish()
-	end
-	
+function PLAYER:Think()
 	if GAMEMODE.Income_Time ~= 0 and GAMEMODE.Income_Time <= CurTime() then
 		self.Player:AddZMPoints(self.Player:GetZMPointIncome())
 		GAMEMODE.Income_Time = CurTime() + GetConVar("zm_incometime"):GetInt()
+	end
+end
+
+function PLAYER:PostThink()
+	if self.Player:IsOnFire() then
+		self.Player:Extinguish()
 	end
 	
 	if self.Player:KeyPressed(IN_RELOAD) then

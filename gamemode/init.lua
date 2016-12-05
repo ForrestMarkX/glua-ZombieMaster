@@ -512,7 +512,6 @@ function GM:SetupPlayer(ply)
 	ply:ChangeTeam(TEAM_SURVIVOR)
 	ply:SetClass("player_survivor")
 	
-	ply:SetCustomCollisionCheck(true)
 	ply:UnSpectate()
 	ply:Spawn()
 	
@@ -625,12 +624,23 @@ function GM:ConvertEntTo(prop, convertto)
 	end
 end
 
+function GM:ScaleNPCDamage(npc, hitgroup, dmginfo)
+	if npc:GetClass() == "npc_poisonzombie" and (hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG) then
+		dmginfo:ScaleDamage(1.5)
+	end
+	
+	if hitgroup == HITGROUP_HEAD then
+		dmginfo:ScaleDamage(1.5)
+	end
+end
+
 function GM:EntityTakeDamage(ent, dmginfo)
 	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
 	local damage = dmginfo:GetDamage()
 	
 	if ent:IsPlayerHolding() and damage > 10 then
 		DropEntityIfHeld(ent)
+		ent:SetCollisionGroup(ent._OldCG or COLLISION_GROUP_NONE)
 	end
 	
 	if ent:IsNPC() then
@@ -700,6 +710,16 @@ function GM:PlayerPostThink(pl)
 	player_manager.RunClass(pl, "PostThink")
 end
 
+function GM:StartCommand(ply, ucmd)
+	if ply:IsSurvivor() and (ucmd:KeyDown(IN_ATTACK) or ucmd:KeyDown(IN_ATTACK2)) then
+		if IsValid(ply.HeldObject) then
+			ply.HeldObject:SetCollisionGroup(ply.HeldObject._OldCG or COLLISION_GROUP_NONE)
+			ply.HeldObject._OldCG = nil
+			ply.HeldObject = nil
+		end
+	end
+end
+
 function GM:Tick()
 	--[[
 	for _, npc in pairs(ents.FindByClass("npc_*")) do
@@ -759,13 +779,15 @@ function GM:ShowTeam(pl)
 end
 
 function GM:PlayerDisconnected(ply)
-	timer.Simple(2, function()
-		if team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 then
-			hook.Call("TeamVictorious", self, true, "zombiemaster_left")
-		elseif team.NumPlayers(TEAM_SURVIVOR) <= 0 then
-			hook.Call("TeamVictorious", self, false, "all_humans_left")
-		end
-	end)
+	if self:GetRoundActive() then
+		timer.Simple(0.1, function()
+			if team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 then
+				hook.Call("TeamVictorious", self, true, "zombiemaster_left")
+			elseif team.NumPlayers(TEAM_SURVIVOR) <= 0 then
+				hook.Call("TeamVictorious", self, false, "all_humans_left")
+			end
+		end)
+	end
 	
 	self.DeadPlayers[ply:SteamID()] = true
 end
@@ -825,6 +847,8 @@ function GM:SetupZombieMasterVolunteers(bSkipToSelection)
 end
 
 function GM:SetPlayerToZombieMaster(pl)
+	if team.NumPlayers(TEAM_ZOMBIEMASTER) >= 1 then return end
+	
 	if not IsValid(pl) then 
 		hook.Call("SetupZombieMasterVolunteers", self, true) 
 		return
@@ -882,7 +906,7 @@ function GM:GetZombieMasterVolunteer()
 end
 
 function GM:AllowPlayerPickup(pl, ent)
-	return player_manager.RunClass(pl, "AllowPickup", ent)
+	return false
 end
 
 function GM:PlayerCanHearPlayersVoice(listener, talker)
@@ -920,16 +944,20 @@ function GM:PlayerUse(pl, ent)
 		end
 		ent.m_AntiDoorSpam = CurTime() + 0.85
     elseif pl:IsSurvivor() then
-        if string.sub(entclass, 1 , 12) == "prop_physics" or string.sub(entclass, 1 , 12) == "func_physbox" then
-            if hook.Call("AllowPlayerPickup", self, pl, ent) and not ent:IsPlayerHolding() then
-				pl:DropObject()
-				
-                local phys = ent:GetPhysicsObject()
-                if IsValid(phys) then
-                    if phys:IsMotionEnabled() then
-                        pl:PickupObject(ent)
-                    end
-                end
+		local phys = ent:GetPhysicsObject()
+		if ent:GetMoveType() == MOVETYPE_VPHYSICS and IsValid(phys) and phys:IsMoveable() and player_manager.RunClass(pl, "AllowPickup", ent) then	
+			local washolding = ent:IsPlayerHolding()
+			DropEntityIfHeld(ent)
+			ent:SetCollisionGroup(ent._OldCG or COLLISION_GROUP_NONE)
+			ent._OldCG = nil
+			
+			if washolding then return false end
+			
+            if not ent:IsPlayerHolding() then
+				pl:PickupObject(ent)
+				pl.HeldObject = ent
+				ent._OldCG = ent:GetCollisionGroup()
+				ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
             end
         end
 	end

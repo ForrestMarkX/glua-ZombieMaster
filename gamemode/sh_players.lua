@@ -1,10 +1,6 @@
 local meta = FindMetaTable("Player")
 if not meta then return end
 
-function meta:ShouldNotCollide(ent)
-	return (self:IsSurvivor() and ent.IsTriggerNode)
-end
-
 function meta:IsZM()
 	return self:Team() == TEAM_ZOMBIEMASTER
 end

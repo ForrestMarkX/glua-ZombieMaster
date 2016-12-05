@@ -26,7 +26,7 @@ function ENT:PhysicsCollide(data, physObject)
 		return
 	end
 	
-	util.BlastDamageEx(self, self.Owner, self:GetPos(), 128, 40, DMG_BURN)
+	util.BlastDamageEx(self, self.Owner, self:GetPos(), 128, 40)
 	
 	local effectdata = EffectData()
 		effectdata:SetOrigin(self:GetPos())
@@ -40,20 +40,9 @@ end
 
 function ENT:OnRemove()
     for _, v in pairs(ents.FindInSphere(self:GetPos(), 128)) do
-        if v:IsWorld() or v:IsWeapon() or not IsValid(v) then return end
-		if IsValid(v) and v:IsPlayer() and v ~= self.Owner then return end
-        
-        if string.find(v:GetClass(), "prop_") then
-            local phys = v:GetPhysicsObject()
-            if string.find(phys:GetMaterial(), "metal") then
-                return
-            end
-        end
-        
-        if string.find(v:GetClass(), "info_") then return end
-		if v:IsPlayer() and (v:IsZM() or v:IsSpectator()) then return end
-        
-		v:Ignite(100)
+		if v:IsNPC() then
+			v:Ignite(100)
+		end
     end
 	
 	for i = 1, 10 do

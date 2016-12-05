@@ -1,0 +1,1 @@
+GM.DontConvertProps = false

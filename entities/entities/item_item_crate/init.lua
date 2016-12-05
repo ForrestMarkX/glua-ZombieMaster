@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+ENT.bWasLarge = false
+
 function ENT:Initialize()
 	self:SetModel("models/Items/item_item_crate.mdl")
 	self:PhysicsInit(SOLID_VPHYSICS)
@@ -27,7 +29,12 @@ function ENT:KeyValue(key, value)
 	if key == "cratetype" then
 		self.cratetype = value or self.cratetype
 	elseif key == "itemclass" then
-		self.itemclass = value or self.itemclass
+		local ammotype = string.Replace(value, "_large", "")
+		self.itemclass = ammotype or self.itemclass
+		
+		if string.find(value, "_large") then
+			bWasLarge = true
+		end
 	elseif key == "itemcount" then
 		self.itemcount = tonumber(value)
 	end
@@ -75,13 +82,17 @@ function ENT:Think()
 	if self.Destroyed then
 		local playercount = #team.GetPlayers(TEAM_SURVIVOR)
 		if playercount > 64 then
-			self.itemcount = math.Round(self.itemcount * 2.5)
+			self.itemcount = math.Round(self.itemcount * 3)
 		elseif playercount > 32 then
-			self.itemcount = math.Round(self.itemcount * 2)
+			self.itemcount = math.Round(self.itemcount * 2.5)
 		elseif playercount > 16 then
-			self.itemcount = math.Round(self.itemcount * 1.5)
+			self.itemcount = math.Round(self.itemcount * 2)
 		elseif playercount > 8 then
 			self.itemcount = math.Round(self.itemcount * 1.2)
+		end
+		
+		if bWasLarge then
+			self.itemcount = self.itemcount * 2
 		end
 		
 		for i=1, self.itemcount do

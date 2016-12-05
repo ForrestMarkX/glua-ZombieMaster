@@ -17,3 +17,13 @@ function meta:TakeSpecialDamage(damage, damagetype, attacker, inflictor, hitpos)
 
 	return dmginfo
 end
+
+function meta:IsPointInBounds(vecWorldPt)
+	local vecLocalSpace = self:WorldToLocal(vecWorldPt)
+	local m_vecMins = self:OBBMins()
+	local m_vecMaxs = self:OBBMaxs()
+	
+	return (vecLocalSpace.x >= m_vecMins.x and vecLocalSpace.x <= m_vecMaxs.x) and
+			(vecLocalSpace.y >= m_vecMins.y and vecLocalSpace.y <= m_vecMaxs.y) and
+			(vecLocalSpace.z >= m_vecMins.z and vecLocalSpace.z <= m_vecMaxs.z)
+end

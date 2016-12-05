@@ -93,9 +93,7 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 	for k, v in pairs( ents.FindByClass( "trigger_blockspotcreate" ) ) do
 		if IsValid(v) then
 			if v.m_bActive then
-				local vecMins = v:OBBMins()
-				local vecMaxs = v:OBBMaxs()
-				if vecMins.x <= location.x and vecMins.y <= location.y and vecMins.z <= location.z and vecMaxs.x >= location.x and vecMaxs.y >= location.y and vecMaxs.z >= location.z then
+				if v:IsPointInBounds(location) then
 					ply:PrintTranslatedMessage( HUD_PRINTTALK, "zombie_cant_be_created" )
 					return
 				end

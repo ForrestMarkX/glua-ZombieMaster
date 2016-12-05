@@ -128,11 +128,3 @@ end
 function GM:GetRoundEnd()
     return GetSharedBool("zm_round_ended", false)
 end
-
-function GM:ShouldCollide(enta, entb)
-	if enta.ShouldNotCollide and enta:ShouldNotCollide(entb) or entb.ShouldNotCollide and entb:ShouldNotCollide(enta) then
-		return false
-	end
-
-	return true
-end

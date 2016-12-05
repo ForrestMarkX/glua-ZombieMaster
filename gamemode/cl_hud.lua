@@ -437,6 +437,12 @@ function GM:ShowOptions()
 end
 
 function GM:ShowHelp()
+	if IsValid(self.objmenu) then
+		self.objmenu:SetVisible(not self.objmenu:IsVisible())
+		self.objmenuimage:SetVisible(not self.objmenuimage:IsVisible())
+		return
+	end
+	
 	gui.EnableScreenClicker(true)
 	
 	local frame = vgui.Create("DEXRoundedFrame")

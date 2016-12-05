@@ -1,12 +1,13 @@
 if CLIENT then return end
 
+DEFINE_BASECLASS("scripted_trigger")
 ENT.Type = "brush"
 
 function ENT:Initialize()
-	self:SetTrigger(true)
+	BaseClass.Initialize(self)
+	
 	self.m_iPercentageToFire = self.m_iPercentageToFire or 0
 	self.m_bActive = self.m_bActive or false
-	self.Entities = {}
 end
 
 function ENT:Think()
@@ -17,7 +18,9 @@ function ENT:Think()
 		local fPercentage = (humans/#self.Entities) * 100
 
 		if fPercentage >= self.m_iPercentageToFire then
-			self:Input("OnCount", self)
+			for output, value in pairs(self:GetTable()) do
+				self:FireOutput(output, self)
+			end
 		end
 	end
 	
@@ -66,23 +69,4 @@ end
 
 function ENT:PassesTriggerFilters(ent)
 	return ent:IsPlayer() and ent:IsSurvivor()
-end
-
-function ENT:IsTouchedBy(ent)
-	return table.HasValue(self.Entities, ent)
-end
-
-function ENT:StartTouch( ent )
-	if not self:PassesTriggerFilters(ent) then return end
-	table.insert(self.Entities, ent)
-end
-
-function ENT:Touch( ent )
-	if not self:PassesTriggerFilters(ent) then return end
-	if not table.HasValue(self.Entities, ent) then table.insert(self.Entities, ent) end
-end
-
-function ENT:EndTouch( ent )
-	if not self:IsTouchedBy(ent) then return end
-	table.RemoveByValue(self.Entities, ent)
 end
