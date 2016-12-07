@@ -164,7 +164,18 @@ end
 function PLAYER:OnHurt(attacker, healthremaining, damage)
 end
 
+local NextThink = 0
 function PLAYER:Think()
+	if NextThink <= CurTime() then
+		NextThink = CurTime() + 1
+		
+		local heldprop = self.Player.HeldObject
+		if IsValid(heldprop) and not heldprop:IsPlayerHolding() then
+			heldprop:SetCollisionGroup(heldprop._OldCG or COLLISION_GROUP_NONE)
+			heldprop._OldCG = nil
+			self.Player.HeldObject = nil
+		end
+	end
 end
 
 function PLAYER:PostThink()

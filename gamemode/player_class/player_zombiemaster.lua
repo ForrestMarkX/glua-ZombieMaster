@@ -92,6 +92,8 @@ function PLAYER:BindPress(bind, pressed)
 end
 
 function PLAYER:Think()
+	BaseClass.Think(self)
+	
 	if GAMEMODE.Income_Time ~= 0 and GAMEMODE.Income_Time <= CurTime() then
 		self.Player:AddZMPoints(self.Player:GetZMPointIncome())
 		GAMEMODE.Income_Time = CurTime() + GetConVar("zm_incometime"):GetInt()

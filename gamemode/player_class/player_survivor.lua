@@ -79,6 +79,8 @@ function PLAYER:Loadout()
 end
 
 function PLAYER:Think()
+	BaseClass.Think(self)
+	
 	if self.Player:WaterLevel() == 3 then
 		if self.Player:IsOnFire() then
 			self.Player:Extinguish()
