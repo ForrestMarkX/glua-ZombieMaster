@@ -110,7 +110,7 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 		end
 	end
 	
-	local pZombie = gamemode.Call("SpawnZombie", ply, "npc_zombie", location, ply:EyeAngles(), GetConVar("zm_spotcreate_cost"):GetInt())
+	local pZombie = gamemode.Call("SpawnZombie", ply, "npc_zombie", location, ply:EyeAngles(), GetConVar("zm_spotcreate_cost"):GetInt(), true)
 	if IsValid(pZombie) then
 		ply:PrintTranslatedMessage(HUD_PRINTTALK, "hidden_zombie_spawned")
 	end

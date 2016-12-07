@@ -18,9 +18,7 @@ function ENT:Think()
 		local fPercentage = (humans/#self.Entities) * 100
 
 		if fPercentage >= self.m_iPercentageToFire then
-			for output, value in pairs(self:GetTable()) do
-				self:FireOutput(output, self)
-			end
+			self:Input("OnCount", self)
 		end
 	end
 	

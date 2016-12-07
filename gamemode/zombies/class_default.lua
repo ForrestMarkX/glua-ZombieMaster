@@ -13,7 +13,7 @@ NPC.Health = 0
 NPC.Model = {}
 
 if SERVER then
-	NPC.SpawnFlags = bit.bor(SF_ZOMBIE_WANDER_ON_IDLE, SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK, SF_NPC_NO_PLAYER_PUSHAWAY)
+	NPC.SpawnFlags = SF_NPC_LONG_RANGE + SF_NPC_FADE_CORPSE + SF_NPC_ALWAYSTHINK + SF_NPC_NO_PLAYER_PUSHAWAY
 	NPC.Capabilities = nil
 
 	NPC.Friends = {"npc_zombie", "npc_poisonzombie", "npc_burnzombie", "npc_dragzombie"}
@@ -24,7 +24,7 @@ function NPC:OnSpawned(npc)
 	
 	npc:SetKeyValue("wakeradius", 32768)
 	npc:SetKeyValue("wakesquad", 1)
-	npc:SetNPCState(NPC_STATE_IDLE)
+	npc:SetNPCState(NPC_STATE_ALERT)
 	
 	if self.Capabilities then
 		npc:CapabilitiesClear()
@@ -44,13 +44,13 @@ function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
 	if npc:Health() <= damage then
 		dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_REMOVENORAGDOLL))
 	end
-	
+
 	local atkowner = attacker.OwnerClass
 	if IsValid(attacker) and attacker:GetClass() == "env_fire" and atkowner and atkowner == "npc_burnzombie" then
 		dmginfo:SetDamageType(DMG_GENERIC)
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
-		return
+		return true
 	end
 	
 	if not IsValid(npc:GetEnemy()) and IsValid(attacker) then
@@ -75,11 +75,103 @@ function NPC:OnKilled(npc, attacker, inflictor)
 		GAMEMODE:TakeCurZombiePop(popCost)
 	end
 	
-	if IsValid(attacker) and attacker:IsPlayer() then
-		attacker:AddFrags(1)
-	end
-	
 	net.Start("zm_spawnclientragdoll")
 		net.WriteEntity(npc)
 	net.Broadcast()
+	
+	if IsValid(attacker) and attacker:IsPlayer() then
+		attacker:AddFrags(1)
+	end
+end
+
+function NPC:Think(npc)
+	--[[
+	if not IsValid(npc) then return end
+	
+	local isDead = npc:Health() <= 0 or npc:IsCurrentSchedule(SCHED_DIE)
+	if isDead then
+		return
+	end
+	
+	local strafing = npc:IsCurrentSchedule(SCHED_RUN_RANDOM)
+	if strafing then
+		return
+	end
+	
+	local currentActivity = npc:GetActivity()
+	local reloading = npc:IsCurrentSchedule(SCHED_RELOAD) or npc:IsCurrentSchedule(SCHED_HIDE_AND_RELOAD) or currentActivity == ACT_RELOAD
+	if reloading then
+		return
+	end
+	
+	local getLineOfFire = npc:IsCurrentSchedule(SCHED_ESTABLISH_LINE_OF_FIRE)
+	if getLineOfFire then
+		return
+	end
+	
+	local chasingEnemy = npc:IsCurrentSchedule(SCHED_CHASE_ENEMY)
+	if chasingEnemy then
+		return
+	end
+	
+	local fallingBack = npc:IsCurrentSchedule(SCHED_RUN_FROM_ENEMY_FALLBACK)
+	if fallingBack then
+		return
+	end
+	
+	local specialAttack = npc:IsCurrentSchedule(SCHED_RANGE_ATTACK2) or npc:IsCurrentSchedule(SCHED_MELEE_ATTACK1) or npc:IsCurrentSchedule(SCHED_MELEE_ATTACK2) or npc:IsCurrentSchedule(SCHED_SPECIAL_ATTACK1) or npc:IsCurrentSchedule(SCHED_SPECIAL_ATTACK2)
+	if specialAttack then
+		return
+	end
+	
+	local forcedRunning = npc:IsCurrentSchedule(SCHED_FORCED_GO_RUN)
+	if forcedRunning and not IsValid(npc:GetEnemy()) then
+		return
+	end
+	
+	npc:Fire("Wake")
+	
+	if IsValid(npc:GetEnemy()) then
+		npc:RefreshEnemyMemory()
+		npc:SetNPCState(NPC_STATE_COMBAT)
+		npc:Fire("SetReadinessHigh")
+	else
+		npc:Fire("SetReadinessLow")
+		
+		local state = npc:GetNPCState()
+		local patrolling = npc:IsCurrentSchedule(SCHED_PATROL_WALK)
+		
+		if state == NPC_STATE_IDLE and not patrolling then
+			npc:SetSchedule(SCHED_PATROL_WALK)
+			return
+		end
+	end
+	
+	local meleeAttacking = npc:GetActivity() == ACT_MELEE_ATTACK1
+	if IsValid(npc:GetEnemy()) then
+		local enemyDistance = npc:GetPos():Distance(npc:GetEnemy():GetPos())
+		local chasingEnemy = npc:IsCurrentSchedule(SCHED_CHASE_ENEMY)
+		
+		if enemyDistance <= 75 then
+			if not meleeAttacking then
+				npc:RefreshEnemyMemory()
+				npc:SetSchedule(SCHED_MELEE_ATTACK1)
+			end
+		elseif not chasingEnemy then
+			npc:SetSchedule(SCHED_CHASE_ENEMY)
+		end
+	end
+	
+	if not npc.ZombieFrezy or npc.ZombieFrezy < 0 then
+		npc.ZombieFrezy = 0
+	end
+	
+	if meleeAttacking then
+		npc.ZombieFrezy = npc.ZombieFrezy + 1
+		npc:SetKeyValue("playbackrate", tostring(1 + (npc.ZombieFrezy / 100)))
+	else
+		npc.ZombieFrezy = npc.ZombieFrezy - 1
+		npc:SetKeyValue("playbackrate", "1")
+	end
+	--]]
 end

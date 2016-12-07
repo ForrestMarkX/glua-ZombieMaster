@@ -224,6 +224,17 @@ function GM:PostGamemodeLoaded()
 end
 
 function GM:OnReloaded()
+	if team.NumPlayers(TEAM_ZOMBIEMASTER) > 0 then
+		timer.Simple(0.25, function() 
+			self.Income_Time = 1
+			self:SetRoundActive(true)
+			
+			if file.Exists("zm_rounds.dec") then
+				self.RoundsPlayed = tonumber(file.Read("zm_rounds.dec"))
+			end
+		end)
+	end
+	
 	hook.Call("BuildZombieDataTable", self)
 end
 
@@ -249,6 +260,7 @@ end
 
 function GM:PlayerInitialSpawn(pl)
 	pl:SetTeam(TEAM_UNASSIGNED)
+	pl:CrosshairDisable()
 	
 	if self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and not NotifiedRestart then
 		PrintTranslatedMessage(HUD_PRINTTALK, "round_restarting")
@@ -371,6 +383,15 @@ function GM:RestartGame()
 	self.PostMapSetup = false
 
 	timer.Simple(0.25, function() self:DoRestartGame() end)
+end
+
+function GM:PlayerSay(sender, text, teamChat)
+	if string.lower(text) == "!roundsleft" then
+		local roundsleft = GetConVar("zm_roundlimit"):GetInt() - self.RoundsPlayed
+		PrintMessage(HUD_PRINTTALK, "There is currently "..roundsleft.." rounds left.")
+	end
+	
+	return BaseClass.PlayerSay(self, sender, text, teamChat)
 end
 
 function GM:OnPlayerClassChanged(pl, class)
@@ -506,6 +527,7 @@ end
 
 function GM:IncrementRoundCount()
 	self.RoundsPlayed = self.RoundsPlayed + 1
+	file.Write("zm_rounds.dec", tostring(self.RoundsPlayed))
 end
 
 function GM:SetupPlayer(ply)
@@ -624,16 +646,6 @@ function GM:ConvertEntTo(prop, convertto)
 	end
 end
 
-function GM:ScaleNPCDamage(npc, hitgroup, dmginfo)
-	if npc:GetClass() == "npc_poisonzombie" and (hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG) then
-		dmginfo:ScaleDamage(1.5)
-	end
-	
-	if hitgroup == HITGROUP_HEAD then
-		dmginfo:ScaleDamage(1.5)
-	end
-end
-
 function GM:EntityTakeDamage(ent, dmginfo)
 	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
 	local damage = dmginfo:GetDamage()
@@ -641,6 +653,12 @@ function GM:EntityTakeDamage(ent, dmginfo)
 	if ent:IsPlayerHolding() and damage > 10 then
 		DropEntityIfHeld(ent)
 		ent:SetCollisionGroup(ent._OldCG or COLLISION_GROUP_NONE)
+		
+		dmginfo:SetDamage(0)
+		dmginfo:ScaleDamage(0)
+		dmginfo:SetDamageType(DMG_BULLET)
+		
+		return true
 	end
 	
 	if ent:IsNPC() then
@@ -660,10 +678,12 @@ function GM:EntityTakeDamage(ent, dmginfo)
 		end
 	end
 	
-	if ent:GetModel() ~= nil and string.find(ent:GetModel(), "explosive") and ent:IsPlayerHolding() then
+	local mdlname = ent:GetModel() or ""
+	if string.find(mdlname, "explosive") and ent:IsPlayerHolding() then
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
-		return
+		dmginfo:SetDamageType(DMG_BULLET)
+		return true
 	end
 	
     -- We need to stop explosive chains team killing.
@@ -721,13 +741,9 @@ function GM:StartCommand(ply, ucmd)
 end
 
 function GM:Tick()
-	--[[
 	for _, npc in pairs(ents.FindByClass("npc_*")) do
-		if npc:IsNPC() and npc.NPCThink then
-			npc:NPCThink()
-		end
+		self:CallZombieFunction(npc:GetClass(), "Think", npc)
 	end
-	--]]
 end
 
 local NextTick = 0
@@ -1006,7 +1022,7 @@ function GM:TakeCurZombiePop(amount)
 	self:SetCurZombiePop(self:GetCurZombiePop() - amount)
 end
 
-function GM:SpawnZombie(pZM, entname, origin, angles, cost)
+function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 	local tab = self:GetZombieData(entname)
 	if not tab then return NULL end
 	
@@ -1045,6 +1061,12 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost)
 
 		pZombie:Spawn()
 		pZombie:Activate()
+		
+		if not bHidden then
+			pZombie:Fire("Wake")
+			pZombie:SetNPCState(NPC_STATE_ALERT)
+			pZombie:CheckForEnemies()
+		end
 		
 		self:CallZombieFunction(entname, "OnSpawned", pZombie)
 		

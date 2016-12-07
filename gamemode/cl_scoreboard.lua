@@ -103,6 +103,8 @@ function PANEL:Think()
 	end
 	
 	if self.Player:Team() ~= self._LastTeam then
+		if not IsValid(g_Scoreboard) then return end
+		
 		g_Scoreboard.SurvivorsList:InvalidateLayout()
 		g_Scoreboard.ZombieMasterList:InvalidateLayout()
 		g_Scoreboard.SpectatorsList:InvalidateLayout()
@@ -280,9 +282,9 @@ function PANEL:Think()
 		end
 	end
 	
-	self.SurvivorsList:SizeToChildren(false, true)
-	self.ZombieMasterList:SizeToChildren(false, true)
-	self.SpectatorsList:SizeToChildren(false, true)
+	if IsValid(self.SurvivorsList) then self.SurvivorsList:SizeToChildren(false, true) end
+	if IsValid(self.ZombieMasterList) then self.ZombieMasterList:SizeToChildren(false, true) end
+	if IsValid(self.SpectatorsList) then self.SpectatorsList:SizeToChildren(false, true) end
 end
 
 vgui.Register("ZMScoreBoard", PANEL, "EditablePanel")

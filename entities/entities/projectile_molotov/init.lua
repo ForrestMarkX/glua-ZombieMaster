@@ -26,7 +26,7 @@ function ENT:PhysicsCollide(data, physObject)
 		return
 	end
 	
-	util.BlastDamageEx(self, self.Owner, self:GetPos(), 128, 40)
+	util.BlastDamageEx(self, self.Owner, self:GetPos(), 128, 40, DMG_BURN)
 	
 	local effectdata = EffectData()
 		effectdata:SetOrigin(self:GetPos())

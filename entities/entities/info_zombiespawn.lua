@@ -165,10 +165,10 @@ if SERVER then
 			end
 
 			if node_idx == -1 then
-				local xDeviation = math.random(-128, 128)
-				local yDeviation = math.random(-128, 128)
+				local xDeviation = math.random(-64, 64)
+				local yDeviation = math.random(-64, 64)
 
-				vSpawnPoint = self:GetPos() + (vForward * 64)
+				vSpawnPoint = self:GetPos() + (vForward * 32)
 				vSpawnPoint.x = vSpawnPoint.x + xDeviation
 				vSpawnPoint.y = vSpawnPoint.y + yDeviation
 			end

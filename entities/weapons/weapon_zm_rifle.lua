@@ -28,7 +28,7 @@ SWEP.HoldType = "ar2"
 
 SWEP.Primary.ClipSize			= 11
 SWEP.Primary.DefaultClip		= 11
-SWEP.Primary.Damage				= 90
+SWEP.Primary.Damage				= 120
 SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 1.6
 SWEP.Primary.Cone				= 0

@@ -28,4 +28,4 @@ SWEP.Primary.NumShots 			= 10
 SWEP.Primary.Delay 				= 1.1
 SWEP.Primary.Cone				= 0.048
 
-SWEP.ReloadDelay = 0.4
+SWEP.ReloadDelay = 0.3

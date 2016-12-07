@@ -14,9 +14,10 @@ hook.Add("EntityKeyValue", "changing", function(ent, key, value)
 end)
 
 hook.Add("OnEntityCreated", "changing2", function(ent)
-	timer.Simple(1, function()
+	timer.Simple(0.25, function()
 		if IsValid(ent) and ent:GetModel() == "models/cat/cat_woodencrate_grey.mdl" then
-			ent:SetModel("models\props_junk\wood_crate001a.mdl")
+			ent:SetModel("models/props_junk/wood_crate001a.mdl")
+			ent:SetMaterial("CAT/cat_woodencrate_grey")
 		end
 	end)
 end)

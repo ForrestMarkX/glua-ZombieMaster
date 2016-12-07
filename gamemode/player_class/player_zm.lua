@@ -151,16 +151,14 @@ function PLAYER:OnDeath(attacker, dmginfo)
 	
 	self.Player:PlayDeathSound()
 	
-	hook.Call("PlayerSpawnAsSpectator", GAMEMODE, self.Player)
+	timer.Simple(0.1, function() 
+		if not IsValid(self.Player) then return end
+		hook.Call("PlayerSpawnAsSpectator", GAMEMODE, self.Player) 
+	end)
 end
 
 function PLAYER:PostOnDeath(inflictor, attacker)
 	self.Player:Spectate(OBS_MODE_ROAMING)
-	if not GAMEMODE:GetRoundEnd() and GAMEMODE:GetRoundActive() then
-		if team.NumPlayers(TEAM_SURVIVOR) == 0 then
-			hook.Call("TeamVictorious", GAMEMODE, false, "undead_has_won")
-		end
-	end
 end
 
 function PLAYER:OnHurt(attacker, healthremaining, damage)

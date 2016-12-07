@@ -13,6 +13,7 @@ PLAYER.TeammateNoCollide	= false
 function PLAYER:Spawn()
 	BaseClass.Spawn(self)
 	
+	self.Player:CrosshairEnable()
 	self.Player:SetMoveType(MOVETYPE_WALK)
 	
 	self.Player:StripWeapons()
@@ -200,16 +201,21 @@ function PLAYER:BindPress(bind, pressed)
 	end
 end
 
-function PLAYER:OnDeath(attacker, dmginfo)
-	BaseClass.OnDeath(self, attacker, dmginfo)
+function PLAYER:PreDeath(inflictor, attacker)
+	BaseClass.PreDeath(self, inflictor, attacker)
 	
 	self.Player:Flashlight(false)
+	self.Player:CrosshairDisable()
 	
 	for _, wep in pairs(self.Player:GetWeapons()) do
 		if IsValid(wep) and not wep.Undroppable then
 			self.Player:DropWeapon(wep)
 		end
 	end
+end
+
+function PLAYER:OnDeath(attacker, dmginfo)
+	BaseClass.OnDeath(self, attacker, dmginfo)
 	
 	local pZM = GAMEMODE:FindZM()
 	if IsValid(pZM) then
@@ -218,6 +224,14 @@ function PLAYER:OnDeath(attacker, dmginfo)
 		pZM:AddZMPoints(income)
 		pZM:SetZMPointIncome(pZM:GetZMPointIncome() + 10)
 	end
+end
+
+function PLAYER:PostOnDeath(inflictor, attacker)
+	timer.Simple(0.15, function()
+		if team.NumPlayers(TEAM_SURVIVOR) == 0 then
+			hook.Call("TeamVictorious", GAMEMODE, false, "undead_has_won")
+		end
+	end)
 end
 
 function PLAYER:OnHurt(attacker, healthremaining, damage)
@@ -247,7 +261,7 @@ function PLAYER:ShouldTakeDamage(attacker)
 		end
 	end
 
-	if attacker:IsPlayer() and attacker ~= self.Player and not attacker.AllowTeamDamage and not self.Player.AllowTeamDamage and attacker:Team() == pl:Team() then return false end
+	if attacker:IsPlayer() and attacker ~= self.Player and not attacker.AllowTeamDamage and not self.Player.AllowTeamDamage and attacker:Team() == self.Player:Team() then return false end
 	
 	local entclass = attacker:GetClass()
 	if string.find(entclass, "item_") then

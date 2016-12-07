@@ -3,10 +3,8 @@ DEFINE_BASECLASS("player_zm")
 
 local PLAYER = {}
 
-function PLAYER:Spawn()
-	BaseClass.Spawn(self)
-	self.Player:Flashlight(false)
-	self.Player:AllowFlashlight(false)
+function PLAYER:CanSuicide()
+	return false
 end
 
 function PLAYER:PostOnDeath(inflictor, attacker)

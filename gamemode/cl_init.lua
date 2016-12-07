@@ -58,6 +58,10 @@ function GM:PostClientInit()
 end
 
 function GM:OnReloaded()
+	if IsValid(g_Scoreboard) then
+		g_Scoreboard:Remove()
+	end
+	
 	hook.Call("BuildZombieDataTable", self)
 end
 

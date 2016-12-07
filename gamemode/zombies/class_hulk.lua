@@ -11,3 +11,9 @@ NPC.Model = {"models/zombie/hulk.mdl"}
 if SERVER then
 	NPC.Capabilities = bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1)
 end
+
+function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
+	if hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG then
+		dmginfo:ScaleDamage(1.5)
+	end
+end
