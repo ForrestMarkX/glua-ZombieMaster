@@ -33,9 +33,9 @@ function ENT:EndTouch(ent)
 
 	local bFoundOtherTouchee = false
 	local iSize = #self.Entities
-	for i=iSize - 1, 0, -1 do 
+	for i=iSize, 0, -1 do 
 		local hOther = self.Entities[i]
-		if not hOther then
+		if not IsValid(hOther) then
 			table.RemoveByValue(self.Entities, hOther)
 		else
 			bFoundOtherTouchee = true
