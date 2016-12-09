@@ -167,7 +167,7 @@ end
 local NextThink = 0
 function PLAYER:Think()
 	if NextThink <= CurTime() then
-		NextThink = CurTime() + 1
+		NextThink = CurTime() + 0.25
 		
 		local heldprop = self.Player.HeldObject
 		if IsValid(heldprop) and not heldprop:IsPlayerHolding() then

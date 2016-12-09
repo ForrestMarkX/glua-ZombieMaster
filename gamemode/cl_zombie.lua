@@ -1,4 +1,4 @@
-local zombieMenus = {}
+local zombieMenus = {} 
 
 function GM:GetZombieMenus()
 	return zombieMenus
@@ -23,7 +23,7 @@ net.Receive("zm_queue", function(len)
 end)
 
 net.Receive("zm_remove_queue", function(um)
-	local id = ents.GetByIndex(net.ReadInt(32))
+	local id = ents.GetByIndex(net.ReadUInt(16))
 	local menu = zombieMenus[id]
 	
 	if menu then

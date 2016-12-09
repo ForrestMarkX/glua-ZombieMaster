@@ -8,6 +8,10 @@ function TrueVisible(posa, posb)
 	return not util.TraceLine({start = posa, endpos = posb, filter = player.GetAll(), mask = MASK_SHOT}).Hit
 end
 
+function LightVisible(posa, posb)
+	return not util.TraceLine({start = posa, endpos = posb, mask = MASK_SHOT_OPAQUE, filter = player.GetAll()}).Hit
+end
+
 function TrueVisibleFilters(posa, posb, ...)
 	local filt = ents.FindByClass("projectile_*")
 	filt = table.Add(filt, player.GetAll())

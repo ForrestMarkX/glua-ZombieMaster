@@ -15,6 +15,9 @@ function PLAYER:Spawn()
 	
 	self.Player:CrosshairEnable()
 	self.Player:SetMoveType(MOVETYPE_WALK)
+	self.Player:SetCollisionGroup(COLLISION_GROUP_PLAYER)
+	self.Player:ResetHull()
+	self.Player:UnSpectate()
 	
 	self.Player:StripWeapons()
 	self.Player:SetColor(color_white)
@@ -78,6 +81,7 @@ function PLAYER:Loadout()
 	self.Player:Give("weapon_zm_fists")
 end
 
+local NextThink = 0
 function PLAYER:Think()
 	BaseClass.Think(self)
 	
@@ -102,6 +106,11 @@ function PLAYER:Think()
 		end
 	else
 		self.Player.drowning = nil
+	end
+	
+	if NextThink <= CurTime() then
+		NextThink = CurTime() + 1
+		self.Player:CheckStuck()
 	end
 end
 
@@ -179,7 +188,11 @@ function PLAYER:CanPickupItem(item)
 			
 			if string.lower(primaryammo) == string.lower(ammotype) or string.lower(secondaryammo) == string.lower(ammotype) then
 				local ammoid = game.GetAmmoID(ammotype)
-				if self.Player:GetAmmoCount(ammotype) < game.GetAmmoMax(ammoid) then
+				local ammovar = GetConVar("zm_maxammo_"..primaryammo or secondaryammo)
+				
+				if ammovar == nil then return end
+				
+				if self.Player:GetAmmoCount(ammotype) < ammovar:GetInt() then
 					return true
 				end
 			end

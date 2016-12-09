@@ -1,7 +1,7 @@
 AddCSLuaFile()
 
 ENT.Base = "info_node_base"
-ENT.Type = "anim"
+ENT.Type = "anim" 
 ENT.Model = Model("models/zombiespawner.mdl")
 
 if CLIENT then
@@ -26,7 +26,7 @@ function ENT:Initialize()
 		self.nodeName = self.nodeName or nil
 		self.rallyName = self.rallyName or nil
 		self.spawndelay = 0
-		self.query = {}
+		self.spawn_queue = {}
 	end
 end
 
@@ -44,35 +44,49 @@ if SERVER then
 	end
 	
 	function ENT:Think()
-		if #self.query > 0 then
-			local data = self.query[1]
-			
-			if data and IsValid(data.ply) then
-				local resources, population = data.ply:GetZMPoints(), GAMEMODE:GetCurZombiePop()
+		if #self.spawn_queue <= 0 then
+			self.m_bSpawning = false
+			return
+		end
+		
+		if not self.m_bActive then
+			table.Empty(self.spawn_queue)
+			return
+		end
+		
+		local data = self.spawn_queue[1]
+		if not data then return end
+		
+		local pZM = data.ply
+		if not IsValid(pZM) then return end
+		
+		local resources, population = data.ply:GetZMPoints(), GAMEMODE:GetCurZombiePop()
+		if ((population + data.popCost) > GAMEMODE:GetMaxZombiePop() or pZM:CanAfford(data.cost)) then
+			self:NextThink(CurTime + GetConVar("zm_spawndelay"):GetFloat() + math.Rand(0.1, 0.2))
+			return true
+		end
 
-				if population + data.popCost < GAMEMODE:GetMaxZombiePop() and data.ply:CanAfford(data.cost) then
-					local spawnPoint = self:FindValidSpawnPoint()
-					if spawnPoint:IsZero() then return end
-					
-					local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
-					
-					timer.Simple(0.25, function()
-						if IsValid(self) then
-							local rally = self:GetRallyEntity()
-							if IsValid(rally) then
-								zombie:ForceGoto(rally:GetPos())
-							end
-						end
-					end)
-				
-					net.Start("zm_remove_queue")
-						net.WriteInt(self:EntIndex(), 32)
-					net.Send(data.ply)
-				
-					table.remove(self.query, 1)
+		local spawnPoint = self:FindValidSpawnPoint()
+		if spawnPoint:IsZero() then 
+			self:NextThink(CurTime + GetConVar("zm_spawndelay"):GetFloat() + math.Rand(0.1, 0.2))
+			return true
+		end
+		
+		local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
+		timer.Simple(0.25, function()
+			if IsValid(self) then
+				local rally = self:GetRallyEntity()
+				if IsValid(rally) then
+					zombie:ForceGoto(rally:GetPos())
 				end
 			end
-		end
+		end)
+		
+		table.remove(self.spawn_queue, 1)
+		
+		net.Start("zm_remove_queue")
+			net.WriteUInt(self:EntIndex(), 16)
+		net.Send(pZM)
 		
 		self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat())
 		return true
@@ -96,38 +110,6 @@ if SERVER then
 			self.nodeName = value or self.nodeName
 		end
 	end
-	
-	--[[
-	function ENT:GetSuitableVector()
-		local vector = Vector(0, 0, 0)
-		repeat
-			local angle = self:GetAngles()
-			local vForward = angle:Forward()
-			local vRight = angle:Right()
-			local vUp = angle:Up()
-			
-			local xDeviation = math.random(-128, 128)
-			local yDeviation = math.random(-128, 128)
-
-			vector = self:GetPos() + (vForward * 64)
-			vector.x = vector.x + xDeviation
-			vector.y = vector.y + yDeviation
-		until util.IsInWorld(vector)
-		
-		local tr = util.TraceHull({
-			start = vSpawnPoint,
-			endpos = vSpawnPoint + Vector( 0, 0, 1 ),
-			maxs = Vector(13, 13, 72),
-			mins = Vector(-13, -13, 0),
-			mask = MASK_NPCSOLID
-		})
-		if tr.fraction ~= 1.0 then
-			return vector:Zero()
-		end
-		
-		return vector
-	end
-	--]]
 
 	local nodePoints = {}
 	function ENT:FindValidSpawnPoint()
@@ -178,6 +160,7 @@ if SERVER then
 				endpos = vSpawnPoint + Vector( 0, 0, 1 ),
 				maxs = Vector(13, 13, 72),
 				mins = Vector(-13, -13, 0),
+				filter = ents.FindByClass("npc_*"),
 				mask = MASK_NPCSOLID
 			})
 			
@@ -248,17 +231,17 @@ if SERVER then
 	function ENT:AddQuery(ply, zombietype, amount)
 		local data = GAMEMODE:GetZombieData(zombietype)
 
-		if data and #self.query < 18 then
+		if data and #self.spawn_queue < 18 then
 			local zombieFlags = self:GetZombieFlags() or 0
 			local allowed = gamemode.Call("CanSpawnZombie", data.Flag or 0, zombieFlags)
 			if not allowed then return end
 			
 			if amount > 1 and amount < 19 then
 				for i = 1, amount do
-					if #self.query == 18 then
+					if #self.spawn_queue == 18 then
 						ply:PrintTranslatedMessage(HUD_PRINTTALK, "queue_is_full")
 					else
-						table.insert(self.query, {type = zombietype, cost = data.Cost, ply = ply, popCost = data.PopCost})
+						table.insert(self.spawn_queue, {type = zombietype, cost = data.Cost, ply = ply, popCost = data.PopCost})
 					
 						net.Start("zm_queue")
 							net.WriteString(zombietype)
@@ -267,7 +250,7 @@ if SERVER then
 					end
 				end
 			else
-				table.insert(self.query, {type = zombietype, cost = data.Cost, ply = ply, popCost = data.PopCost})
+				table.insert(self.spawn_queue, {type = zombietype, cost = data.Cost, ply = ply, popCost = data.PopCost})
 			
 				net.Start("zm_queue")
 					net.WriteString(zombietype)
@@ -281,10 +264,10 @@ if SERVER then
 
 	function ENT:ClearQueue(clear)
 		if clear then
-			self.query = {}
+			self.spawn_queue = {}
 		else
-			if #self.query > 0 then
-				table.remove(self.query, 1)
+			if #self.spawn_queue > 0 then
+				table.remove(self.spawn_queue, #self.spawn_queue)
 			end
 		end
 	end

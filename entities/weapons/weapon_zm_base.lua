@@ -183,6 +183,10 @@ function SWEP:EquipAmmo(ply)
 	ply:EmitSound("items/ammo_pickup.wav", 75, 100, 0.8, CHAN_ITEM)
 end
 
+function SWEP:OnDrop()
+	self:SetCollisionBounds(self:OBBMins() * 2, self:OBBMaxs() * 2)
+end
+
 if not CLIENT then return end
 
 local colBG = Color(60, 0, 0, 200)

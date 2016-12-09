@@ -17,3 +17,24 @@ function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 		dmginfo:ScaleDamage(1.5)
 	end
 end
+
+local NextAttack = 0
+function NPC:Think(npc)
+	if not IsValid(npc) then return end
+	
+	local meleeAttacking = npc:GetActivity() == ACT_MELEE_ATTACK1
+	local target = npc:GetEnemy()
+	if IsValid(target) then
+		if meleeAttacking and target:IsPlayer() and target:Crouching() then
+			if NextAttack < CurTime() then
+				NextAttack = CurTime() + 1
+				
+				local dmginfo = DamageInfo()
+				dmginfo:SetDamage(20)
+				dmginfo:SetAttacker(npc)
+				dmginfo:SetDamageType(DMG_SLASH)
+				target:TakeDamageInfo(dmginfo)
+			end
+		end
+	end
+end

@@ -29,10 +29,12 @@ end
 local function ThinkButton(self)
 	self.BaseClass.Think(self)
 		
-	if #self.ParentQueue:GetItems() <= 0 then
-		self:SetEnabled(false)
-	else
-		self:SetEnabled(true)
+	if not self.DontDisabled then
+		if #self.ParentQueue:GetItems() <= 0 then
+			self:SetEnabled(false)
+		else
+			self:SetEnabled(true)
+		end
 	end
 	
 	if self.bActive ~= not self.m_bDisabled then
@@ -86,13 +88,14 @@ function PANEL:Init()
 	self.removeOne:SetSize(80, 20)
 	self.removeOne:SetText("Remove Last")
 	self.removeOne:SetTextColor(color_white)
+	self.removeOne.DontDisabled = true
 	self.removeOne.Paint = PaintButton
 	self.removeOne.Think = ThinkButton
 	self.removeOne.DoClick = function()
 		if LocalPlayer():IsZM() then
 			if #self.queue:GetItems() > 0 then
-				self:UpdateQueue()
 				RunConsoleCommand("zm_rqueue", self:GetCurrent())
+				self:UpdateQueue()
 			end
 		end
 	end
@@ -103,6 +106,7 @@ function PANEL:Init()
 	self.clearQueue:SetSize(80, 20)
 	self.clearQueue:SetText("Clear")
 	self.clearQueue:SetTextColor(color_white)
+	self.clearQueue.DontDisabled = true
 	self.clearQueue.Paint = PaintButton
 	self.clearQueue.Think = ThinkButton
 	self.clearQueue.DoClick = function()

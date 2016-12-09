@@ -8,6 +8,8 @@ function ENT:Initialize()
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	
 	self:SetTrigger(true)
+	
+	self:SetCollisionBounds(self:OBBMins() * 2, self:OBBMaxs() * 2)
 
 	local phys = self:GetPhysicsObject()
 	if phys:IsValid() then
@@ -25,7 +27,10 @@ function ENT:Touch(ent)
 	
 	local amount = self.AmmoAmount
 	local ammocount = ent:GetAmmoCount(self.AmmoType)
-	local maxammo = game.GetAmmoMax(game.GetAmmoID(self.AmmoType))
+	local ammovar = GetConVar("zm_maxammo_"..self.AmmoType)
+	if ammovar == nil then return end
+	
+	local maxammo = ammovar:GetInt()
 	
 	if (ammocount + amount) > maxammo then
 		amount = maxammo - ammocount

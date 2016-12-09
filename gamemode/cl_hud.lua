@@ -17,9 +17,9 @@ function GM:HUDPaint()
 	
 	if not self:GetRoundActive() then
 		if not self:GetZMSelection() then
-			draw.SimpleText(translate.Get("waiting_on_players"), "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
+			draw.SimpleText(translate.Get("waiting_on_players"), "ZMHUDFontSmall", w * 0.5, h * 0.25, Color(150, 0, 0), TEXT_ALIGN_CENTER)
 		else
-			draw.SimpleText(translate.Get("players_ready"), "ZMHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
+			draw.SimpleText(translate.Get("players_ready"), "ZMHUDFontSmall", w * 0.5, h * 0.25, Color(0, 150, 0), TEXT_ALIGN_CENTER)
 		end
 	end
 	

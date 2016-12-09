@@ -146,6 +146,7 @@ function NPC:Think(npc)
 			return
 		end
 	end
+	--]]
 	
 	local meleeAttacking = npc:GetActivity() == ACT_MELEE_ATTACK1
 	if IsValid(npc:GetEnemy()) then
@@ -173,5 +174,4 @@ function NPC:Think(npc)
 		npc.ZombieFrezy = npc.ZombieFrezy - 1
 		npc:SetKeyValue("playbackrate", "1")
 	end
-	--]]
 end

@@ -59,6 +59,12 @@ end
 function GM:InitPostEntity()
 	RunConsoleCommand("mapcyclefile", "mapcycle_zombiemaster.txt")
 	hook.Call("InitPostEntityMap", self)
+	
+	local ammotbl = hook.Call("GetCustomAmmo", GAMEMODE)
+	if #ammotbl > 0 then
+		CreateConVar("zm_maxammo_"..ammotbl.Type, ammotbl.MaxCarry, FCVAR_REPLICATED, "Max "..ammotbl.Type.." ammo that players can hold.")
+		game.AddAmmoType({name = ammotbl.Type, dmgtype = ammotbl.DmgType, tracer = ammotbl.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammotbl.MaxCarry})
+	end
 end
 
 function GM:InitPostEntityMap()
@@ -131,6 +137,31 @@ function GM:ConvertAmmo(ammo)
 	end
 end
 
+local WepsToConvert = {
+	["weapon_357"] = "weapon_zm_revolver",
+	["weapon_pistol"] = "weapon_zm_pistol",
+	["weapon_shotgun"] = "weapon_zm_shotgun",
+	["weapon_smg1"] = "weapon_zm_mac10",
+	["weapon_crossbow"] = "weapon_zm_rifle",
+	["weapon_grenade"] = "weapon_zm_molotov",
+	["weapon_ar2"] = "weapon_zm_mac10",
+	["weapon_rpg"] = "weapon_zm_rifle",
+	["weapon_crowbar"] = "weapon_zm_improvised",
+	["weapon_bugbait"] = "weapon_zm_molotov"
+}
+function GM:ConvertWeapon(wep)
+	if not IsValid(wep) then return end
+	if not WepsToConvert[wep:GetClass()] then return end
+
+	local ent = ents.Create(WepsToConvert[wep:GetClass()])
+	if IsValid(ent) then
+		ent:SetPos(wep:GetPos())
+		ent:SetAngles(wep:GetAngles())
+		ent:Spawn()
+		wep:Remove()
+	end
+end
+
 function GM:SetupNPCZombieModels(ent)
 	if not IsValid(ent) then return end
 	
@@ -146,9 +177,60 @@ function GM:SetupNPCZombieModels(ent)
 	ent:SetModel(randmodel)
 end
 
+function GM:CreateCustomWeapons(ent)
+	local weptbl = hook.Call("GetCustomWeapons", GAMEMODE)
+	if #weptbl > 0 then
+		if math.random() > weptbl[ent:GetClass()].Chance then
+			local wep = ents.Create(weptbl[ent:GetClass()].Class)
+			if IsValid(wep) then
+				wep:SetPos(ent:GetPos())
+				wep:SetAngles(ent:GetAngles())
+				wep:Spawn()
+				wep:SetCollisionBounds(wep:OBBMins() * 2, wep:OBBMaxs() * 2)
+				
+				return wep
+			end
+		end
+	end
+	
+	return ent
+end
+
+function GM:CreateCustomAmmo(ent)
+	local ammotbl = hook.Call("GetCustomAmmo", GAMEMODE)
+	if #ammotbl > 0 then
+		if math.random() > ammotbl[ent.AmmoType].Chance then
+			local ammoent = ents.Create(ammotbl[ent.AmmoType].Class)
+			if IsValid(ammoent) then
+				ammoent:SetPos(ent:GetPos())
+				ammoent:SetAngles(ent:GetAngles())
+				ammoent:Spawn()
+				ammoent:SetCollisionBounds(ammoent:OBBMins() * 2, ammoent:OBBMaxs() * 2)
+				
+				return ammoent
+			end
+		end
+	end
+	
+	return ent
+end
+
 function GM:OnEntityCreated(ent)
 	if self.PostMapSetup and (string.sub(ent:GetClass(), 1, 10) == "item_ammo_" or string.sub(ent:GetClass(), 1, 9) == "item_box_") then
 		timer.Simple(0.335, function() self:ConvertAmmo(ent) end)
+	end
+	
+	if ent:IsWeapon() then
+		if not ent.Dropped then ent = hook.Call("CreateCustomWeapons", GAMEMODE, ent) end
+		if ent:CreatedByMap() and ent:IsScripted() then
+			ent:SetCollisionBounds(ent:OBBMins() * 2, ent:OBBMaxs() * 2)
+		end
+		
+		self:ConvertWeapon(ent)
+	end
+	
+	if ent:GetClass() == "item_zm_ammo" then
+		ent = hook.Call("CreateCustomAmmo", GAMEMODE, ent)
 	end
 	
 	if ent:IsNPC() then
@@ -229,8 +311,8 @@ function GM:OnReloaded()
 			self.Income_Time = 1
 			self:SetRoundActive(true)
 			
-			if file.Exists("zm_rounds.dec") then
-				self.RoundsPlayed = tonumber(file.Read("zm_rounds.dec"))
+			if file.Exists("zm_rounds.txt") then
+				self.RoundsPlayed = tonumber(file.Read("zm_rounds.txt"))
 			end
 		end)
 	end
@@ -354,7 +436,7 @@ function GM:RestartLua()
 end
 
 function GM:DoRestartGame()
-	game.CleanUpMap(false)
+	game.CleanUpMap()
 	
 	self:SetRoundStart(true)
 	self:SetRoundActive(false)
@@ -527,7 +609,7 @@ end
 
 function GM:IncrementRoundCount()
 	self.RoundsPlayed = self.RoundsPlayed + 1
-	file.Write("zm_rounds.dec", tostring(self.RoundsPlayed))
+	file.Write("zm_rounds.txt", tostring(self.RoundsPlayed))
 end
 
 function GM:SetupPlayer(ply)

@@ -67,6 +67,11 @@ end
 
 function GM:InitPostEntity()
 	hook.Call("PostClientInit", self)
+	
+	local ammotbl = hook.Call("GetCustomAmmo", GAMEMODE)
+	if #ammotbl > 0 then
+		game.AddAmmoType({name = ammotbl.Type, dmgtype = ammotbl.DmgType, tracer = ammotbl.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammotbl.MaxCarry})
+	end
 end
 
 function GM:PostGamemodeLoaded()

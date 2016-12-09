@@ -103,7 +103,7 @@ local function ZM_Power_SpotCreate_SV(ply, command, arguments)
 	
 	for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
 		if IsValid(pl) then
-			if TrueVisible(location, pl:EyePos()) then
+			if LightVisible(pl:GetShootPos(), location) then
 				ply:PrintTranslatedMessage(HUD_PRINTCENTER, "human_can_see_location" )
 				return
 			end
