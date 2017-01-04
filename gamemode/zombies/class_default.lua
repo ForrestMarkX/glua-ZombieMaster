@@ -162,16 +162,4 @@ function NPC:Think(npc)
 			npc:SetSchedule(SCHED_CHASE_ENEMY)
 		end
 	end
-	
-	if not npc.ZombieFrezy or npc.ZombieFrezy < 0 then
-		npc.ZombieFrezy = 0
-	end
-	
-	if meleeAttacking then
-		npc.ZombieFrezy = npc.ZombieFrezy + 1
-		npc:SetKeyValue("playbackrate", tostring(1 + (npc.ZombieFrezy / 100)))
-	else
-		npc.ZombieFrezy = npc.ZombieFrezy - 1
-		npc:SetKeyValue("playbackrate", "1")
-	end
 end

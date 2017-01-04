@@ -325,6 +325,12 @@ function GM:PlayerSpawnAsSpectator(pl)
 	pl:SetTeam(TEAM_SPECTATOR)
 	pl:Spectate(OBS_MODE_ROAMING)
 	
+	pl:SendLua([[
+		if IsValid(GAMEMODE.powerMenu) then
+			GAMEMODE.powerMenu:Remove()
+		end
+	]])
+	
 	pl:SetClass("player_spectator")
 end
 
