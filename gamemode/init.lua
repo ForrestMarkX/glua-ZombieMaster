@@ -350,7 +350,7 @@ function GM:PlayerInitialSpawn(pl)
 	pl:SetTeam(TEAM_UNASSIGNED)
 	pl:CrosshairDisable()
 	
-	if self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and not NotifiedRestart then
+	if (self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and team.NumPlayers(TEAM_ZOMBIEMASTER) >= 1) and not NotifiedRestart then
 		PrintTranslatedMessage(HUD_PRINTTALK, "round_restarting")
 		timer.Simple(2, function() hook.Call("PreRestartRound", self) end)
 		timer.Simple(3, function() hook.Call("RestartRound", self) end)
@@ -849,7 +849,7 @@ function GM:Think()
 	if NextTick <= time then
 		NextTick = time + 1
 		
-		if self:GetRoundActive() and not self:GetRoundEnd() and team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 then
+		if self:GetRoundActive() and not self:GetRoundEnd() and (team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 and team.NumPlayers(TEAM_SURVIVOR) >= 1) then
 			hook.Call("SetupZombieMasterVolunteers", self, true)
 		end
 		
