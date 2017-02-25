@@ -580,6 +580,8 @@ function GM:CreateGibs(pos, headoffset)
 end
 
 function GM:TeamVictorious(won, message)
+	if #player.GetAll() == 1 then return end
+	
 	local winscore = Either(won, HUMAN_WIN_SCORE, HUMAN_LOSS_SCORE)
 	local winningteam = Either(won, TEAM_SURVIVOR, TEAM_ZOMBIEMASTER)
 	for _, ply in pairs(team.GetPlayers(winningteam)) do
