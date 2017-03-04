@@ -34,6 +34,9 @@ function PLAYER:ShouldDrawLocal()
 	if self.TauntCam:ShouldDrawLocalPlayer(self.Player, self.Player:IsPlayingTaunt()) then return true end
 end
 
+function PLAYER:SetupMove(mv, cmd)
+end
+
 function PLAYER:CreateMove( cmd )
 	if self.TauntCam:CreateMove(cmd, self.Player, self.Player:IsPlayingTaunt()) then return true end
 end

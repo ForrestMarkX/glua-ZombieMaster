@@ -3,6 +3,23 @@ DEFINE_BASECLASS("player_zm")
 
 local PLAYER = {}
 
+--[[
+local MoveUp = false
+local MoceDown = false
+--]]
+function PLAYER:SetupMove(mv, cmd)
+	--[[
+	if vgui.CursorVisible() then
+		if MoveUp then cmd:SetMouseWheel(1) end
+		if MoveDown then cmd:SetMouseWheel(-1) end
+	end
+	--]]
+	
+	if cmd:GetMouseWheel() ~= 0 then
+		mv:SetOrigin(mv:GetOrigin() + Vector(0, 0, (cmd:GetMouseWheel() * 20)))
+	end
+end
+
 function PLAYER:CreateMove(cmd)
 	if not isDragging and vgui.CursorVisible() then
 		local menuopen = hook.Call("IsMenuOpen", GAMEMODE)
@@ -91,15 +108,16 @@ function PLAYER:BindPress(bind, pressed)
 	elseif bind == "+speed" and pressed then
 		gui.EnableScreenClicker(not vgui.CursorVisible())
 		return true
-	//+moveup and +movedown are broken in gmod
+	--[[
 	elseif bind == "invprev" then
-		self.Player:ConCommand("+movedown")
-		timer.Simple(0.1, function() self.Player:ConCommand("-movedown") end)
+		MovingUp = true
+		timer.Simple(0, function() MovingUp = false end)
 		return true
 	elseif bind == "invnext" then
-		self.Player:ConCommand("+moveup")
-		timer.Simple(0.1, function() self.Player:ConCommand("-moveup") end)
+		MovingDown = true
+		timer.Simple(0, function() MovingDown = false end)
 		return true
+	--]]
 	end
 end
 

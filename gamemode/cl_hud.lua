@@ -386,6 +386,16 @@ function MakepOptions()
 	check:SetConVar("zm_nopreferredmenu")
 	check:SizeToContents()
 	list:AddItem(check)
+	
+	--[[
+	local slider = vgui.Create("DNumSlider", Window)
+	slider:SetDecimals(0)
+	slider:SetMinMax(0, 50)
+	slider:SetConVar("zm_scrollwheelsensativity")
+	slider:SetText("Scroll Sensitivity")
+	slider:SizeToContents()
+	list:AddItem(slider)
+	--]]
 
 	Window:SetAlpha(0)
 	Window:AlphaTo(255, 0.5, 0)

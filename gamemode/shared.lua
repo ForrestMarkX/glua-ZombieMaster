@@ -132,3 +132,7 @@ end
 function GM:GetRoundEnd()
     return GetSharedBool("zm_round_ended", false)
 end
+
+function GM:SetupMove(ply, mv, cmd)
+	player_manager.RunClass(ply, "SetupMove", mv, cmd)
+end
