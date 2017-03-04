@@ -45,14 +45,6 @@ local nightVision_ColorMod = {
 	["$pp_colour_mulb"] 		= 0
 }
 
-local function TraceLongDistance(vector, nocollideall)
-	return util.TraceLine({start = LocalPlayer():GetShootPos(), endpos = LocalPlayer():GetShootPos() + (vector * 56756), filter = nocollideall and ents.GetAll() or LocalPlayer()})
-end
-
-local function TraceLongDistanceFilter(vector, filter)
-	return util.TraceLine({start = LocalPlayer():GetShootPos(), endpos = LocalPlayer():GetShootPos() + (vector * 56756), filter = filter})
-end
-
 function GM:PostClientInit()
 	RunConsoleCommand("zm_player_ready")
 end
@@ -236,7 +228,7 @@ local function TraceToNPCs(ent)
 	return false
 end
 function GM:GUIMouseReleased(mouseCode, aimVector)
-	local tr = TraceLongDistanceFilter(aimVector, TraceToNPCs)
+	local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, TraceToNPCs)
 	
 	if tr.Entity and tr.Entity:IsNPC() then
 		isDragging = false
@@ -244,11 +236,10 @@ function GM:GUIMouseReleased(mouseCode, aimVector)
 	end
 	
 	if isDragging then
-		local a, b = gui.ScreenToVector(traceX, traceY), gui.ScreenToVector(mouseX, mouseY)
-		local c, d = TraceLongDistanceFilter(a, TraceToNPCs), TraceLongDistanceFilter(b, TraceToNPCs)
+		local a, b = util.QuickTrace(LocalPlayer():GetShootPos(), gui.ScreenToVector(traceX, traceY) * 10000, TraceToNPCs), util.QuickTrace(LocalPlayer():GetShootPos(), gui.ScreenToVector(mouseX, mouseY) * 10000, TraceToNPCs)
 		
-		if c.HitPos and d.HitPos then
-			RunConsoleCommand("zm_traceselect", tostring(d.HitPos), tostring(c.HitPos))
+		if a.HitPos and b.HitPos then
+			RunConsoleCommand("zm_traceselect", tostring(b.HitPos), tostring(a.HitPos))
 		end
 		
 		isDragging = false
@@ -293,7 +284,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				placingZombie = false
 				zm_placedpoweritem = true
 			elseif placingTrap then
-				local hitPos = TraceLongDistance(aimVector, true).HitPos
+				local hitPos = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos
 				local vector = string.Explode(" ", tostring(hitPos))
 			
 				RunConsoleCommand("zm_placetrigger", vector[1], vector[2], vector[3], trapTrigger)
@@ -302,7 +293,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			elseif placingRally then
 				if zm_placedrally then zm_placedrally = false end
 				
-				local hitPos = TraceLongDistance(aimVector, true).HitPos
+				local hitPos = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos
 				local vector = string.Explode(" ", tostring(hitPos))
 				
 				RunConsoleCommand("zm_placerally", vector[1], vector[2], vector[3], trapTrigger)
@@ -316,7 +307,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			if zm_placedpoweritem or zm_placedrally then
 				click_delta = CurTime()
 
-				local tr = TraceLongDistance(aimVector, true)
+				local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll())
 				zm_ring_pos = tr.HitPos
 				zm_ring_ang = tr.HitNormal:Angle()
 				zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
@@ -324,7 +315,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 		end
 		
 		if mouseCode == MOUSE_LEFT and not placingShockwave and not placingZombie then
-			local ent = TraceLongDistance(aimVector).Entity
+			local ent = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).Entity
 			if IsValid(ent) then
 				local class = ent:GetClass()
 				gamemode.Call("SpawnTrapMenu", class, ent)
@@ -352,7 +343,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			
 			click_delta = CurTime()
 
-			local tr = TraceLongDistance(aimVector)
+			local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll())
 			zm_ring_pos = tr.HitPos
 			zm_ring_ang = tr.HitNormal:Angle()
 			zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
@@ -378,18 +369,6 @@ function GM:CreateGhostEntity(trap, rallyID)
 	else
 		hook.Call("SetPlacingRallyPoint", self, true)
 		trapTrigger = rallyID
-	end
-end
-
-function GM:KeyPress(ply, key)
-	if ply:IsZM() and key == IN_SPEED then
-		gui.EnableScreenClicker(false)
-	end
-end
-
-function GM:KeyRelease(ply, key)
-	if ply:IsZM() and key == IN_SPEED then
-		gui.EnableScreenClicker(true)
 	end
 end
 

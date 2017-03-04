@@ -5,7 +5,7 @@ local function ZM_Open_Preferred_Menu(ply)
 	if not IsValid(ply) then return end
 	GAMEMODE:MakePreferredMenu()
 end
-concommand.Add("zm_open_preferred menu", ZM_Open_Preferred_Menu, nil, "Opens the preference menu.")
+concommand.Add("zm_open_preferred_menu", ZM_Open_Preferred_Menu, nil, "Opens the preference menu.")
 
 local function ZM_Power_PhysExplode(ply)
 	if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) then

@@ -86,7 +86,7 @@ function SWEP:Initialize()
 end
 
 function SWEP:PlayPrimaryFireSound()
-	self:EmitSound(self.Primary.Sound, 140, Either(self.Primary.RandomPitch, math.random(self.Primary.MinPitch, self.Primary.MaxPitch), 100))
+	self:EmitSound(self.Primary.Sound, 75, Either(self.Primary.RandomPitch, math.random(self.Primary.MinPitch, self.Primary.MaxPitch), 100))
 end
 
 function SWEP:PlayReloadSound()

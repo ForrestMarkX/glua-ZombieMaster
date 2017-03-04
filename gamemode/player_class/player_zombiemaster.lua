@@ -88,6 +88,18 @@ function PLAYER:BindPress(bind, pressed)
 	if bind == "impulse 100" and pressed then
 		RunConsoleCommand("zm_power_nightvision")
 		return true
+	elseif bind == "+speed" and pressed then
+		gui.EnableScreenClicker(not vgui.CursorVisible())
+		return true
+	//+moveup and +movedown are broken in gmod
+	elseif bind == "invprev" then
+		self.Player:ConCommand("+movedown")
+		timer.Simple(0.1, function() self.Player:ConCommand("-movedown") end)
+		return true
+	elseif bind == "invnext" then
+		self.Player:ConCommand("+moveup")
+		timer.Simple(0.1, function() self.Player:ConCommand("-moveup") end)
+		return true
 	end
 end
 

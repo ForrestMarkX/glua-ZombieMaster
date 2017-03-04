@@ -311,7 +311,7 @@ function GM:OnReloaded()
 			self.Income_Time = 1
 			self:SetRoundActive(true)
 			
-			if file.Exists("zm_rounds.txt") then
+			if file.Exists("zm_rounds.txt", "DATA") then
 				self.RoundsPlayed = tonumber(file.Read("zm_rounds.txt"))
 			end
 		end)
@@ -989,12 +989,14 @@ function GM:GetZombieMasterVolunteer()
 	if team.NumPlayers(TEAM_ZOMBIEMASTER) >= 1 then return end
 	
 	local iHighest = -1
-	local ZMList = {}
 	for _, pl in pairs(player.GetAll()) do
 		if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority > iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
 			iHighest = pl.m_iZMPriority
 		end
-		
+	end
+	
+	local ZMList = {}
+	for _, pl in pairs(player.GetAll()) do
 		if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority == iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
 			table.insert(ZMList, pl)
 		end

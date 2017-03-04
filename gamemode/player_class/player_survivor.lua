@@ -207,10 +207,10 @@ function PLAYER:CanPickupItem(item)
 end
 
 function PLAYER:BindPress(bind, pressed)
-	if bind == "+menu" and pressed then
+	if input.IsKeyDown(KEY_B) and pressed then
 		RunConsoleCommand("zm_dropweapon")
 		return true
-	elseif bind == "+menu_context" and pressed then
+	elseif input.IsKeyDown(KEY_V) and pressed then
 		RunConsoleCommand("zm_dropammo")
 		return true
 	end

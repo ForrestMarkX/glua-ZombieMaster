@@ -342,6 +342,56 @@ function MakepPlayerColor()
 	pPlayerColor:MakePopup()
 end
 
+function MakepOptions()
+	if pOptions then
+		pOptions:SetAlpha(0)
+		pOptions:AlphaTo(255, 0.5, 0)
+		pOptions:SetVisible(true)
+		pOptions:MakePopup()
+		return
+	end
+
+	local Window = vgui.Create("DFrame")
+	local wide = math.min(ScrW(), 500)
+	local tall = math.min(ScrH(), 580)
+	Window:SetSize(wide, tall)
+	Window:Center()
+	Window:SetTitle(" ")
+	Window:SetDeleteOnClose(false)
+	Window.btnMinim:SetVisible(false)
+	Window.btnMaxim:SetVisible(false)
+	Window.Paint = function(self, w, h)
+		draw.RoundedBox(8, 0, 0, w, h, Color(150, 0, 0))
+		draw.RoundedBox(4, 4, 4, w - 7, h - 7, Color(60, 0, 0))
+	end
+	pOptions = Window
+
+	local y = 8
+	local label = EasyLabel(Window, "Options", "ZMHUDFont", color_white)
+	label:SetPos(wide * 0.5 - label:GetWide() * 0.5, y)
+	y = y + label:GetTall() + 8
+
+	local list = vgui.Create("DPanelList", pOptions)
+	list:EnableVerticalScrollbar()
+	list:EnableHorizontal(false)
+	list:SetSize(wide - 24, tall - y - 12)
+	list:SetPos(12, y)
+	list:SetPadding(8)
+	list:SetSpacing(4)
+
+	hook.Call("AddExtraOptions", GAMEMODE, list, Window)
+
+	local check = vgui.Create("DCheckBoxLabel", Window)
+	check:SetText("Show Volunteer Menu")
+	check:SetConVar("zm_nopreferredmenu")
+	check:SizeToContents()
+	list:AddItem(check)
+
+	Window:SetAlpha(0)
+	Window:AlphaTo(255, 0.5, 0)
+	Window:MakePopup()
+end
+
 local surfacecolor = Color(72, 0, 0)
 local outlinecolor = Color(110, 0, 0)
 local function DrawZMButton(self, w, h)
@@ -403,6 +453,17 @@ function GM:ShowOptions()
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
 	but.DoClick = function() MakepPlayerColor() end
+	but:SetTextColor(color_white)
+	but.Paint = DrawZMButton
+	
+	local but = vgui.Create("DButton", menu)
+	but:SetFont("ZMHUDFontSmaller")
+	but:SetText(translate.Get("button_options"))
+	but:SetTall(32)
+	but:DockMargin(12, 0, 12, 12)
+	but:DockPadding(0, 12, 0, 12)
+	but:Dock(TOP)
+	but.DoClick = function() MakepOptions() end
 	but:SetTextColor(color_white)
 	but.Paint = DrawZMButton
 

@@ -1,4 +1,4 @@
-NPC.Class = "npc_zombie"
+NPC.Class = "npc_zm_zombie"
 NPC.Name = translate.Get("npc_class_shambler")
 NPC.Description = translate.Get("npc_description_shambler")
 NPC.Icon = "VGUI/zombies/info_shambler"
