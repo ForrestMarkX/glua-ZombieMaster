@@ -90,40 +90,8 @@ function meta:DropAllAmmo()
 	end
 end
 
-meta.OldDropWeapon = meta.DropWeapon
+meta.OldDropWeapon = meta.OldDropWeapon or meta.DropWeapon
 function meta:DropWeapon(wep)
 	wep.Dropped = true
 	self:OldDropWeapon(wep)
-end
-
-//Code by Heox and Soldner42
-function meta:CheckStuck()
-	if self:InVehicle() then return end
-	
-	local Offset = Vector(5, 5, 5)
-	local Stuck = false
-	
-	if self.Stuck == nil then
-		self.Stuck = false
-	end
-	
-	if self.Stuck then
-		Offset = Vector(2, 2, 2)
-	end
-
-	for _, ent in pairs(ents.FindInBox(self:GetPos() + self:OBBMins() + Offset, self:GetPos() + self:OBBMaxs() - Offset)) do
-		if IsValid(ent) and ent ~= self and ent:IsPlayer() and ent:Alive() then
-			self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-			self:SetVelocity(Vector(-10, -10, 0) * 20)
-			
-			ent:SetVelocity(Vector(10, 10, 0) * 20)
-			
-			Stuck = true
-		end
-	end
-   
-	if not Stuck and self:GetCollisionGroup() ~= COLLISION_GROUP_PLAYER then
-		self.Stuck = false
-		self:SetCollisionGroup(COLLISION_GROUP_PLAYER)
-	end
 end

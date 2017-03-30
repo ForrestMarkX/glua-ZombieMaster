@@ -45,8 +45,8 @@ function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
 		dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_REMOVENORAGDOLL))
 	end
 
-	local atkowner = attacker.OwnerClass
-	if IsValid(attacker) and attacker:GetClass() == "env_fire" and atkowner and atkowner == "npc_burnzombie" then
+	local atkowner = attacker:GetOwner()
+	if IsValid(attacker) and attacker:GetClass() == "env_fire" and IsValid(atkowner) and atkowner:GetClass() == "npc_burnzombie" then
 		dmginfo:SetDamageType(DMG_GENERIC)
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)

@@ -60,6 +60,8 @@ function GM:Initialize()
 	game.AddAmmoType({name = "unused"})
 	
 	hook.Call("BuildZombieDataTable", self)
+	
+	if SERVER then game.ConsoleCommand("mp_flashlight 1\n") end
 end
 
 function GM:CreateTeams()

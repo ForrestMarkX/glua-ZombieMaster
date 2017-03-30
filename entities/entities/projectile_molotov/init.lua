@@ -40,7 +40,7 @@ end
 
 function ENT:OnRemove()
     for _, v in pairs(ents.FindInSphere(self:GetPos(), 128)) do
-		if v:IsNPC() then
+		if v:IsNPC() or v == self:GetOwner() then
 			v:Ignite(100)
 		end
     end
@@ -56,8 +56,9 @@ function ENT:OnRemove()
 		fire:SetKeyValue("firetype", "0" )
 		fire:SetKeyValue("spawnflags", "132")
 		fire:Spawn()
-		fire.Team = TEAM_SURVIVOR
 		fire:Fire("StartFire", "", 0)
+		
+		fire:SetOwner(self:GetOwner())
 	end
 	
 	for i=1, 8 do

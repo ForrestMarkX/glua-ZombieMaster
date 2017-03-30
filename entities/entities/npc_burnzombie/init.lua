@@ -87,16 +87,17 @@ function ENT:OnRemove()
 		fire:SetKeyValue("StartDisabled", "0")
 		fire:SetKeyValue("firetype", "0" )
 		fire:SetKeyValue("spawnflags", "132")
-		fire.OwnerClass = self:GetClass()
 		fire:Spawn()
 		fire:Fire("StartFire", "", 0)
+		
+		fire:SetOwner(self)
 	end
 end
 
 function ENT:OnTakeDamage(dmginfo)
 	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
-	local atkowner = attacker.OwnerClass
-	if IsValid(attacker) and attacker:GetClass() == "env_fire" and atkowner and atkowner == self:GetClass() then
+	local attackowner = attacker:GetOwner()
+	if IsValid(attacker) and attacker:GetClass() == "env_fire" and IsValid(attackowner) and attackowner:GetClass() == self:GetClass() then
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
 		return

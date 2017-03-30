@@ -27,11 +27,10 @@ function PLAYER:Spawn()
 	end
 	
 	self.Player:SetNoCollideWithTeammates(true)
+	self.Player:SetAvoidPlayers(false)
 	timer.Simple(3, function() 
 		self.Player:SetNoCollideWithTeammates(false)
-		timer.Simple(0.35, function() 
-			self.Player:CheckStuck()
-		end)
+		self.Player:SetAvoidPlayers(true)
 	end)
 end
 
@@ -81,7 +80,6 @@ function PLAYER:Loadout()
 	self.Player:Give("weapon_zm_fists")
 end
 
-local NextThink = 0
 function PLAYER:Think()
 	BaseClass.Think(self)
 	
@@ -106,11 +104,6 @@ function PLAYER:Think()
 		end
 	else
 		self.Player.drowning = nil
-	end
-	
-	if NextThink <= CurTime() then
-		NextThink = CurTime() + 1
-		self.Player:CheckStuck()
 	end
 end
 
@@ -268,11 +261,9 @@ function PLAYER:ShouldTakeDamage(attacker)
 	end
 	
 	if IsValid(attacker) then
-		local attowner = attacker.Team
-		if type(attowner) ~= "function" and IsValid(attowner) then
-			if attacker:GetClass() == "env_fire" and attowner and self.Player:Team() == attowner then
-				return false
-			end
+		local attowner = attacker:GetOwner()
+		if attacker:GetClass() == "env_fire" and IsValid(attowner) and attowner:IsPlayer() and attowner:Team() == self.Player:Team() and attowner ~= self.Player then
+			return false
 		end
 	end
 
