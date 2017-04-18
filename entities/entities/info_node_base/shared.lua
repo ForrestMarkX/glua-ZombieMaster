@@ -17,6 +17,7 @@ function ENT:Initialize()
 	self:SetCollisionBounds(Vector(-32, -32, -32), Vector(32, 32, 32))
 	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	self:DrawShadow(false)
+	self:SetRenderMode(RENDERMODE_TRANSALPHA)
 	
 	if SERVER then
 		timer.Simple(1, function()

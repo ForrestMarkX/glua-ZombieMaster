@@ -2,6 +2,9 @@ CreateClientConVar("zm_preference", "0", true, true, "What is your Zombie Master
 CreateClientConVar("zm_nopreferredmenu", "0", true, false, "Toggles the preference menu to appear or not.")
 CreateClientConVar("zm_scrollwheelsensativity", "20", true, false, "How sensitive the mouse scroll is when moving with ZM.")
 
+CreateClientConVar("zm_dropweaponkey", "12", true, false, "Key enum to use for dropping your currently held weapon.")
+CreateClientConVar("zm_dropammokey", "32", true, false, "Key enum to use for dropping your currently held weapons ammo.")
+
 local function ZM_Open_Preferred_Menu(ply)
 	if not IsValid(ply) then return end
 	GAMEMODE:MakePreferredMenu()

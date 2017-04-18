@@ -208,12 +208,12 @@ end
 function SWEP:DrawHUD()
 	local screenscale = BetterScreenScale()
 	local wid, hei = 180 * screenscale, 64 * screenscale
-	local x, y = ScrW() - wid - 128 * screenscale, ScrH() - hei - 32 * screenscale
+	local x, y = ScrW() * 0.865, ScrH() * 0.91
 	local clip = self.DontDrawSpare and self.Owner:GetAmmoCount(self:GetPrimaryAmmoType()) or self:Clip1()
 	local spare = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
 	local maxclip = self.Primary.ClipSize
 
-	draw.RoundedBox(16, x + 2, y + 2, wid , hei, colBG)
+	draw.RoundedBox(16, x + 2, y + 2, wid, hei, colBG)
 
 	local displayspare = maxclip > 0 and self.Primary.DefaultClip ~= 99999
 	if displayspare or not self.DontDrawSpare then

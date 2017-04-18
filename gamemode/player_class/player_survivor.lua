@@ -200,10 +200,10 @@ function PLAYER:CanPickupItem(item)
 end
 
 function PLAYER:BindPress(bind, pressed)
-	if input.IsKeyDown(KEY_B) and pressed then
+	if input.IsKeyDown(GetConVar("zm_dropweaponkey"):GetInt()) and pressed then
 		RunConsoleCommand("zm_dropweapon")
 		return true
-	elseif input.IsKeyDown(KEY_V) and pressed then
+	elseif input.IsKeyDown(GetConVar("zm_dropammokey"):GetInt()) and pressed then
 		RunConsoleCommand("zm_dropammo")
 		return true
 	end

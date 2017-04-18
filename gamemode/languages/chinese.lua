@@ -18,7 +18,7 @@ LANGUAGE.map_changing                       = "正在變更地圖．．．\n"
 LANGUAGE.zombiemaster_left                  = "殭屍大師離線了！\n"
 LANGUAGE.all_humans_left                    = "所有的人類都離線了！\n"
 LANGUAGE.x_has_become_the_zombiemaster      = "%s 成為了殭屍大師！"
-LANGUAGE.zm_move_instructions               = "如果想要像殭屍大師一樣的移動，你可以按住 SHIFT 或是你的加速鍵(+speed)，如果你需要幫助可以按 F1 >> 幫助。"
+LANGUAGE.zm_move_instructions               = "如果想要像殭屍大師一樣的移動，你可以按住 SHIFT 或是你的加速鍵(+speed)，如果你需要幫助可以按 F2 >> 幫助。"
  
 LANGUAGE.population_limit_reached           = "無法生成殭屍： 達到了殭屍的上限！\n"
 LANGUAGE.invalid_surface_for_explosion      = "找不到一個平面來放置爆裂物。"

@@ -653,8 +653,9 @@ net.Receive("zm_gamemodecall", function(length)
 	gamemode.Call(net.ReadString())
 end)
 
-net.Receive("zm_mapinfo", function(length)
+net.Receive("zm_infostrings", function(length)
 	GAMEMODE.MapInfo = net.ReadString()
+	GAMEMODE.HelpInfo = net.ReadString()
 end)
 
 net.Receive("zm_sendcurrentgroups", function(length)

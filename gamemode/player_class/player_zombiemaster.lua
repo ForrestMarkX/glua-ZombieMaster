@@ -18,6 +18,21 @@ function PLAYER:SetupMove(mv, cmd)
 	if cmd:GetMouseWheel() ~= 0 then
 		mv:SetOrigin(mv:GetOrigin() + Vector(0, 0, (cmd:GetMouseWheel() * 20)))
 	end
+	
+	if CLIENT then
+		-- I hate this so much but this appears to be the only way to get cmd:GetMouseWheel() to return something other than 0 when the cursor is visible.
+		if input.WasMousePressed(MOUSE_WHEEL_UP) or input.WasMousePressed(MOUSE_WHEEL_DOWN) then
+			if vgui.CursorVisible() then
+				local c_x, c_y = input.GetCursorPos()
+				
+				gui.EnableScreenClicker(false)
+				timer.Simple(0, function() 
+					gui.EnableScreenClicker(true) 
+					input.SetCursorPos(c_x, c_y)
+				end)
+			end
+		end
+	end
 end
 
 function PLAYER:CreateMove(cmd)
@@ -108,16 +123,6 @@ function PLAYER:BindPress(bind, pressed)
 	elseif bind == "+speed" and pressed then
 		gui.EnableScreenClicker(not vgui.CursorVisible())
 		return true
-	--[[
-	elseif bind == "invprev" then
-		MovingUp = true
-		timer.Simple(0, function() MovingUp = false end)
-		return true
-	elseif bind == "invnext" then
-		MovingDown = true
-		timer.Simple(0, function() MovingDown = false end)
-		return true
-	--]]
 	end
 end
 

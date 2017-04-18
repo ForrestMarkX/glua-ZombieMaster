@@ -18,7 +18,7 @@ LANGUAGE.map_changing                       = "正在改换地图．．．\n"
 LANGUAGE.zombiemaster_left                  = "僵尸大师已离线了！\n"
 LANGUAGE.all_humans_left                    = "所有的人类已离线了！\n"
 LANGUAGE.x_has_become_the_zombiemaster      = "%s 已成为僵尸大师！"
-LANGUAGE.zm_move_instructions               = "你可以按着 SHIFT 或是你的加速键 (+Speed) 来控制僵尸大师的行动。如果你需要帮忙的话，请按 F1 >> 帮助。"
+LANGUAGE.zm_move_instructions               = "你可以按着 SHIFT 或是你的加速键 (+Speed) 来控制僵尸大师的行动。如果你需要帮忙的话，请按 F2 >> 帮助。"
 
 LANGUAGE.population_limit_reached           = "无法生成僵尸： 已达到了僵尸最大的数量！\n"
 LANGUAGE.invalid_surface_for_explosion      = "找不到适合的平面来放置爆炸物。"

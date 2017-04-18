@@ -2,10 +2,21 @@ CreateConVar("zm_physexp_forcedrop_radius", "128", FCVAR_NOTIFY, "Radius in whic
 CreateConVar("zm_loadout_disable", "0", FCVAR_NOTIFY, "If set to 1, any info_loadout entity will not hand out weapons. Not recommended unless you're intentionally messing with game balance and playing on maps that support this move.")
 
 CreateConVar("zm_debug_nozombiemaster", "0", FCVAR_NOTIFY + FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE, "Used for debug, will not cause players to become the ZM.")
+
+concommand.Add("zm_forceround_reboot", function(ply, cmd, args)
+	if IsValid(ply) and not ply:IsSuperAdmin() then return end
+	
+	timer.Simple(2, function() hook.Call("PreRestartRound", GAMEMODE) end)
+	timer.Simple(3, function() hook.Call("RestartRound", GAMEMODE) end)
+end)
+
+//Isn't called for reasons unknown
+--[[
 cvars.AddChangeCallback("zm_debug_nozombiemaster", function(convar_name, value_old, value_new)
 	timer.Simple(2, function() hook.Call("PreRestartRound", GAMEMODE) end)
 	timer.Simple(3, function() hook.Call("RestartRound", GAMEMODE) end)
 end)
+--]]
 
 CreateConVar("zm_roundlimit","2", FCVAR_NOTIFY, "Sets the number of rounds before the server changes map\n" )
 //CreateConVar("zm_nocollideplayers","0", FCVAR_NOTIFY, "Should players not collide with each other?" )

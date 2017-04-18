@@ -65,6 +65,20 @@ function GM:InitPostEntity()
 		CreateConVar("zm_maxammo_"..ammotbl.Type, ammotbl.MaxCarry, FCVAR_REPLICATED, "Max "..ammotbl.Type.." ammo that players can hold.")
 		game.AddAmmoType({name = ammotbl.Type, dmgtype = ammotbl.DmgType, tracer = ammotbl.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammotbl.MaxCarry})
 	end
+	
+	--[[
+	if not file.Exists("maps/"..game.GetMap()..".ain", "GAME") then
+		MsgC(Color(255, 0, 0), "A NavMesh was not found for this map, generating one now. Please allow for up to 1 second to 3 minutes for it to finish.")
+		navmesh.BeginGeneration()
+		
+		timer.Create("NavMeshGenCheck", 0, 0, function()
+			if not navmesh.IsGenerating() then
+				navmesh.Save()
+				timer.Remove("NavMeshGenCheck")
+			end
+		end)
+	end
+	--]]
 end
 
 function GM:InitPostEntityMap()
@@ -287,7 +301,7 @@ function GM:PostGamemodeLoaded()
 	
 	util.AddNetworkString("zm_gamemodecall")
 	util.AddNetworkString("zm_trigger")
-	util.AddNetworkString("zm_mapinfo")	
+	util.AddNetworkString("zm_infostrings")	
 	util.AddNetworkString("zm_queue")
 	util.AddNetworkString("zm_remove_queue")
 	util.AddNetworkString("zm_sendcurrentgroups")
@@ -302,6 +316,16 @@ function GM:PostGamemodeLoaded()
 		self.MapInfo = file.Read(mapinfo, "GAME")
 	else
 		self.MapInfo = "No objectives found!"
+	end
+	
+	if not file.Exists("zm_info", "DATA") then
+		file.CreateDir("zm_info")
+	end
+	
+	if file.Exists("zm_info/help_menu.html", "DATA") then
+		self.HelpInfo = file.Read("zm_info/help_menu.html", "DATA")
+	else
+		self.HelpInfo = "No Info"
 	end
 end
 
@@ -365,9 +389,10 @@ function GM:PlayerInitialSpawn(pl)
 	
 	table.insert(self.UnReadyPlayers, pl)
 	
-	net.Start("zm_mapinfo")
+	net.Start("zm_infostrings")
 		net.WriteString(self.MapInfo)
-	net.Send(pl)
+		net.WriteString(self.HelpInfo)
+	net.Send(pl)	
 end
 
 function GM:IncreaseResources(pZM)
@@ -580,7 +605,7 @@ function GM:CreateGibs(pos, headoffset)
 end
 
 function GM:TeamVictorious(won, message)
-	if #player.GetAll() == 1 then return end
+	if player.GetCount() == 1 then return end
 	
 	local winscore = Either(won, HUMAN_WIN_SCORE, HUMAN_LOSS_SCORE)
 	local winningteam = Either(won, TEAM_SURVIVOR, TEAM_ZOMBIEMASTER)

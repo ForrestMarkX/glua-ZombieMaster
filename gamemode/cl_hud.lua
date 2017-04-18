@@ -34,7 +34,7 @@ end
 
 function GM:HumanHUD(screenscale)	
 	local wid, hei = 225 * screenscale, 72 * screenscale
-	local x, y = ScrW() - wid - screenscale * (ScrW() - (ScrW() * 0.18)), ScrH() - hei - screenscale * 32
+	local x, y = ScrW() * 0.035, ScrH() * 0.9
 	
 	draw.RoundedBox(16, x + 2, y + 2, wid, hei, Color(60, 0, 0, 200))
 	
@@ -108,6 +108,47 @@ function GM:ZombieMasterHUD(scale)
 	end
 end
 
+local defaultHelpStr = [[
+	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+	<html>
+	<head>
+	<title>ZM MOTD</title>
+	<style type="text/css">
+	body	{
+		background:#1B0503;
+		margin-left:10px;
+		margin-top:10px;
+		text-align: center;
+	}
+	h	{
+		font-family: Arial Black, Arial, Impact, serif;
+	}
+	#centering {
+		font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+		color: #FFFFFF;
+		width: 80%;
+		background-color: #550000;
+		margin-left: auto;
+		margin-right: auto;
+		padding: 20px;
+	}
+	</style>
+	</head>
+	<body scroll="no">
+	<div id="centering">
+	<!-- motd goes here -->
+	<h2>Zombie Master</h2>
+	<h3>Beta 1.X.X</h3>
+	<h4>Make sure you bind all new keys in the keyboard config!</h4>
+	<p><b>ZM for noobs</b></p>
+	<p><i>As Zombie Master</i>: Click on the orbs, spawn zombies, kill humans.</p>
+	<p><i>As Human</i>: Get guns, check map objectives (key in keyconfig), survive and complete objectives.</p>
+	<p>www.zombiemaster.org</p>
+
+	</div>
+	</body>
+	</html>
+]]
 function MakepHelp()
 	local frame = vgui.Create( "DFrame" )
 	frame:SetSize(ScrW() * 0.6, ScrH() * 0.6)
@@ -122,47 +163,9 @@ function MakepHelp()
 		draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
 	end
 	
-	local html = vgui.Create("DHTML" , frame)
+	local html = vgui.Create("DHTML", frame)
 	html:Dock(FILL)
-	html:SetHTML([[
-		<html>
-		<head>
-		<title>ZM MOTD</title>
-		<style type="text/css">
-		body	{
-			background:#1B0503;
-			margin-left:10px;
-			margin-top:10px;
-			text-align: center;
-		}
-		h	{
-			font-family: Arial Black, Arial, Impact, serif;
-		}
-		#centering {
-			font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
-			color: #FFFFFF;
-			width: 80%;
-			background-color: #550000;
-			margin-left: auto;
-			margin-right: auto;
-			padding: 20px;
-		}
-		</style>
-		</head>
-		<body scroll='no'>
-		<div id='centering'>
-		<!-- motd goes here -->
-		<h2>Zombie Master</h2>
-		<h3>Beta 1.X.X</h3>
-		<h4>Make sure you bind all new keys in the keyboard config!</h4>
-		<p><b>ZM for noobs</b></p>
-		<p><i>As Zombie Master</i>: Click on the orbs, spawn zombies, kill humans.</p>
-		<p><i>As Human</i>: Get guns, check map objectives (F1), survive and complete objectives.</p>
-		<p>www.zombiemaster.org</p>
-
-		</div>
-		</body>
-		</html>]])
+	html:SetHTML(Either(GAMEMODE.HelpInfo == "No Info", defaultHelpStr, GAMEMODE.HelpInfo))
 
 	frame:MakePopup()
 end
@@ -181,15 +184,15 @@ function MakepCredits()
 		draw.RoundedBox(8, 0, 0, w, h, Color(0, 0, 0, 180))
 	end
 
-	local label = EasyLabel(frame, GAMEMODE.Name.." Credits", "ZMHUDFontNS", color_white)
+	local label = EasyLabel(frame, GAMEMODE.Name.." Credits", "ZMHUDFont", color_white)
 	label:AlignTop(y)
 	label:CenterHorizontal()
 	y = y + label:GetTall() + 8
 
 	for authorindex, authortab in ipairs(GAMEMODE.Credits) do
-		local lineleft = EasyLabel(frame, string.Replace(authortab[1], "@", "(at)"), "ZMHUDFontSmallestNS", color_white)
-		local linemid = EasyLabel(frame, "-", "ZMHUDFontSmallestNS", color_white)
-		local lineright = EasyLabel(frame, authortab[3], "ZMHUDFontSmallestNS", color_white)
+		local lineleft = EasyLabel(frame, string.Replace(authortab[1], "@", "(at)"), "ZMHUDFontSmallest", color_white)
+		local linemid = EasyLabel(frame, "-", "ZMHUDFontSmallest", color_white)
+		local lineright = EasyLabel(frame, authortab[3], "ZMHUDFontSmallest", color_white)
 		local linesub
 		if authortab[2] then
 			linesub = EasyURL(frame, authortab[2], "DefaultFont", color_white)
@@ -387,15 +390,27 @@ function MakepOptions()
 	check:SizeToContents()
 	list:AddItem(check)
 	
-	--[[
-	local slider = vgui.Create("DNumSlider", Window)
-	slider:SetDecimals(0)
-	slider:SetMinMax(0, 50)
-	slider:SetConVar("zm_scrollwheelsensativity")
-	slider:SetText("Scroll Sensitivity")
-	slider:SizeToContents()
-	list:AddItem(slider)
-	--]]
+	local label = EasyLabel(Window, "Drop Weapon Key", "ZMHUDFont", color_white)
+	local binder = vgui.Create("DBinder", Window)
+	binder:SetConVar("zm_dropweaponkey")
+	binder:SizeToContents()
+	function binder:SetSelectedNumber(num)
+		self.m_iSelectedNumber = num
+		RunConsoleCommand("zm_dropweaponkey", num)
+	end
+	list:AddItem(label)
+	list:AddItem(binder)
+	
+	local label = EasyLabel(Window, "Drop Ammo Key", "ZMHUDFont", color_white)
+	local binder = vgui.Create("DBinder", Window)
+	binder:SetConVar("zm_dropammokey")
+	binder:SizeToContents()
+	function binder:SetSelectedNumber(num)
+		self.m_iSelectedNumber = num
+		RunConsoleCommand("zm_dropammokey", num)
+	end
+	list:AddItem(label)
+	list:AddItem(binder)
 
 	Window:SetAlpha(0)
 	Window:AlphaTo(255, 0.5, 0)
