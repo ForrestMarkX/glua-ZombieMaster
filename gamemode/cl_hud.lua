@@ -314,7 +314,7 @@ function MakepPlayerColor()
 
 	local y = 8
 
-	local label = Label(pPlayerColor, "Colors", pPlayerColor)
+	local label = Label("Colors", pPlayerColor)
 	label:SetFont("ZMHUDFont")
 	label:SizeToContents()
 	label:SetPos((pPlayerColor:GetWide() - label:GetWide()) / 2, y)
