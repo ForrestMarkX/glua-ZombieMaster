@@ -27,6 +27,7 @@ CreateConVar("zm_incometime", "5", FCVAR_NOTIFY, "Amount of time in seconds the 
 CreateConVar("zm_resourcegainperplayerdeathmin", "50", FCVAR_NOTIFY, "Min amount of resources the Zombie Master gains per player death.")
 CreateConVar("zm_resourcegainperplayerdeathmax", "100", FCVAR_NOTIFY, "Max amount of resources the Zombie Master gains per player death.")
 CreateConVar("zm_notimeslowonwin", "0", FCVAR_NOTIFY, "Disables time slowing down when someone wins a game.")
+CreateConVar("zm_postroundstarttimer", "30", FCVAR_NOTIFY, "How many seconds after the game starts that first joiners will not be human.")
 
 local function ZM_Power_PhysExplode_SV(ply, command, arguments)
 	if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) then

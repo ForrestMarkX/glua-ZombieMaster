@@ -4,12 +4,12 @@ include("shared.lua")
 function ENT:Initialize()
 	self:SetModel(self.Model)
 	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetSolid(SOLID_VPHYSICS)
+	self:SetSolid(SOLID_BBOX)
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	
 	self:SetTrigger(true)
 	
-	self:SetCollisionBounds(self:OBBMins() * 2, self:OBBMaxs() * 2)
+	self:SetCollisionBounds(self:OBBMins() * 4, self:OBBMaxs() * 4)
 
 	local phys = self:GetPhysicsObject()
 	if phys:IsValid() then
@@ -51,4 +51,8 @@ end
 
 function ENT:OnTakeDamage(dmginfo)
 	self:TakePhysicsDamage(dmginfo)
+end
+
+function ENT:AllowPickup(ply)
+	return false
 end

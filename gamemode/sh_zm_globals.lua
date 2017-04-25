@@ -79,8 +79,7 @@ GM.AmmoModels["item_ammo_pistol"] = "models/items/boxsrounds.mdl"
 GM.AmmoModels["item_ammo_pistol_large"] = "models/items/boxsrounds.mdl"
 GM.AmmoModels["item_box_buckshot"] = "models/items/boxbuckshot.mdl"
 
-CARRY_MASS = 145
-CARRY_VOLUME = 120
+CARRY_MASS = 40
 
 GM.HumanGibs = {
 	Model("models/gibs/HGIBS.mdl"),

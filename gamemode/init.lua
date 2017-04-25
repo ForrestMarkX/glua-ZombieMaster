@@ -172,6 +172,10 @@ function GM:ConvertWeapon(wep)
 		ent:SetPos(wep:GetPos())
 		ent:SetAngles(wep:GetAngles())
 		ent:Spawn()
+		
+		ent:SetSolid(SOLID_BBOX)
+		ent:SetCollisionBounds(ent:OBBMins() * 4, ent:OBBMaxs() * 4)
+		
 		wep:Remove()
 	end
 end
@@ -236,10 +240,8 @@ function GM:OnEntityCreated(ent)
 	
 	if ent:IsWeapon() then
 		if not ent.Dropped then ent = hook.Call("CreateCustomWeapons", GAMEMODE, ent) end
-		if ent:CreatedByMap() and ent:IsScripted() then
-			ent:SetCollisionBounds(ent:OBBMins() * 2, ent:OBBMaxs() * 2)
-		end
-		
+		ent:SetSolid(SOLID_BBOX)
+		ent:SetCollisionBounds(ent:OBBMins() * 4, ent:OBBMaxs() * 4)
 		self:ConvertWeapon(ent)
 	end
 	
@@ -253,10 +255,13 @@ function GM:OnEntityCreated(ent)
 			return
 		end
 		
-		local entname = string.lower(ent:GetClass())
-	
 		timer.Simple(0, function()
 			if not IsValid(ent) then return end
+			
+			if string.find(ent:GetClass(), "fastzombie") then
+				ent:SetModelScale(0.855)
+				ent:SetHullSizeNormal()
+			end
 			
 			if ent.GetNumBodyGroups and ent.SetBodyGroup then
 				for k = 0, ent:GetNumBodyGroups() - 1 do
@@ -678,7 +683,7 @@ function GM:InitClient(pl)
 	end
 	
 	if self.RoundStarted and self.RoundStarted ~= 0 and self:GetRoundActive() then
-		if self.RoundStarted + 15 >= CurTime() and not self.DeadPlayers[pl:SteamID()] then
+		if self.RoundStarted + GetConVar("zm_postroundstarttimer"):GetInt() >= CurTime() and not self.DeadPlayers[pl:SteamID()] then
 			hook.Call("SetupPlayer", self, pl)
 		end
 	end
@@ -1089,7 +1094,7 @@ function GM:PlayerUse(pl, ent)
 		if ent:GetMoveType() == MOVETYPE_VPHYSICS and IsValid(phys) and phys:IsMoveable() and player_manager.RunClass(pl, "AllowPickup", ent) then	
 			local washolding = ent:IsPlayerHolding()
 			DropEntityIfHeld(ent)
-			ent:SetCollisionGroup(ent._OldCG or COLLISION_GROUP_NONE)
+			ent:SetCollisionGroup(ent._OldCG or ent:GetCollisionGroup())
 			ent._OldCG = nil
 			
 			if washolding then return false end

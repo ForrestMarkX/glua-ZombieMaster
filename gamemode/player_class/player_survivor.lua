@@ -108,14 +108,37 @@ function PLAYER:Think()
 end
 
 function PLAYER:AllowPickup(ent)
-	if ent:IsPlayerHolding() then return false end
+	if ent:IsPlayerHolding() or not self.Player:Alive() or not ent:IsValid() then return false end
 	
-	local entclass = ent:GetClass()
-	if (string.sub(entclass, 1, 12) == "prop_physics" or string.sub(entclass, 1, 12) == "func_physbox") and self.Player:Alive() and ent:GetMoveType() == MOVETYPE_VPHYSICS and ent:GetPhysicsObject():IsValid() and ent:GetPhysicsObject():GetMass() <= CARRY_MASS and ent:GetPhysicsObject():IsMoveable() and ent:OBBMins():Length() + ent:OBBMaxs():Length() <= CARRY_VOLUME then
-		return true
+	local phys = ent:GetPhysicsObject()
+	local objectMass = 0
+	if IsValid(phys) then
+		objectMass = phys:GetMass()
+		if phys:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP) then
+			return false
+		end
+	else
+		return false
 	end
 	
-	return false
+	if ent.AllowPickup and not ent:AllowPickup(self.Player) then 
+		return false 
+	end
+	
+	if CARRY_MASS > 0 and objectMass > CARRY_MASS then
+		return false
+	end
+
+	--[[
+	if sizeLimit > 0 then
+		local size = ent:OBBMaxs() - ent:OBBMins()
+		if size.x > sizeLimit or size.y > sizeLimit or size.z > sizeLimit then
+			return false
+		end
+	end
+	--]]
+	
+	return true
 end
 
 function PLAYER:CanPickupWeapon(ent)
