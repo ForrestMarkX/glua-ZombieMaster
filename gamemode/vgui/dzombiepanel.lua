@@ -174,13 +174,19 @@ function PANEL:Populate()
 			self.base:SetSize(200, 106)
 			self.base.Paint = function() end
 			
-			self.costLabel = EasyLabel(self.base, "Resources: " .. data.Cost, "DefaultFontBold", color_white)
+			self.costLabel = Label("Resources: " .. data.Cost, self.base)
+			self.costLabel:SetFont("DefaultFontBold")
+			self.costLabel:SizeToContents()
 			self.costLabel:SetPos(5, 20)
 			
-			self.popLabel = EasyLabel(self.base, "Population: " .. data.PopCost, "DefaultFontBold", color_white)
+			self.popLabel = Label("Population: " .. data.PopCost, self.base)
+			self.popLabel:SetFont("DefaultFontBold")
+			self.popLabel:SizeToContents()
 			self.popLabel:SetPos(5, 40)
 			
-			self.desc = EasyLabel(self.base, data.Description, "DefaultFontBold", color_white)
+			self.desc = Label(data.Description, self.base)
+			self.desc:SetFont("DefaultFontBold")
+			self.desc:SizeToContents()
 			self.desc:SetPos(5, 60)
 			self.desc:DockMargin(5, 60, 12, 0)
 			self.desc:Dock(FILL)

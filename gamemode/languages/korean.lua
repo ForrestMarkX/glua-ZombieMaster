@@ -76,6 +76,7 @@ LANGUAGE.scoreboard_kills                   = "킬수"
 LANGUAGE.preferred_playstyle                = "플레이어 모드 지정"
 LANGUAGE.preferred_willing_zm               = "좀비 마스터 (RTS)."
 LANGUAGE.preferred_prefer_survivor          = "플레이어 (FPS)."
+LANGUAGE.preferred_prefer_spectator         = "관객 선호."
 LANGUAGE.preferred_dont_ask                 = "다신 묻지 않기"
 
 LANGUAGE.button_help                        = "도움"

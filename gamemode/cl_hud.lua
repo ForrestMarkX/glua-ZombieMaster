@@ -45,64 +45,62 @@ function GM:HumanHUD(screenscale)
 end
 
 function GM:ZombieMasterHUD(scale)
-	if LocalPlayer():IsZM() then
-		-- Resources + Income.
-		draw.DrawSimpleRect(5, h - 43, 150, 38, Color(60, 0, 0, 200))
-		draw.DrawSimpleOutlined(5, h - 43, 150, 38, color_black)
-		
-		surface.SetDrawColor(color_white)
-		surface.SetTexture(skullMaterial)
-		surface.DrawTexturedRect(7, h - 41, 32, 32)
-		
-		draw.DrawText(tostring(LocalPlayer():GetZMPoints()), "zm_hud_font", 60, h - 42, color_white, 1)
-		
-		if LocalPlayer():GetZMPointIncome() then
-			draw.DrawText("+ " .. LocalPlayer():GetZMPointIncome(), "zm_hud_font2", 90, h - 24, color_white, 1)
-		end
-		
-		-- Population.
-		draw.DrawSimpleRect(5, h - 62, 100, 18, Color(60, 0, 0, 200))
-		draw.DrawSimpleOutlined(5, h - 62, 100, 18, color_black)
-		
-		surface.SetDrawColor(color_white)
-		surface.SetTexture(popMaterial)
-		surface.DrawTexturedRect(6, h - 61, 16, 16)
-		
-		draw.DrawText(self:GetCurZombiePop() .. "/" .. self:GetMaxZombiePop(), "zm_hud_font2", 60, h - 62, color_white, 1)
+	-- Resources + Income.
+	draw.DrawSimpleRect(5, h - 43, 150, 38, Color(60, 0, 0, 200))
+	draw.DrawSimpleOutlined(5, h - 43, 150, 38, color_black)
+	
+	surface.SetDrawColor(color_white)
+	surface.SetTexture(skullMaterial)
+	surface.DrawTexturedRect(7, h - 41, 32, 32)
+	
+	draw.DrawText(tostring(LocalPlayer():GetZMPoints()), "zm_hud_font", 60, h - 42, color_white, 1)
+	
+	if LocalPlayer():GetZMPointIncome() then
+		draw.DrawText("+ " .. LocalPlayer():GetZMPointIncome(), "zm_hud_font2", 90, h - 24, color_white, 1)
+	end
+	
+	-- Population.
+	draw.DrawSimpleRect(5, h - 62, 100, 18, Color(60, 0, 0, 200))
+	draw.DrawSimpleOutlined(5, h - 62, 100, 18, color_black)
+	
+	surface.SetDrawColor(color_white)
+	surface.SetTexture(popMaterial)
+	surface.DrawTexturedRect(6, h - 61, 16, 16)
+	
+	draw.DrawText(self:GetCurZombiePop() .. "/" .. self:GetMaxZombiePop(), "zm_hud_font2", 60, h - 62, color_white, 1)
 
-		if isDragging then
-			local x, y = gui.MousePos()
+	if isDragging then
+		local x, y = gui.MousePos()
+		
+		traceX, traceY = x, y
+
+		if mouseX < x then
+			if mouseY < y then
+				surface.SetDrawColor(selection_color_outline)
+				surface.DrawOutlinedRect(mouseX, mouseY, x -mouseX, y -mouseY)
 			
-			traceX, traceY = x, y
-
-			if mouseX < x then
-				if mouseY < y then
-					surface.SetDrawColor(selection_color_outline)
-					surface.DrawOutlinedRect(mouseX, mouseY, x -mouseX, y -mouseY)
-				
-					surface.SetDrawColor(selection_color_box)
-					surface.DrawRect(mouseX, mouseY, x -mouseX, y -mouseY)
-				else
-					surface.SetDrawColor(selection_color_outline)
-					surface.DrawOutlinedRect(mouseX, y, x -mouseX, mouseY -y)
-				
-					surface.SetDrawColor(selection_color_box)
-					surface.DrawRect(mouseX, y, x -mouseX, mouseY -y)
-				end
+				surface.SetDrawColor(selection_color_box)
+				surface.DrawRect(mouseX, mouseY, x -mouseX, y -mouseY)
 			else
-				if mouseY > y then
-					surface.SetDrawColor(selection_color_outline)
-					surface.DrawOutlinedRect(x, y, mouseX -x, mouseY -y)
-				
-					surface.SetDrawColor(selection_color_box)
-					surface.DrawRect(x, y, mouseX -x, mouseY -y)
-				else
-					surface.SetDrawColor(selection_color_outline)
-					surface.DrawOutlinedRect(x, mouseY, mouseX -x, y -mouseY)
-				
-					surface.SetDrawColor(selection_color_box)
-					surface.DrawRect(x, mouseY, mouseX -x, y -mouseY)
-				end
+				surface.SetDrawColor(selection_color_outline)
+				surface.DrawOutlinedRect(mouseX, y, x -mouseX, mouseY -y)
+			
+				surface.SetDrawColor(selection_color_box)
+				surface.DrawRect(mouseX, y, x -mouseX, mouseY -y)
+			end
+		else
+			if mouseY > y then
+				surface.SetDrawColor(selection_color_outline)
+				surface.DrawOutlinedRect(x, y, mouseX -x, mouseY -y)
+			
+				surface.SetDrawColor(selection_color_box)
+				surface.DrawRect(x, y, mouseX -x, mouseY -y)
+			else
+				surface.SetDrawColor(selection_color_outline)
+				surface.DrawOutlinedRect(x, mouseY, mouseX -x, y -mouseY)
+			
+				surface.SetDrawColor(selection_color_box)
+				surface.DrawRect(x, mouseY, mouseX -x, y -mouseY)
 			end
 		end
 	end
@@ -158,9 +156,10 @@ function MakepHelp()
 	frame.btnMaxim:SetVisible(false)
 	frame.btnMinim:SetVisible(false)
 	frame:Center()
-	frame.Paint = function(self, w, h)
-		draw.RoundedBox(8, 0, 0, w, h, Color(130, 0, 0))
-		draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
+	frame.OnClose = function(self)
+		if not IsValid(self.OptionsMenu) then
+			GAMEMODE:ShowOptions()
+		end
 	end
 	
 	local html = vgui.Create("DHTML", frame)
@@ -180,23 +179,38 @@ function MakepCredits()
 	frame:SetTitle(" ")
 	frame:SetKeyboardInputEnabled(false)
 	frame.lblTitle:SetFont("dexfont_med")
-	frame.Paint = function(self, w, h)
-		draw.RoundedBox(8, 0, 0, w, h, Color(0, 0, 0, 180))
+	frame.OnClose = function(self)
+		if not IsValid(self.OptionsMenu) then
+			GAMEMODE:ShowOptions()
+		end
 	end
 
-	local label = EasyLabel(frame, GAMEMODE.Name.." Credits", "ZMHUDFont", color_white)
+	local label = Label(GAMEMODE.Name.." Credits", frame)
+	label:SetFont("ZMHUDFont")
+	label:SizeToContents()
 	label:AlignTop(y)
 	label:CenterHorizontal()
 	y = y + label:GetTall() + 8
 
 	for authorindex, authortab in ipairs(GAMEMODE.Credits) do
-		local lineleft = EasyLabel(frame, string.Replace(authortab[1], "@", "(at)"), "ZMHUDFontSmallest", color_white)
-		local linemid = EasyLabel(frame, "-", "ZMHUDFontSmallest", color_white)
-		local lineright = EasyLabel(frame, authortab[3], "ZMHUDFontSmallest", color_white)
+		local lineleft = Label(string.Replace(authortab[1], "@", "(at)"), frame)
+		local linemid = Label("-", frame)
+		local lineright = Label(authortab[3], frame)
+		
 		local linesub
 		if authortab[2] then
-			linesub = EasyURL(frame, authortab[2], "DefaultFont", color_white)
+			linesub = vgui.Create("DLabelURL", frame)
+			linesub:SetText(authortab[2])
+			linesub:SetURL(authortab[2])
+			linesub:SizeToContents()
 		end
+		
+		lineleft:SetFont("ZMHUDFontSmallest")
+		lineleft:SizeToContents()
+		lineright:SetFont("ZMHUDFontSmallest")
+		lineright:SizeToContents()
+		linemid:SetFont("ZMHUDFontSmallest")
+		linemid:SizeToContents()
 
 		lineleft:AlignLeft(8)
 		lineleft:AlignTop(y)
@@ -244,9 +258,10 @@ function MakepPlayerModel()
 	pPlayerModel:SetDeleteOnClose(true)
 	pPlayerModel.btnMaxim:SetVisible(false)
 	pPlayerModel.btnMinim:SetVisible(false)
-	pPlayerModel.Paint = function(self, w, h)
-		draw.RoundedBox(8, 0, 0, w, h, Color(130, 0, 0))
-		draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
+	pPlayerModel.OnClose = function(self)
+		if not IsValid(self.OptionsMenu) then
+			GAMEMODE:ShowOptions()
+		end
 	end
 
 	local list = vgui.Create("DPanelList", pPlayerModel)
@@ -291,18 +306,22 @@ function MakepPlayerColor()
 	pPlayerColor:SetDeleteOnClose(true)
 	pPlayerColor.btnMaxim:SetVisible(false)
 	pPlayerColor.btnMinim:SetVisible(false)
-	pPlayerColor.Paint = function(self, w, h)
-		draw.RoundedBox(8, 0, 0, w, h, Color(130, 0, 0))
-		draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
+	pPlayerColor.OnClose = function(self)
+		if not IsValid(self.OptionsMenu) then
+			GAMEMODE:ShowOptions()
+		end
 	end
 
 	local y = 8
 
-	local label = EasyLabel(pPlayerColor, "Colors", "ZMHUDFont", color_white)
+	local label = Label(pPlayerColor, "Colors", pPlayerColor)
+	label:SetFont("ZMHUDFont")
+	label:SizeToContents()
 	label:SetPos((pPlayerColor:GetWide() - label:GetWide()) / 2, y)
 	y = y + label:GetTall() + 8
 
-	local lab = EasyLabel(pPlayerColor, translate.Get("title_playercolor"))
+	local lab = Label(translate.Get("title_playercolor"), pPlayerColor)
+	lab:SizeToContents()
 	lab:SetPos(8, y)
 	y = y + lab:GetTall()
 
@@ -321,7 +340,8 @@ function MakepPlayerColor()
 	colpicker:SetPos(8, y)
 	y = y + colpicker:GetTall()
 
-	local lab = EasyLabel(pPlayerColor, translate.Get("title_weaponcolor"))
+	local lab = Label(translate.Get("title_weaponcolor"), pPlayerColor)
+	lab:SizeToContents()
 	lab:SetPos(8, y)
 	y = y + lab:GetTall()
 
@@ -363,14 +383,18 @@ function MakepOptions()
 	Window:SetDeleteOnClose(false)
 	Window.btnMinim:SetVisible(false)
 	Window.btnMaxim:SetVisible(false)
-	Window.Paint = function(self, w, h)
-		draw.RoundedBox(8, 0, 0, w, h, Color(150, 0, 0))
-		draw.RoundedBox(4, 4, 4, w - 7, h - 7, Color(60, 0, 0))
+	Window.OnClose = function(self)
+		if LocalPlayer().HadMenuOpen and not IsValid(self.OptionsMenu) then
+			GAMEMODE:ShowOptions()
+		end
 	end
+	
 	pOptions = Window
 
 	local y = 8
-	local label = EasyLabel(Window, "Options", "ZMHUDFont", color_white)
+	local label = Label("Options", Window)
+	label:SetFont("ZMHUDFont")
+	label:SizeToContents()
 	label:SetPos(wide * 0.5 - label:GetWide() * 0.5, y)
 	y = y + label:GetTall() + 8
 
@@ -383,33 +407,52 @@ function MakepOptions()
 	list:SetSpacing(4)
 
 	hook.Call("AddExtraOptions", GAMEMODE, list, Window)
-
+	
 	local check = vgui.Create("DCheckBoxLabel", Window)
 	check:SetText("Show Volunteer Menu")
 	check:SetConVar("zm_nopreferredmenu")
 	check:SizeToContents()
 	list:AddItem(check)
 	
-	local label = EasyLabel(Window, "Drop Weapon Key", "ZMHUDFont", color_white)
+	local but = vgui.Create("DButton", Window)
+	but:SetTall(24)
+	but:SetFont("ZMHUDFontSmaller")
+	but:SetText("Open Volunteer Menu")
+	but.DoClick = function()
+		RunConsoleCommand("zm_open_preferred_menu")
+	end
+	list:AddItem(but)
+	
+	local label = Label("Drop Weapon Key", Window)
+	label:SetFont("ZMHUDFontSmallest")
+	label:SizeToContents()
+	list:AddItem(label)
+	
 	local binder = vgui.Create("DBinder", Window)
+	binder:SetTall(24)
+	binder:SetFont("ZMHUDFontSmaller")
 	binder:SetConVar("zm_dropweaponkey")
 	binder:SizeToContents()
 	function binder:SetSelectedNumber(num)
 		self.m_iSelectedNumber = num
 		RunConsoleCommand("zm_dropweaponkey", num)
 	end
-	list:AddItem(label)
 	list:AddItem(binder)
 	
-	local label = EasyLabel(Window, "Drop Ammo Key", "ZMHUDFont", color_white)
+	local label = Label("Drop Ammo Key", Window)
+	label:SetFont("ZMHUDFontSmallest")
+	label:SizeToContents()
+	list:AddItem(label)
+	
 	local binder = vgui.Create("DBinder", Window)
+	binder:SetTall(24)
+	binder:SetFont("ZMHUDFontSmaller")
 	binder:SetConVar("zm_dropammokey")
 	binder:SizeToContents()
 	function binder:SetSelectedNumber(num)
 		self.m_iSelectedNumber = num
 		RunConsoleCommand("zm_dropammokey", num)
 	end
-	list:AddItem(label)
 	list:AddItem(binder)
 
 	Window:SetAlpha(0)
@@ -417,33 +460,20 @@ function MakepOptions()
 	Window:MakePopup()
 end
 
-local surfacecolor = Color(72, 0, 0)
-local outlinecolor = Color(110, 0, 0)
-local function DrawZMButton(self, w, h)
-	if self:IsHovered() then
-		surfacecolor = Color(92, 0, 0)
-		outlinecolor = Color(140, 0, 0)
-	else
-		surfacecolor = Color(72, 0, 0)
-		outlinecolor = Color(110, 0, 0)
-	end
-	draw.RoundedBox(8, 0, 0, w, h, outlinecolor)
-	draw.RoundedBox(4, 2, 2, w - 4, h - 4, surfacecolor)
-end
 function GM:ShowOptions()
 	if self.OptionsMenu and self.OptionsMenu:Valid() then
 		self.OptionsMenu:Remove()
 	end
 	
-	local menu = vgui.Create("Panel")
+	local menu = vgui.Create("DPanel")
 	menu:SetSize(BetterScreenScale() * 420, ScrH() * 0.35)
 	menu:Center()
-	menu.Paint = function(self, w, h)
-		draw.RoundedBox(8, 0, 0, w, h, Color(150, 0, 0))
-		draw.RoundedBox(4, 4, 4, w - 7, h - 7, Color(60, 0, 0))
-	end
+	
+	LocalPlayer().HadMenuOpen = true
 
-	local header = EasyLabel(menu, self.Name, "ZMHUDFont")
+	local header = Label(self.Name, menu)
+	header:SetFont("ZMHUDFont")
+	header:SizeToContents()
 	header:SetContentAlignment(8)
 	header:DockMargin(0, 12, 0, 24)
 	header:Dock(TOP)
@@ -455,9 +485,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() MakepHelp() end
-	but:SetTextColor(color_white)
-	but.Paint = DrawZMButton
+	but.DoClick = function() MakepHelp() menu:Remove() end
 	
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
@@ -466,9 +494,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() MakepPlayerModel() end
-	but:SetTextColor(color_white)
-	but.Paint = DrawZMButton
+	but.DoClick = function() MakepPlayerModel() menu:Remove() end
 
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
@@ -477,9 +503,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() MakepPlayerColor() end
-	but:SetTextColor(color_white)
-	but.Paint = DrawZMButton
+	but.DoClick = function() MakepPlayerColor() menu:Remove() end
 	
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
@@ -488,9 +512,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() MakepOptions() end
-	but:SetTextColor(color_white)
-	but.Paint = DrawZMButton
+	but.DoClick = function() MakepOptions() menu:Remove() end
 
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
@@ -499,9 +521,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() MakepCredits() end
-	but:SetTextColor(color_white)
-	but.Paint = DrawZMButton
+	but.DoClick = function() MakepCredits() menu:Remove() end
 
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
@@ -510,9 +530,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 24, 12, 0)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() menu:Remove() end
-	but:SetTextColor(color_white)
-	but.Paint = DrawZMButton
+	but.DoClick = function() menu:Remove() LocalPlayer().HadMenuOpen = false end
 
 	menu:InvalidateLayout(true)
 	menu:SizeToChildren(false, true)
@@ -556,7 +574,9 @@ function GM:ShowHelp()
 		draw.RoundedBox(8, 0, 0, w, h, Color(24, 24, 24))
 	end
 	
-	local label = EasyLabel(frame, translate.Get("title_objectives"), "ZMHUDFont", color_white)
+	local label = Label(translate.Get("title_objectives"), frame)
+	label:SetFont("ZMHUDFont")
+	label:SizeToContents()
 	label:AlignLeft(frame:GetWide() * 0.1)
 	label:AlignTop(frame:GetTall() * 0.01)
 	
@@ -578,7 +598,6 @@ function GM:ShowHelp()
 	but:SetWide(frame:GetWide() * 0.13)
 	but:AlignBottom(frame:GetTall() * 0.012)
 	but:AlignRight(frame:GetWide() * 0.062)
-	but:SetTextColor(color_white)
 	but.DoClick = function()
 		if not LocalPlayer():IsZM() then
 			gui.EnableScreenClicker(false)
@@ -602,8 +621,6 @@ function GM:ShowHelp()
 end
 
 function GM:MakePreferredMenu()
-	if GetConVar("zm_nopreferredmenu"):GetBool() then return end
-	
 	gui.EnableScreenClicker(true)
 	
 	local frame = vgui.Create("DFrame")
@@ -614,14 +631,13 @@ function GM:MakePreferredMenu()
 	frame:SetMouseInputEnabled(true)
 	frame:AlignTop(20)
 	frame:AlignLeft(20)
+	frame.btnMinim:SetVisible(false)
+	frame.btnMaxim:SetVisible(false)
 	frame.Close = function(self)
 		if not LocalPlayer():IsZM() then
 			gui.EnableScreenClicker(false)
 		end
 		self:Remove()
-	end
-	frame.Paint = function(self)
-		draw.RoundedBox(8, 0, 0, self:GetWide(), self:GetTall(), Color(60, 0, 0, 200))
 	end
 	
 	local label = vgui.Create("DLabel", frame)
@@ -632,56 +648,55 @@ function GM:MakePreferredMenu()
 	label:SizeToContents()
 	label:CenterHorizontal()
 	
-	local but = vgui.Create("DButton", frame)
-	but:AlignTop(95)
+	local pan = vgui.Create("Panel", frame)
+	pan:MoveBelow(label, 10)
+	pan:SetSize(frame:GetWide() * 0.85, frame:GetTall() * 0.5)
+	pan:Center()
+	
+	local but = vgui.Create("DButton", pan)
+	but:Dock(TOP)
+	but:DockMargin(0, 4, 0, 4)
+	but:DockPadding(0, 4, 0, 4)
 	but:SetWide(250)
 	but:SetTall(30)
 	but:SetText(translate.Get("preferred_willing_zm"))
 	but:CenterHorizontal()
-	but:SetTextColor(color_white)
 	but.DoClick = function(self)
 		RunConsoleCommand("zm_preference", 1)
 		surface.PlaySound("buttons/combine_button1.wav")
 		frame:Close()
 	end
-	but.Paint = function(self)
-		if self:IsHovered() then
-			col = Color(145, 0, 0)
-			col2 = Color(95, 0, 0)
-		else
-			col = Color(89, 0, 0)
-			col2 = Color(52, 0, 0)
-		end
-		draw.RoundedBox(0, 0, 0, w, h, col)
-		draw.RoundedBox(0, 2, 2, w - 4, h - 4, col2)
-	end
 	
-	local but = vgui.Create("DButton", frame)
-	but:AlignTop(165)
+	local but = vgui.Create("DButton", pan)
+	but:Dock(TOP)
+	but:DockMargin(0, 4, 0, 4)
+	but:DockPadding(0, 4, 0, 4)
 	but:SetWide(250)
 	but:SetTall(30)
 	but:SetText(translate.Get("preferred_prefer_survivor"))
 	but:CenterHorizontal()
-	but:SetTextColor(color_white)
 	but.DoClick = function(self)
 		RunConsoleCommand("zm_preference", 0)
 		surface.PlaySound("buttons/combine_button1.wav")
 		frame:Close()
 	end
-	but.Paint = function(self)
-		if self:IsHovered() then
-			col = Color(145, 0, 0)
-			col2 = Color(95, 0, 0)
-		else
-			col = Color(89, 0, 0)
-			col2 = Color(52, 0, 0)
-		end
-		draw.RoundedBox(0, 0, 0, w, h, col)
-		draw.RoundedBox(0, 2, 2, w - 4, h - 4, col2)
+	
+	local but = vgui.Create("DButton", pan)
+	but:Dock(TOP)
+	but:DockMargin(0, 4, 0, 4)
+	but:DockPadding(0, 4, 0, 4)
+	but:SetWide(250)
+	but:SetTall(30)
+	but:SetText(translate.Get("preferred_prefer_spectator"))
+	but:CenterHorizontal()
+	but.DoClick = function(self)
+		RunConsoleCommand("zm_preference", 2)
+		surface.PlaySound("buttons/combine_button1.wav")
+		frame:Close()
 	end
 	
 	local check = vgui.Create("DCheckBoxLabel", frame)
-	check:AlignTop(270)
+	check:AlignBottom(25)
 	check:CenterHorizontal()
 	check:SetText(translate.Get("preferred_dont_ask"))
 	check:SetConVar("zm_nopreferredmenu")

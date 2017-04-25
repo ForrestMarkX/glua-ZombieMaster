@@ -76,6 +76,7 @@ LANGUAGE.scoreboard_kills                   = "Fällda"
 LANGUAGE.preferred_playstyle                = "Välj din spelstil."
 LANGUAGE.preferred_willing_zm               = "Villig att vara Zombie Mästare (RTS)."
 LANGUAGE.preferred_prefer_survivor          = "Föredrar att vara en Överlevare (FPS)."
+LANGUAGE.preferred_prefer_spectator         = "Föredrar att vara en åskådare."
 LANGUAGE.preferred_dont_ask                 = "Fråga inte igen."
 
 LANGUAGE.button_help                        = "Hjälp"

@@ -77,6 +77,7 @@ LANGUAGE.scoreboard_kills                   = "击杀数"
 LANGUAGE.preferred_playstyle                = "请选择你的游戏风格。"
 LANGUAGE.preferred_willing_zm               = "愿意成为僵尸大师 (即时战略)。"
 LANGUAGE.preferred_prefer_survivor          = "宁愿成为人类 (第一人称射击)。"
+LANGUAGE.preferred_prefer_spectator         = "喜欢成为观众."
 LANGUAGE.preferred_dont_ask                 = "下次不要再问。"
 
 LANGUAGE.button_help                        = "帮助"

@@ -75,6 +75,7 @@ LANGUAGE.scoreboard_kills                   = "הריגות"
 LANGUAGE.preferred_playstyle                = "בחר את סגנון המשחק שלך."
 LANGUAGE.preferred_willing_zm               = "מאשר להיות שליט זומבים (RTS)."
 LANGUAGE.preferred_prefer_survivor          = "מעדיף להיות שורד (FPS)."
+LANGUAGE.preferred_prefer_spectator         = "מעדיף להיות צופה."
 LANGUAGE.preferred_dont_ask                 = "אל תשאל שוב."
 
 LANGUAGE.button_help                        = "עזרה"

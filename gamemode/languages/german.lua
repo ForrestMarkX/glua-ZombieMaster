@@ -76,6 +76,7 @@ LANGUAGE.scoreboard_kills                   = "Abschüsse"
 LANGUAGE.preferred_playstyle                = "Wähle deinen Playstil."
 LANGUAGE.preferred_willing_zm               = "Zombie Master werden (RTS)."
 LANGUAGE.preferred_prefer_survivor          = "Bevorzugt Zombie Master (FPS)."
+LANGUAGE.preferred_prefer_spectator         = "Bevorzugen Sie ein Zuschauer."
 LANGUAGE.preferred_dont_ask                 = "Nicht nochmal nachfragen."
 
 LANGUAGE.button_help                        = "Hilfe"

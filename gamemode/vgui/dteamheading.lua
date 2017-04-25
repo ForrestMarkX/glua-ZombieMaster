@@ -4,7 +4,9 @@ PANEL.NextRefresh = 0
 PANEL.RefreshTime = 2
 
 function PANEL:Init()
-	self.m_TeamNameLabel = EasyLabel(self, " ", "ZMScoreBoardHeading", color_white)
+	self.m_TeamNameLabel = Label(" ", self)
+	self.m_TeamNameLabel:SetFont("ZMScoreBoardHeading")
+	self.m_TeamNameLabel:SizeToContents()
 	
 	--[[
 	self.NameCol = vgui.Create("DLabel", self)

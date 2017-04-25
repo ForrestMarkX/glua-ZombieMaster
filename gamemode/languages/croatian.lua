@@ -76,6 +76,7 @@ LANGUAGE.scoreboard_kills                   = "Broj ubistava"
 LANGUAGE.preferred_playstyle                = "Izaberi svoj playstyle."
 LANGUAGE.preferred_willing_zm               = "Željan da bude Zombie Master (RTS)."
 LANGUAGE.preferred_prefer_survivor          = "Radije bi bio preživjeli (FPS)."
+LANGUAGE.preferred_prefer_spectator         = "Preferiraju se kao Spektator."
 LANGUAGE.preferred_dont_ask                 = "Ne pitaj me ponovo."
 
 LANGUAGE.button_help                        = "Pomoć"

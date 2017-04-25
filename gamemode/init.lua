@@ -646,6 +646,8 @@ function GM:IncrementRoundCount()
 end
 
 function GM:SetupPlayer(ply)
+	if ply:GetInfoNum("zm_preference", 0) >= 2 then return end
+	
 	ply:ChangeTeam(TEAM_SURVIVOR)
 	ply:SetClass("player_survivor")
 	
@@ -671,7 +673,9 @@ function GM:InitClient(pl)
 		self.ReadyTimer = CurTime() + 15
 	end
 	
-	pl:SendLua("GAMEMODE:MakePreferredMenu()")
+	if pl:GetInfoNum("zm_nopreferredmenu", 0) <= 0 then
+		pl:SendLua("GAMEMODE:MakePreferredMenu()")
+	end
 	
 	if self.RoundStarted and self.RoundStarted ~= 0 and self:GetRoundActive() then
 		if self.RoundStarted + 15 >= CurTime() and not self.DeadPlayers[pl:SteamID()] then
@@ -907,6 +911,10 @@ end
 
 function GM:ShowTeam(pl)
 	pl:SendLua("GAMEMODE:ShowOptions()")
+end
+
+function GM:ShowSpare1(pl)
+	pl:SendLua("MakepOptions()")
 end
 
 function GM:PlayerDisconnected(ply)
