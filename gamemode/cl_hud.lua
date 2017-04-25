@@ -409,7 +409,7 @@ function MakepOptions()
 	hook.Call("AddExtraOptions", GAMEMODE, list, Window)
 	
 	local check = vgui.Create("DCheckBoxLabel", Window)
-	check:SetText("Show Volunteer Menu")
+	check:SetText("Don't show volunteer menu")
 	check:SetConVar("zm_nopreferredmenu")
 	check:SizeToContents()
 	list:AddItem(check)
