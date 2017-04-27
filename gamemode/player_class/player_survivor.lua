@@ -108,7 +108,7 @@ function PLAYER:Think()
 end
 
 function PLAYER:AllowPickup(ent)
-	if ent:IsPlayerHolding() or not self.Player:Alive() or not ent:IsValid() then return false end
+	if not ent:IsValid() or ent:IsPlayerHolding() or not self.Player:Alive() then return false end
 	
 	local phys = ent:GetPhysicsObject()
 	local objectMass = 0
