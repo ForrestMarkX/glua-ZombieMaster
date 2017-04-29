@@ -45,20 +45,22 @@ function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
 		dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_REMOVENORAGDOLL))
 	end
 
-	local atkowner = attacker:GetOwner()
-	if IsValid(attacker) and attacker:GetClass() == "env_fire" and IsValid(atkowner) and atkowner:GetClass() == "npc_burnzombie" then
-		dmginfo:SetDamageType(DMG_GENERIC)
-		dmginfo:SetDamage(0)
-		dmginfo:ScaleDamage(0)
-		return true
-	end
-	
-	if not IsValid(npc:GetEnemy()) and IsValid(attacker) then
-		npc:ForceGotoEnemy(attacker, attacker:GetPos())
+	if IsValid(attacker) then
+		local atkowner = attacker:GetOwner()
+		if IsValid(attacker) and attacker:GetClass() == "env_fire" and IsValid(atkowner) and atkowner:GetClass() == "npc_burnzombie" then
+			dmginfo:SetDamageType(DMG_GENERIC)
+			dmginfo:SetDamage(0)
+			dmginfo:ScaleDamage(0)
+			return true
+		end
 		
-		for k, v in pairs(ents.FindByClass("npc_*")) do
-			if IsValid(v) and v:IsNPC() and not IsValid(v:GetEnemy()) then
-				npc:ForceGotoEnemy(v, attacker:GetPos())
+		if not IsValid(npc:GetEnemy()) then
+			npc:ForceGotoEnemy(attacker, attacker:GetPos())
+			
+			for k, v in pairs(ents.FindByClass("npc_*")) do
+				if IsValid(v) and v:IsNPC() and not IsValid(v:GetEnemy()) then
+					npc:ForceGotoEnemy(v, attacker:GetPos())
+				end
 			end
 		end
 	end
