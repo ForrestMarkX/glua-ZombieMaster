@@ -21,7 +21,7 @@ function PLAYER:SetupMove(mv, cmd)
 	
 	if CLIENT then
 		-- I hate this so much but this appears to be the only way to get cmd:GetMouseWheel() to return something other than 0 when the cursor is visible.
-		if input.WasMousePressed(MOUSE_WHEEL_UP) or input.WasMousePressed(MOUSE_WHEEL_DOWN) then
+		if not hook.Call("IsMenuOpen", GAMEMODE) and (input.WasMousePressed(MOUSE_WHEEL_UP) or input.WasMousePressed(MOUSE_WHEEL_DOWN)) then
 			if vgui.CursorVisible() then
 				local c_x, c_y = input.GetCursorPos()
 				

@@ -116,4 +116,27 @@ function SKIN:PaintButton(panel, w, h)
 	draw.RoundedBox(2, 2, 2, w - 4, h - 4, col2)
 end
 
+local color_tab_active = Color(95, 0, 0, 220)
+local color_tab_border = Color(145, 0, 0)
+function SKIN:PaintPropertySheet(panel, w, h)
+	draw.RoundedBoxHollow(3, 0, 0, w, h, color_tab_border)
+	draw.RoundedBox(2, 2, 2, w - 4, h - 4, color_tab_active)
+end
+
+function SKIN:PaintTab(panel, w, h)
+	if panel:GetPropertySheet():GetActiveTab() == panel then
+		return self:PaintActiveTab(panel, w, h)
+	end
+
+	draw.RoundedBoxHollow(3, 0, 0, w, h, color_tab_border)
+	draw.RoundedBox(2, 2, 2, w - 4, h - 4, color_tab_active)
+end
+
+local color_tab_active2 = Color(135, 0, 0, 220)
+local color_tab_border2 = Color(218, 0, 0)
+function SKIN:PaintActiveTab( panel, w, h )
+	draw.RoundedBoxHollow(3, 0, 0, w, h, color_tab_border2)
+	draw.RoundedBox(2, 2, 2, w - 4, h - 4, color_tab_active2)
+end
+
 derma.DefineSkin("zm_skin", "Zombie Master Derma Skin", SKIN, "Default")

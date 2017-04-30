@@ -15,9 +15,7 @@ include("vgui/dteamcounter.lua")
 include("vgui/dteamheading.lua")
 include("vgui/dzombiepanel.lua")
 include("vgui/dpowerpanel.lua")
-
-include("vgui/dexnotificationslist.lua")
-include("vgui/dexroundedframe.lua")
+include("vgui/dmodelselector.lua")
 
 local circleMaterial 	   = Material("SGM/playercircle")
 local healthcircleMaterial = Material("effects/zm_healthring")
@@ -412,6 +410,10 @@ function GM:IsMenuOpen()
 	end
 	
 	if self.trapMenu and self.trapMenu:IsVisible() then
+		return true
+	end
+	
+	if IsValid(PlayerModelSelectionFrame) and PlayerModelSelectionFrame:IsVisible() then
 		return true
 	end
 	

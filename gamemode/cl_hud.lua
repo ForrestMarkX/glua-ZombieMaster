@@ -179,6 +179,9 @@ function MakepCredits()
 	frame:SetTitle(" ")
 	frame:SetKeyboardInputEnabled(false)
 	frame.lblTitle:SetFont("dexfont_med")
+	frame.btnMinim:SetVisible(false)
+	frame.btnMaxim:SetVisible(false)
+	
 	frame.OnClose = function(self)
 		if not IsValid(self.OptionsMenu) then
 			GAMEMODE:ShowOptions()
@@ -235,136 +238,6 @@ function MakepCredits()
 	frame:MakePopup()
 end
 
-local pPlayerModel
-local function SwitchPlayerModel(self)
-	surface.PlaySound("buttons/button14.wav")
-	RunConsoleCommand("cl_playermodel", self.m_ModelName)
-	chat.AddText(COLOR_LIMEGREEN, translate.Format("changed_player_model", tostring(self.m_ModelName)))
-
-	pPlayerModel:Close()
-end
-function MakepPlayerModel()
-	if pPlayerModel and pPlayerModel:Valid() then pPlayerModel:Remove() end
-	
-	local numcols = 8
-	local wid = numcols * 68 + 24
-	local hei = 400
-
-	pPlayerModel = vgui.Create("DFrame")
-	pPlayerModel:SetSkin("Default")
-	pPlayerModel:SetTitle(translate.Get("title_playermodels"))
-	pPlayerModel:SetSize(wid, hei)
-	pPlayerModel:Center()
-	pPlayerModel:SetDeleteOnClose(true)
-	pPlayerModel.btnMaxim:SetVisible(false)
-	pPlayerModel.btnMinim:SetVisible(false)
-	pPlayerModel.OnClose = function(self)
-		if not IsValid(self.OptionsMenu) then
-			GAMEMODE:ShowOptions()
-		end
-	end
-
-	local list = vgui.Create("DPanelList", pPlayerModel)
-	list:StretchToParent(8, 24, 8, 8)
-	list:EnableVerticalScrollbar()
-
-	local grid = vgui.Create("DGrid", pPlayerModel)
-	grid:SetCols(numcols)
-	grid:SetColWide(68)
-	grid:SetRowHeight(68)
-	
-	local playermodels = player_manager.AllValidModels()
-	for _, name in pairs(GAMEMODE.RestrictedPMs) do
-		if playermodels[name] then
-			playermodels[name] = nil
-		end
-	end
-	for name, mdl in pairs(playermodels) do
-		if mdl ~= nil then
-			local button = vgui.Create("SpawnIcon", grid)
-			button:SetPos(0, 0)
-			button:SetModel(mdl)
-			button.m_ModelName = name
-			button.OnMousePressed = SwitchPlayerModel
-			grid:AddItem(button)
-		end
-	end
-	grid:SetSize(wid - 16, math.ceil(table.Count(playermodels) / numcols) * grid:GetRowHeight())
-
-	list:AddItem(grid)
-
-	pPlayerModel:SetSkin("Default")
-	pPlayerModel:MakePopup()
-end
-
-function MakepPlayerColor()
-	if pPlayerColor and pPlayerColor:Valid() then pPlayerColor:Remove() end
-
-	pPlayerColor = vgui.Create("DFrame")
-	pPlayerColor:SetWide(math.min(ScrW(), 500))
-	pPlayerColor:SetTitle(" ")
-	pPlayerColor:SetDeleteOnClose(true)
-	pPlayerColor.btnMaxim:SetVisible(false)
-	pPlayerColor.btnMinim:SetVisible(false)
-	pPlayerColor.OnClose = function(self)
-		if not IsValid(self.OptionsMenu) then
-			GAMEMODE:ShowOptions()
-		end
-	end
-
-	local y = 8
-
-	local label = Label("Colors", pPlayerColor)
-	label:SetFont("ZMHUDFont")
-	label:SizeToContents()
-	label:SetPos((pPlayerColor:GetWide() - label:GetWide()) / 2, y)
-	y = y + label:GetTall() + 8
-
-	local lab = Label(translate.Get("title_playercolor"), pPlayerColor)
-	lab:SizeToContents()
-	lab:SetPos(8, y)
-	y = y + lab:GetTall()
-
-	local colpicker = vgui.Create("DColorMixer", pPlayerColor)
-	colpicker:SetAlphaBar(false)
-	colpicker:SetPalette(false)
-	colpicker.UpdateConVars = function(me, color)
-		me.NextConVarCheck = SysTime() + 0.2
-		RunConsoleCommand("cl_playercolor", color.r / 100 .." ".. color.g / 100 .." ".. color.b / 100)
-	end
-	local r, g, b = string.match(GetConVarString("cl_playercolor"), "(%g+) (%g+) (%g+)")
-	if r then
-		colpicker:SetColor(Color(r * 100, g * 100, b * 100))
-	end
-	colpicker:SetSize(pPlayerColor:GetWide() - 16, 72)
-	colpicker:SetPos(8, y)
-	y = y + colpicker:GetTall()
-
-	local lab = Label(translate.Get("title_weaponcolor"), pPlayerColor)
-	lab:SizeToContents()
-	lab:SetPos(8, y)
-	y = y + lab:GetTall()
-
-	local colpicker = vgui.Create("DColorMixer", pPlayerColor)
-	colpicker:SetAlphaBar(false)
-	colpicker:SetPalette(false)
-	colpicker.UpdateConVars = function(me, color)
-		me.NextConVarCheck = SysTime() + 0.2
-		RunConsoleCommand("cl_weaponcolor", color.r / 100 .." ".. color.g / 100 .." ".. color.b / 100)
-	end
-	local r, g, b = string.match(GetConVarString("cl_weaponcolor"), "(%g+) (%g+) (%g+)")
-	if r then
-		colpicker:SetColor(Color(r * 100, g * 100, b * 100))
-	end
-	colpicker:SetSize(pPlayerColor:GetWide() - 16, 72)
-	colpicker:SetPos(8, y)
-	y = y + colpicker:GetTall()
-
-	pPlayerColor:SetTall(y + 8)
-	pPlayerColor:Center()
-	pPlayerColor:MakePopup()
-end
-
 function MakepOptions()
 	if pOptions then
 		pOptions:SetAlpha(0)
@@ -383,6 +256,7 @@ function MakepOptions()
 	Window:SetDeleteOnClose(false)
 	Window.btnMinim:SetVisible(false)
 	Window.btnMaxim:SetVisible(false)
+	
 	Window.OnClose = function(self)
 		if LocalPlayer().HadMenuOpen and not IsValid(self.OptionsMenu) then
 			GAMEMODE:ShowOptions()
@@ -494,16 +368,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() MakepPlayerModel() menu:Remove() end
-
-	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZMHUDFontSmaller")
-	but:SetText(translate.Get("button_playercolor"))
-	but:SetTall(32)
-	but:DockMargin(12, 0, 12, 12)
-	but:DockPadding(0, 12, 0, 12)
-	but:Dock(TOP)
-	but.DoClick = function() MakepPlayerColor() menu:Remove() end
+	but.DoClick = function() RunConsoleCommand("playermodel_selector") menu:Remove() end
 	
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
@@ -549,13 +414,16 @@ function GM:ShowHelp()
 	
 	gui.EnableScreenClicker(true)
 	
-	local frame = vgui.Create("DEXRoundedFrame")
+	local frame = vgui.Create("DFrame")
 	frame:SetWide(ScrW() * 0.75)
 	frame:SetTall(math.min(ScrH() - (ScrH() * 0.1), 900))
 	frame:SetTitle(" ")
 	frame:SetKeyboardInputEnabled(false)
 	frame:SetMouseInputEnabled(true)
 	frame:Center()
+	frame.btnMinim:SetVisible(false)
+	frame.btnMaxim:SetVisible(false)
+	
 	frame.Paint = function(self, w, h)
 		draw.RoundedBoxEx(8, 0, 64, w, h - 64, Color(5, 5, 5, 180), false, false, true, true)
 		draw.RoundedBoxEx(8, 0, 0, w, 64, Color(5, 5, 5, 220), true, true, false, false)
@@ -633,6 +501,7 @@ function GM:MakePreferredMenu()
 	frame:AlignLeft(20)
 	frame.btnMinim:SetVisible(false)
 	frame.btnMaxim:SetVisible(false)
+	
 	frame.Close = function(self)
 		if not LocalPlayer():IsZM() then
 			gui.EnableScreenClicker(false)
@@ -734,7 +603,7 @@ function GM:SpawnTrapMenu(class, ent)
 		end
 		
 		local description = ent:GetDescription()
-		local trapPanel = vgui.Create("DEXRoundedFrame")
+		local trapPanel = vgui.Create("DFrame")
 		trapPanel:SetWide(326.4)
 		trapPanel:SetTall(345)
 		trapPanel:SetTitle("Manipulate")
@@ -742,7 +611,9 @@ function GM:SpawnTrapMenu(class, ent)
 		trapPanel:SetMouseInputEnabled(true)
 		trapPanel:AlignTop(10)
 		trapPanel:AlignLeft(20)
-		trapPanel:SetColor(Color(60, 0, 0, 200))
+		trapPanel.btnMinim:SetVisible(false)
+		trapPanel.btnMaxim:SetVisible(false)
+		trapPanel.btnClose:SetVisible(false)
 		trapPanel.PerformLayout = function(self)
 			self.lblTitle:SetWide(self:GetWide() - 25)
 			self.lblTitle:SetPos(12, 8)

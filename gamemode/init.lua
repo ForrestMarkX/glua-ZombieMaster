@@ -30,9 +30,7 @@ AddCSLuaFile("vgui/dteamcounter.lua")
 AddCSLuaFile("vgui/dteamheading.lua")
 AddCSLuaFile("vgui/dzombiepanel.lua")
 AddCSLuaFile("vgui/dpowerpanel.lua")
-
-AddCSLuaFile("vgui/dexnotificationslist.lua")
-AddCSLuaFile("vgui/dexroundedframe.lua")
+AddCSLuaFile("vgui/dmodelselector.lua")
 
 include("sv_zm_options.lua")
 include("sh_players.lua")

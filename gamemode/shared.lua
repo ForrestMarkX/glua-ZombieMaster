@@ -6,7 +6,7 @@ GM.TeamBased = true
 
 GM.Credits = {
 	{"Forrest Mark X", "http://steamcommunity.com/id/ForrestMarkX/", "Programmer"},
-	{"William \"JetBoom\" Moodhe", "www.noxiousnet.com", "Code snippets from Zombie Survival"},
+	{"William \"JetBoom\" Moodhe", "http://www.noxiousnet.com", "Code snippets from Zombie Survival"},
 	{"Chewgum", "", "Vestige gamemode code"},
 	{"Mka0207", "http://steamcommunity.com/id/mka0207/myworkshopfiles", "Building the base and icon work"},
 	{"Kigen", "", "Providing the shared networking library"},
