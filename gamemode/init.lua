@@ -58,8 +58,10 @@ function GM:InitPostEntity()
 	
 	local ammotbl = hook.Call("GetCustomAmmo", GAMEMODE)
 	if #ammotbl > 0 then
-		CreateConVar("zm_maxammo_"..ammotbl.Type, ammotbl.MaxCarry, FCVAR_REPLICATED, "Max "..ammotbl.Type.." ammo that players can hold.")
-		game.AddAmmoType({name = ammotbl.Type, dmgtype = ammotbl.DmgType, tracer = ammotbl.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammotbl.MaxCarry})
+		for _, ammo in pairs(ammotbl) do
+			CreateConVar("zm_maxammo_"..ammo.Type, ammo.MaxCarry, FCVAR_REPLICATED, "Max "..ammo.Type.." ammo that players can hold.")
+			game.AddAmmoType({name = ammo.Type, dmgtype = ammo.DmgType, tracer = ammo.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammo.MaxCarry})
+		end
 	end
 	
 	--[[
@@ -194,13 +196,15 @@ end
 function GM:CreateCustomWeapons(ent)
 	local weptbl = hook.Call("GetCustomWeapons", GAMEMODE)
 	if #weptbl > 0 then
-		if math.random() > weptbl[ent:GetClass()].Chance then
-			local wep = ents.Create(weptbl[ent:GetClass()].Class)
+		local weptab = weptbl[ent:GetClass()]
+		if weptab and math.random() > weptab.Chance then
+			local wep = ents.Create(weptab.Class)
 			if IsValid(wep) then
 				wep:SetPos(ent:GetPos())
 				wep:SetAngles(ent:GetAngles())
 				wep:Spawn()
-				wep:SetCollisionBounds(wep:OBBMins() * 2, wep:OBBMaxs() * 2)
+				wep:SetSolid(SOLID_BBOX)
+				wep:SetCollisionBounds(ent:OBBMins() * 4, ent:OBBMaxs() * 4)
 				
 				return wep
 			end

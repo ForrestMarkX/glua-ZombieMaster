@@ -184,7 +184,8 @@ function SWEP:EquipAmmo(ply)
 end
 
 function SWEP:OnDrop()
-	self:SetCollisionBounds(self:OBBMins() * 2, self:OBBMaxs() * 2)
+	self:SetSolid(SOLID_BBOX)
+	self:SetCollisionBounds(self:OBBMins() * 4, self:OBBMaxs() * 4)
 end
 
 if not CLIENT then return end
