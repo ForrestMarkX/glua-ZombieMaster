@@ -1,28 +1,29 @@
 DEFINE_BASECLASS("weapon_zm_base")
 
+SWEP.Base = "weapon_zm_base"
+SWEP.HoldType = "shotgun"
+
+SWEP.Primary.Delay = 0.8
+SWEP.ReloadDelay = 1
+SWEP.ReloadSpeed = 1.0
+
 SWEP.ReloadSound = Sound("Weapon_Shotgun_ZM.Reload")
 SWEP.Primary.Sound = Sound("Weapon_Shotgun_ZM.Single")
 SWEP.PumpSound = Sound("Weapon_Shotgun_ZM.Special1")
 SWEP.EmptySound = Sound("Weapon_Shotgun_ZM.Empty")
 
-SWEP.Primary.Automatic   		= false
-SWEP.Primary.Ammo         		= "buckshot"
+SWEP.Primary.Ammo = "buckshot"
 
-SWEP.Secondary.Delay = 0.3
-SWEP.Secondary.ClipSize = 1
-SWEP.Secondary.DefaultClip = 1
-SWEP.Secondary.Automatic = false
-SWEP.Secondary.Ammo = "dummy"
+SWEP.CurReload = ACT_VM_RELOAD
+SWEP.EndReloadPump = ACT_SHOTGUN_PUMP
+SWEP.BeginReload = ACT_SHOTGUN_RELOAD_START
 
 function SWEP:SetupDataTables()
 	BaseClass.SetupDataTables(self)
 	
 	self:NetworkVar( "Float", 1, "ShotgunPump" )
 	self:NetworkVar( "Float", 2, "PumpEnd" )
-	self:NetworkVar( "Float", 3, "ReloadTimer" )
-	self:NetworkVar( "Float", 4, "NextReloadFinish" )
 	self:NetworkVar( "Bool", 0, "Pumping" )
-	self:NetworkVar( "Bool", 1, "Reloading" )
 end
 
 function SWEP:Initialize()
@@ -30,51 +31,20 @@ function SWEP:Initialize()
 	
 	self:SetShotgunPump(0)
 	self:SetPumpEnd(0)
-	self:SetReloadTimer(0)
 	self:SetPumping(false)
-	self:SetReloading(false)
-end
-
-function SWEP:Deploy()
-	self:SendWeaponAnim( ACT_VM_DRAW )
-	can_reload = true
 end
 
 function SWEP:Reload()
-	if self:GetReloading() or self:GetPumping() then return end
-
-	if self:Clip1() < self.Primary.ClipSize and 0 < self.Owner:GetAmmoCount(self.Primary.Ammo) then
-		self:SetNextPrimaryFire(CurTime() + self.ReloadDelay)
-		self:SetReloading(true)
-		self:SetReloadTimer(CurTime() + self.ReloadDelay)
-		self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START)
-		self.Owner:DoReloadEvent()
+	if not self:IsReloading() and self:CanReload() then
+		self:StartReloading()
 	end
 end
 
 function SWEP:Think()
-	if self:GetReloading() and self:GetReloadTimer() < CurTime() then
-		self:SetReloadTimer(CurTime() + self.ReloadDelay)
-		self:SendWeaponAnim(ACT_VM_RELOAD)
-
-		self.Owner:RemoveAmmo(1, self.Primary.Ammo, false)
-		self:SetClip1(self:Clip1() + 1)
-		self:EmitSound(self.ReloadSound)
-
-		if self.Primary.ClipSize <= self:Clip1() or self.Owner:GetAmmoCount(self.Primary.Ammo) <= 0 then
-			self:SetNextReloadFinish(CurTime() + self.ReloadDelay)
-			self:SetReloading(false)
-			self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-		end
+	if self:ShouldDoReload() then
+		self:DoReloadThink()
 	end
-
-	local nextreloadfinish = self:GetNextReloadFinish()
-	if nextreloadfinish ~= 0 and nextreloadfinish < CurTime() then
-		self:EmitSound(self.PumpSound)
-		self:SendWeaponAnim(ACT_SHOTGUN_PUMP)
-		self:SetNextReloadFinish(0)
-	end
-
+	
 	if self:GetShotgunPump() ~= 0 and self:GetShotgunPump() < CurTime() then
 		self:SendWeaponAnim(ACT_SHOTGUN_PUMP) 
 		self:EmitSound(self.PumpSound)
@@ -86,6 +56,103 @@ function SWEP:Think()
 		self:SetPumping(false)
 		self:SetPumpEnd(0)
 	end
+
+	self:NextThink(CurTime())
+	return true
+end
+
+function SWEP:StartReloading()
+	local delay = self:GetReloadDelay()
+	self:SetDTFloat(3, CurTime() + delay)
+	if self.HoldForReload then
+		self:SetDTBool(2, true)
+	end
+	self:SetNextPrimaryFire(CurTime() + math.max(self.Primary.Delay, delay))
+
+	self:GetOwner():DoReloadEvent()
+
+	if self.BeginReload then
+		self:SendWeaponAnim(self.BeginReload)
+	end
+end
+
+function SWEP:StopReloading()
+	self:SetDTFloat(3, 0)
+	if self.HoldForReload then
+		self:SetDTBool(2, false)
+	end
+	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+
+	if self:Clip1() > 0 then
+		if self.PumpSound then
+			self:EmitSound(self.PumpSound)
+		end
+		if self.EndReloadPump then
+			self:SendWeaponAnim(self.EndReloadPump)
+		end
+	end
+end
+
+function SWEP:GetReloadDelay()
+	local reloadspeed = self.ReloadSpeed * (self.ReloadTimeMultiplier or 1)
+	return self.ReloadDelay / reloadspeed
+end
+
+function SWEP:ShouldDoReload()
+	return self:GetDTFloat(3) > 0 and CurTime() >= self:GetDTFloat(3)
+end
+
+function SWEP:IsReloading()
+	return self:GetDTFloat(3) > 0
+end
+
+function SWEP:CanReload()
+	return self:Clip1() < self.Primary.ClipSize and 0 < self:GetOwner():GetAmmoCount(self.Primary.Ammo)
+end
+
+function SWEP:SecondaryAttack()
+end
+
+function SWEP:DoReloadThink()
+	local owner = self:GetOwner()
+	if not self:CanReload() or owner:KeyDown(IN_ATTACK) or (self.HoldForReload and not self:GetDTBool(2) and not owner:KeyDown(IN_RELOAD)) then
+		self:StopReloading()
+		return
+	end
+
+	local delay = self:GetReloadDelay()
+	if self.CurReload then
+		self:SendWeaponAnim(self.CurReload)
+	end
+
+	if self.ReloadSound then
+		self:EmitSound(self.ReloadSound)
+	end
+
+	owner:RemoveAmmo(1, self.Primary.Ammo, false)
+	self:SetClip1(self:Clip1() + 1)
+
+	if self.HoldForReload then
+		self:SetDTBool(2, false)
+	end
+	self:SetDTFloat(3, CurTime() + delay)
+
+	self:SetNextPrimaryFire(CurTime() + math.max(self.Primary.Delay, delay))
+end
+
+function SWEP:CanPrimaryAttack()
+	if self:Clip1() <= 0 then
+		self:EmitSound("weapons/shotgun/shotgun_empty.wav", 75, math.random(95,100))
+		self:SetNextPrimaryFire(CurTime() + 0.25)
+		return false
+	end
+
+	if self:IsReloading() then
+		self:StopReloading()
+		return false
+	end
+
+	return true
 end
 
 function SWEP:PrimaryAttack()
@@ -111,26 +178,4 @@ function SWEP:PrimaryAttack()
 	self:SetShotgunPump(CurTime() + 0.5)
 	self:SetPumpEnd(CurTime() + 1.3)
 	self:SetPumping(true)
-end
-
-function SWEP:CanPrimaryAttack()
-	if self:Clip1() <= 0 then
-		self:EmitSound(self.EmptySound)
-		self:SetNextPrimaryFire(CurTime() + 0.25)
-		self:Reload()
-		return false
-	end
-
-	if self:GetReloading() then
-		if self:Clip1() < self.Primary.ClipSize then
-			self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
-		else
-			self:SendWeaponAnim(ACT_VM_IDLE)
-		end
-		self:SetReloading(false)
-		self:SetNextPrimaryFire(CurTime() + 0.25)
-		return false
-	end
-
-	return true
 end

@@ -11,6 +11,7 @@ concommand.Add("zm_forceround_reboot", function(ply, cmd, args)
 end)
 
 concommand.Add("zm_debug_spawn_zombie", function(ply, cmd, args)
+	if not IsValid(ply) then return end
 	if not ply:IsSuperAdmin() then return end
 	
 	local tr = util.TraceLine(util.GetPlayerTrace(ply))
