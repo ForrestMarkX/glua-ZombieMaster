@@ -9,8 +9,6 @@ AddCSLuaFile("cl_dermaskin.lua")
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_zombie.lua")
 
-AddCSLuaFile("sh_networking.lua")
-
 AddCSLuaFile("sh_weapons.lua")
 AddCSLuaFile("sh_players.lua")
 AddCSLuaFile("sh_entites.lua")
@@ -311,6 +309,28 @@ function GM:PostGamemodeLoaded()
 	util.AddNetworkString("zm_sendselectedgroup")
 	util.AddNetworkString("zm_spawnclientragdoll")
 	util.AddNetworkString("zm_coloredprintmessage")
+	util.AddNetworkString("zm_place_physexplode")
+	util.AddNetworkString("zm_net_power_killzombies")
+	util.AddNetworkString("zm_place_zombiespot")
+	util.AddNetworkString("zm_net_dropammo")
+	util.AddNetworkString("zm_net_dropweapon")
+	util.AddNetworkString("zm_boxselect")
+	util.AddNetworkString("zm_selectnpc")
+	util.AddNetworkString("zm_command_npcgo")
+	util.AddNetworkString("zm_npc_target_object")
+	util.AddNetworkString("zm_net_deselect")
+	util.AddNetworkString("zm_clicktrap")
+	util.AddNetworkString("zm_selectall_zombies")
+	util.AddNetworkString("zm_placetrigger")
+	util.AddNetworkString("zm_spawnzombie")
+	util.AddNetworkString("zm_rqueue")
+	util.AddNetworkString("zm_placerally")
+	util.AddNetworkString("zm_creategroup")
+	util.AddNetworkString("zm_setselectedgroup")
+	util.AddNetworkString("zm_selectgroup")
+	util.AddNetworkString("zm_switch_to_defense")
+	util.AddNetworkString("zm_switch_to_offense")
+	util.AddNetworkString("zm_player_ready")
 	
 	game.ConsoleCommand("fire_dmgscale 1\nmp_falldamage 1\nsv_gravity 600\n")
 	
@@ -345,6 +365,7 @@ function GM:OnReloaded()
 	end
 	
 	hook.Call("BuildZombieDataTable", self)
+	hook.Call("SetupNetworkingCallbacks", self)
 end
 
 function GM:PlayerSpawnAsSpectator(pl)
@@ -1122,24 +1143,24 @@ function GM:PlayerCanPickupItem(pl, item)
 end
 
 function GM:SetZMSelection(value)
-	SetSharedBool("zm_zmselection_start", value)
+	SetGlobalBool("zm_zmselection_start", value)
 end
 
 function GM:SetCurZombiePop(amount)
 	if amount < 0 then amount = 0 end
-	SetSharedInt("m_iZombiePopCount", amount)
+	SetGlobalInt("m_iZombiePopCount", amount)
 end
 
 function GM:SetRoundActive(active)
-    SetSharedBool("zm_round_active", active)
+    SetGlobalBool("zm_round_active", active)
 end
 
 function GM:SetRoundStart(active)
-    SetSharedBool("zm_round_start", active)
+    SetGlobalBool("zm_round_start", active)
 end
 
 function GM:SetRoundEnd(active)
-    SetSharedBool("zm_round_ended", active)
+    SetGlobalBool("zm_round_ended", active)
 end
 
 function GM:AddCurZombiePop(amount)

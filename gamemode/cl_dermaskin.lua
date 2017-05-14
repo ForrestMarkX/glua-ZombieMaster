@@ -139,4 +139,15 @@ function SKIN:PaintActiveTab( panel, w, h )
 	draw.RoundedBox(2, 2, 2, w - 4, h - 4, color_tab_active2)
 end
 
+function SKIN:PaintVScrollBar( panel, w, h )
+	draw.RoundedBox(0, 0, 0, w, h, Color(0, 0, 0, 100))
+end
+
+local color_grip_active = Color(135, 0, 0, 220)
+local color_grip_border = Color(218, 0, 0)
+function SKIN:PaintScrollBarGrip( panel, w, h )
+	draw.RoundedBoxHollow(3, 0, 0, w, h, color_grip_border)
+	draw.RoundedBox(2, 2, 2, w - 4, h - 4, color_grip_active)
+end
+
 derma.DefineSkin("zm_skin", "Zombie Master Derma Skin", SKIN, "Default")

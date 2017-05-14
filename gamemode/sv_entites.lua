@@ -4,8 +4,8 @@ if not meta then return end
 meta.oldPlayerHolding = meta.oldPlayerHolding or meta.IsPlayerHolding
 function meta:IsPlayerHolding()
 	local isHolding = self:oldPlayerHolding()
-	if self:GetSharedBool("holding") ~= isHolding then
-		self:SetSharedBool("holding", isHolding)
+	if self.bIsHolding ~= isHolding then
+		self:SetNW2Bool("holding", isHolding)
 	end
 	return isHolding
 end

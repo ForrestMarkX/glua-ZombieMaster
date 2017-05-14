@@ -27,9 +27,8 @@ local gradient_down	 = surface.GetTextureID("gui/gradient_down")
 local zombieMenu	  = nil
 
 mouseX, mouseY  = 0, 0
-traceX, traceY  = 0, 0
+oldMousePos		= Vector(0, 0, 0)
 isDragging 	    = false
-holdTime 	    = CurTime()
 
 local nightVision_ColorMod = {
 	["$pp_colour_addr"] 		= -1,
@@ -44,7 +43,8 @@ local nightVision_ColorMod = {
 }
 
 function GM:PostClientInit()
-	RunConsoleCommand("zm_player_ready")
+	net.Start("zm_player_ready")
+	net.SendToServer()
 end
 
 function GM:OnReloaded()
@@ -53,6 +53,7 @@ function GM:OnReloaded()
 	end
 	
 	hook.Call("BuildZombieDataTable", self)
+	hook.Call("SetupNetworkingCallbacks", self)
 end
 
 function GM:InitPostEntity()
@@ -175,14 +176,17 @@ function GM:SetPlacingSpotZombie(b)
 	placingZombie = b
 end
 
+local TriggerEnt = nil
 local placingRally = false
-function GM:SetPlacingRallyPoint(b)
+function GM:SetPlacingRallyPoint(b, ent)
 	placingRally = b
+	TriggerEnt = ent
 end
 
 local placingTrap = false
-function GM:SetPlacingTrapEntity(b)
+function GM:SetPlacingTrapEntity(b, ent)
 	placingTrap = b
+	TriggerEnt = ent
 end
 
 function GM:OnPlayerChat( player, strText, bTeamOnly, bPlayerIsDead )
@@ -218,33 +222,6 @@ function draw.SimpleTextBlurry(text, font, x, y, col, xalign, yalign)
 	draw.SimpleText(text, font, x, y, col, xalign, yalign)
 end
 
-local function TraceToNPCs(ent)
-	if ent:IsNPC() and not ent:GetSharedBool("selected") then
-		return true
-	end
-	
-	return false
-end
-function GM:GUIMouseReleased(mouseCode, aimVector)
-	local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, TraceToNPCs)
-	
-	if tr.Entity and tr.Entity:IsNPC() then
-		isDragging = false
-		RunConsoleCommand("zm_selectnpc", tr.Entity:EntIndex())
-	end
-	
-	if isDragging then
-		local a, b = util.QuickTrace(LocalPlayer():GetShootPos(), gui.ScreenToVector(traceX, traceY) * 10000, TraceToNPCs), util.QuickTrace(LocalPlayer():GetShootPos(), gui.ScreenToVector(mouseX, mouseY) * 10000, TraceToNPCs)
-		
-		if a.HitPos and b.HitPos then
-			RunConsoleCommand("zm_traceselect", tostring(b.HitPos), tostring(a.HitPos))
-		end
-		
-		isDragging = false
-		traceX, traceY = 0, 0
-	end
-end
-
 local selectringMaterial = CreateMaterial("CommandRingMat", "UnlitGeneric", {
 	["$basetexture"] = "effects/zm_ring",
 	["$ignorez"] = 1,
@@ -267,39 +244,60 @@ local click_delta = 0
 local zm_ring_pos = Vector(0, 0, 0)
 local zm_ring_ang = Angle(0, 0, 0)
 function GM:GUIMousePressed(mouseCode, aimVector)
+	oldMousePos = aimVector
+	
 	if LocalPlayer():IsZM() then
 		if mouseCode == MOUSE_LEFT then
+			if not isDragging then
+				mouseX, mouseY = gui.MousePos()
+				isDragging = true
+			end
+			
 			if placingShockwave then
 				if zm_placedpoweritem then zm_placedpoweritem = false end
 				
-				RunConsoleCommand("_place_physexplode_zm", tostring(aimVector))
+				net.Start("zm_place_physexplode")
+					net.WriteVector(aimVector)
+				net.SendToServer()
+				
 				placingShockwave = false
 				zm_placedpoweritem = true
 			elseif placingZombie then
 				if zm_placedpoweritem then zm_placedpoweritem = false end
 				
-				RunConsoleCommand("_place_zombiespot_zm", tostring(aimVector))
+				net.Start("zm_place_zombiespot")
+					net.WriteVector(aimVector)
+				net.SendToServer()
+				
 				placingZombie = false
 				zm_placedpoweritem = true
 			elseif placingTrap then
-				local hitPos = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos
-				local vector = string.Explode(" ", tostring(hitPos))
-			
-				RunConsoleCommand("zm_placetrigger", vector[1], vector[2], vector[3], trapTrigger)
+				net.Start("zm_place_zombiespot")
+					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
+					net.WriteEntity(TriggerEnt)
+				net.SendToServer()
 
 				placingTrap = false
 			elseif placingRally then
 				if zm_placedrally then zm_placedrally = false end
 				
-				local hitPos = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos
-				local vector = string.Explode(" ", tostring(hitPos))
-				
-				RunConsoleCommand("zm_placerally", vector[1], vector[2], vector[3], trapTrigger)
+				net.Start("zm_placerally")
+					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
+					net.WriteEntity(TriggerEnt)
+				net.SendToServer()
 				
 				placingRally = false			
 				zm_placedrally = true
 			else
-				RunConsoleCommand("zm_deselect")
+				local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 56756, function(ent) if ent:IsNPC() and not ent.bIsSelected then return true end end)
+				if tr.Entity and tr.Entity:IsNPC() then
+					isDragging = false
+					net.Start("zm_selectnpc")
+						net.WriteEntity(tr.Entity)
+					net.SendToServer()
+				else
+					if not LocalPlayer():KeyDown(IN_DUCK) then RunConsoleCommand("zm_deselect") end
+				end
 			end
 			
 			if zm_placedpoweritem or zm_placedrally then
@@ -349,25 +347,28 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			zm_rightclicked = true
 			
 			if IsValid(tr.Entity) and not tr.Entity:IsWorld() then
-				RunConsoleCommand("zm_npc_target_object", tostring(tr.HitPos), tr.Entity:EntIndex())
+				net.Start("zm_npc_target_object")
+					net.WriteVector(tr.HitPos)
+					net.WriteEntity(tr.Entity)
+				net.SendToServer()
 			else
-				RunConsoleCommand("zm_command_npcgo", tostring(tr.HitPos))
+				net.Start("zm_command_npcgo")
+					net.WriteVector(tr.HitPos)
+				net.SendToServer()
 			end
 		end
 	end
 end
 
-function GM:PlayerBindPress(ply, bind, pressed)
-	if player_manager.RunClass(ply, "BindPress", bind, pressed) then return true end
+function GM:GUIMouseReleased(mouseCode, aimVector)
+	if isDragging then
+		util.BoxSelect(gui.MousePos())
+		isDragging = false
+	end
 end
 
-function GM:CreateGhostEntity(trap, rallyID)
-	if trap then
-		hook.Call("SetPlacingTrapEntity", self, true)
-	else
-		hook.Call("SetPlacingRallyPoint", self, true)
-		trapTrigger = rallyID
-	end
+function GM:PlayerBindPress(ply, bind, pressed)
+	if player_manager.RunClass(ply, "BindPress", bind, pressed) then return true end
 end
 
 function GM:CreateVGUI()
@@ -478,51 +479,6 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 	end
 end
 
---local SCROLL_THRESHOLD = 8
-function GM:Think()
-	if input.IsMouseDown(MOUSE_LEFT) and holdTime < CurTime() and not isDragging and LocalPlayer():IsZM() then
-		holdTime = CurTime()
-		mouseX, mouseY = gui.MousePos()
-		
-		isDragging = true
-	end
-	
-	if isDragging and not input.IsMouseDown(MOUSE_LEFT) then
-		isDragging = false
-	end
-	
-	-- +lookup and +lookdown is broken in gmod
-	--[[
-	if not isDragging and LocalPlayer():IsZM() and vgui.CursorVisible() then
-		local menuopen = gamemode.Call("IsMenuOpen")
-		if not menuopen then
-			local mousex, mousey = gui.MousePos()	
-			if mousex <= SCROLL_THRESHOLD then
-				RunConsoleCommand("+left")
-				timer.Simple(0, function() RunConsoleCommand("-left") end)
-			elseif mousex >= (ScrW() - SCROLL_THRESHOLD) then
-				RunConsoleCommand("+right")
-				timer.Simple(0, function() RunConsoleCommand("-right") end)
-			else
-				RunConsoleCommand("-right")
-				timer.Simple(0, function() RunConsoleCommand("-left") end)
-			end
-			
-			if mousey <= SCROLL_THRESHOLD then
-				RunConsoleCommand("+lookup")
-				timer.Simple(0, function() RunConsoleCommand("-lookdown") end)
-			elseif mousey >= (ScrH() - SCROLL_THRESHOLD) then
-				RunConsoleCommand("+lookdown")
-				timer.Simple(0, function() RunConsoleCommand("-lookup") end)
-			else
-				RunConsoleCommand("-lookup")
-				timer.Simple(0, function() RunConsoleCommand("-lookdown") end)
-			end
-		end
-	end
-	--]]
-end
-
 function GM:PostDrawOpaqueRenderables()
 	if LocalPlayer():IsZM() then
 		cam.Start3D()
@@ -545,7 +501,7 @@ function GM:PostDrawOpaqueRenderables()
 					render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
 					render.DrawQuadEasy(pos, Vector(0, 0, -1), 40, 40, colour)
 					
-					if entity:GetSharedBool("selected", false) then
+					if entity.bIsSelected then
 						render.SetMaterial(circleMaterial)
 						
 						render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
@@ -644,9 +600,7 @@ function GM:RestartRound()
 	zombieMenu = nil
 	
 	mouseX, mouseY  = 0, 0
-	traceX, traceY  = 0, 0
 	isDragging = false
-	holdTime = 0
 	
 	gui.EnableScreenClicker(false)
 end

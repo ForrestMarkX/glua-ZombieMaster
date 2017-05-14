@@ -11,6 +11,9 @@ GM:CanSpawnZombie(int flag, int zombieflags)
 Hook. Called when the round restarts
 GM:RestartRound()
 
+Hook. Used to setup NW2Var callbacks
+GM:SetupNetworkingCallbacks()
+
 =CLIENT=
 Hook. Set if the player is placing a shockwave explosion
 GM:SetPlacingShockwave(bool b)
@@ -19,16 +22,13 @@ Hook. Set if the player is placing a hidden zombie
 GM:SetPlacingSpotZombie(bool b)
 
 Hook. Set if the player is placing a rally point
-GM:SetPlacingRallyPoint(bool b)
+GM:SetPlacingRallyPoint(bool b, Entity rallyEnt)
 
 Hook. Set if the player is placing a trap trigger
-GM:SetPlacingTrapEntity(bool b)
+GM:SetPlacingTrapEntity(bool b, Entity trapEnt)
 
 Hook. Set if the player is dragging his mouse across the screen
 GM:SetDragging(bool b)
-
-Hook. Used to set if the player is setting traps or rally points
-GM:CreateGhostEntity(bool trap, int rallyID)
 
 Hook. Used to spawn the trap GUI for the Zombie Master
 GM:SpawnTrapMenu()

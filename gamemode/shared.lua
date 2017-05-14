@@ -9,7 +9,6 @@ GM.Credits = {
 	{"William \"JetBoom\" Moodhe", "http://www.noxiousnet.com", "Code snippets from Zombie Survival"},
 	{"Chewgum", "", "Vestige gamemode code"},
 	{"Mka0207", "http://steamcommunity.com/id/mka0207/myworkshopfiles", "Building the base and icon work"},
-	{"Kigen", "", "Providing the shared networking library"},
 	{"xyzzy", "", "Some bits of code from iNPC to make the engine NPCs less stupid"},
 	
 	{"AzoNa, Gabil", "", "French translation"},
@@ -23,7 +22,6 @@ GM.Credits = {
 	{"Comic King", "", "Croatian & Serbian translation"}
 }
 
-include("sh_networking.lua")
 include("sh_translate.lua")
 include("sh_sounds.lua")
 include("sh_zm_globals.lua")
@@ -41,6 +39,8 @@ include("player_class/player_zm.lua")
 include("player_class/player_survivor.lua")
 include("player_class/player_zombiemaster.lua")
 include("player_class/player_spectator.lua")
+
+GM.NetworkVarCallbacks = {}
 
 function GM:Initialize()
 	for name, mdl in pairs(player_manager.AllValidModels()) do
@@ -60,8 +60,14 @@ function GM:Initialize()
 	game.AddAmmoType({name = "unused"})
 	
 	hook.Call("BuildZombieDataTable", self)
+	hook.Call("SetupNetworkingCallbacks", self)
 	
 	if SERVER then game.ConsoleCommand("mp_flashlight 1\n") end
+end
+
+function GM:SetupNetworkingCallbacks()
+	self:AddNetworkingCallbacks("holding", function(ent, value) ent.bIsHolding = value end)
+	self:AddNetworkingCallbacks("selected", function(ent, value) ent.bIsSelected = value end)
 end
 
 function GM:CreateTeams()
@@ -120,21 +126,34 @@ function GM:IsSpecialPerson(pl, image)
 end
 
 function GM:GetZMSelection()
-    return GetSharedBool("zm_zmselection_start", false)
+    return GetGlobalBool("zm_zmselection_start", false)
 end
 
 function GM:GetRoundStart()
-    return GetSharedBool("zm_round_start", false)
+    return GetGlobalBool("zm_round_start", false)
 end
 
 function GM:GetRoundActive()
-    return GetSharedBool("zm_round_active", false)
+    return GetGlobalBool("zm_round_active", false)
 end
 
 function GM:GetRoundEnd()
-    return GetSharedBool("zm_round_ended", false)
+    return GetGlobalBool("zm_round_ended", false)
 end
 
 function GM:SetupMove(ply, mv, cmd)
 	player_manager.RunClass(ply, "SetupMove", mv, cmd)
+end
+
+function GM:AddNetworkingCallbacks(name, func)
+	if self.NetworkVarCallbacks[name] then return end
+	self.NetworkVarCallbacks[name] = func
+end
+
+function GM:EntityNetworkedVarChanged(ent, name, oldval, newval)
+	if self.NetworkVarCallbacks[name] ~= nil then self.NetworkVarCallbacks[name](ent, newval) end
+	
+	if CLIENT and ent.PostNetReceive then
+		ent:PostNetReceive()
+	end
 end

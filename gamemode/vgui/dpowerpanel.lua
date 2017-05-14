@@ -33,9 +33,9 @@ function PANEL:Init()
 	self.button1.alpha = 100
 	
 	self.button1.buttons = {
-		{image = "VGUI/miniselectall", func = function() RunConsoleCommand("zm_selectall_zombies") end, tooltip = translate.Get("tooltip_select_all")},
-		{image = "VGUI/minishield", func = function() RunConsoleCommand("zm_switch_to_defense") end, tooltip = translate.Get("tooltip_defend")},
-		{image = "VGUI/minicrosshair", func = function() RunConsoleCommand("zm_switch_to_offense") end, tooltip = translate.Get("tooltip_attack")}
+		{image = "VGUI/miniselectall", func = function() net.Start("zm_selectall_zombies") net.SendToServer() end, tooltip = translate.Get("tooltip_select_all")},
+		{image = "VGUI/minishield", func = function() net.Start("zm_switch_to_defense") net.SendToServer() end, tooltip = translate.Get("tooltip_defend")},
+		{image = "VGUI/minicrosshair", func = function() net.Start("zm_switch_to_offense") net.SendToServer() end, tooltip = translate.Get("tooltip_attack")}
 	}
 	
 	self.button1.Image = image1
@@ -103,7 +103,9 @@ function PANEL:Init()
 			dropdown:SetPos(0, 10)
 			dropdown:SetText("None")
 			dropdown.OnSelect = function(me, index, value, data)
-				RunConsoleCommand("zm_setselectedgroup", tostring(value))
+				net.Start("zm_setselectedgroup")
+					net.WriteString(string.Replace(tostring(value), "Group ", ""))
+				net.SendToServer()
 			end
 			dropdown.Think = function(self)
 				self.BaseClass.Think(self)
@@ -148,8 +150,8 @@ function PANEL:Init()
 	self.button3.OnMousePressed = self.button1.OnMousePressed
 	
 	self.button3.buttons = {
-		{image = "VGUI/minigroupadd", func = function() RunConsoleCommand("zm_creategroup") end, tooltip = translate.Get("tooltip_create_squad")},
-		{image = "VGUI/minigroupselect", func = function() RunConsoleCommand("zm_selectgroup") end, tooltip = translate.Get("tooltip_select_squad")}
+		{image = "VGUI/minigroupadd", func = function() net.Start("zm_creategroup") net.SendToServer() end, tooltip = translate.Get("tooltip_create_squad")},
+		{image = "VGUI/minigroupselect", func = function() net.Start("zm_selectgroup") net.SendToServer() end, tooltip = translate.Get("tooltip_select_squad")}
 	}
 	
 	self.button3.Image = image3

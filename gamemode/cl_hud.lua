@@ -71,9 +71,6 @@ function GM:ZombieMasterHUD(scale)
 
 	if isDragging then
 		local x, y = gui.MousePos()
-		
-		traceX, traceY = x, y
-
 		if mouseX < x then
 			if mouseY < y then
 				surface.SetDrawColor(selection_color_outline)
@@ -671,7 +668,10 @@ function GM:SpawnTrapMenu(class, ent)
 			holdTime = CurTime()
 			
 			if LocalPlayer():CanAfford(cost) then
-				RunConsoleCommand("zm_clicktrap", ent:EntIndex())
+				net.Start("zm_clicktrap")
+					net.WriteEntity(ent)
+				net.SendToServer()
+				
 				trapPanel:Close()
 			end
 		end
@@ -712,10 +712,7 @@ function GM:SpawnTrapMenu(class, ent)
 			holdTime = CurTime()
 			
 			if LocalPlayer():CanAfford(trapCost) then
-				hook.Call("CreateGhostEntity", GAMEMODE, true, ent:EntIndex())
-				
-				trapTrigger = ent:EntIndex()
-				
+				hook.Call("SetPlacingTrapEntity", GAMEMODE, true, ent)
 				trapPanel:Close()
 			end
 		end
@@ -747,14 +744,14 @@ function GM:SpawnTrapMenu(class, ent)
 			local newMenu = vgui.Create("zm_zombiemenu")
 			newMenu:SetZombieflags(zombieFlags)
 			newMenu:SetTitle(translate.Get("title_spawn_menu"))
-			newMenu:SetCurrent(ent:EntIndex())
+			newMenu:SetCurrent(ent)
 			newMenu:Populate()
 			newMenu:AlignTop(10)
 			newMenu:AlignLeft(10)
 			newMenu:SetVisible(true)
 			newMenu:ShowCloseButton(false)
 			
-			trapTrigger = ent:EntIndex()
+			TriggerEnt = ent
 			
 			data[ent] = newMenu
 		else

@@ -171,8 +171,19 @@ if SERVER then
 				vSpawnPoint = self:GetPos() + (vForward * 32)
 				vSpawnPoint.x = vSpawnPoint.x + xDeviation
 				vSpawnPoint.y = vSpawnPoint.y + yDeviation
+				
+				local tr = util.TraceHull({
+					start = vSpawnPoint,
+					endpos = vSpawnPoint - Vector( 0, 0, 256 ),
+					maxs = Vector(13, 13, 72),
+					mins = Vector(-13, -13, 0),
+					mask = MASK_NPCSOLID,
+					filter = ents.FindByClass("npc_*")
+				})
+				
+				vSpawnPoint = tr.HitPos
 			end
-
+			
 			local tr = util.TraceHull({
 				start = vSpawnPoint,
 				endpos = vSpawnPoint + Vector( 0, 0, 1 ),
@@ -180,8 +191,7 @@ if SERVER then
 				mins = Vector(-13, -13, 0),
 				mask = MASK_NPCSOLID
 			})
-			
-			if tr.Fraction ~= 1.0 then
+			if tr.Fraction ~= 1 then
 				if node_idx ~= -1 then
 					table.remove(untried_nodes, node_idx)
 				end

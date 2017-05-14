@@ -1,7 +1,7 @@
 local PANEL = {}
 
 AccessorFunc(PANEL, "m_iFlags", 	"Zombieflags", 	FORCE_NUMBER)
-AccessorFunc(PANEL, "m_iCurrent", 	"Current", 		FORCE_NUMBER)
+AccessorFunc(PANEL, "m_iCurrent", 	"Current")
 
 function PANEL:Paint(w, h)
 	draw.RoundedBox(0, 0, 0, w, h, Color(60, 0, 0, 200))
@@ -49,7 +49,7 @@ local function ThinkButton(self)
 	end
 end
 function PANEL:Init()
-	self:SetSize(400, 300)
+	self:SetSize(411, 300)
 	self:SetTitle("Spawn Menu")
 	self:MakePopup()
 	
@@ -63,12 +63,15 @@ function PANEL:Init()
 	
 	self.buttons = vgui.Create("DPanelList", self)
 	self.buttons:SetPos(4, 28)
-	self.buttons:SetSize(115, self:GetTall() - 32)
+	self.buttons:SetSize(self:GetWide() * 0.31, self:GetTall() * 0.75)
 	self.buttons:SetPadding(2)
 	self.buttons:SetSpacing(4)
+	self.buttons:EnableVerticalScrollbar(true)
 	
 	self.buttons.Paint = function(self, w, h)
-		draw.DrawSimpleRect(w - 1, 0, 1, h * 0.8, color_black)
+		DisableClipping(true)
+		draw.DrawSimpleRect(w + 5, 0, 1, h, color_black)
+		DisableClipping(false)
 	end
 	
 	self.queue = vgui.Create("DPanelList", self)
@@ -90,11 +93,14 @@ function PANEL:Init()
 	self.removeOne:SetTextColor(color_white)
 	self.removeOne.DontDisabled = true
 	self.removeOne.Paint = PaintButton
-	self.removeOne.Think = ThinkButton
 	self.removeOne.DoClick = function()
 		if LocalPlayer():IsZM() then
 			if #self.queue:GetItems() > 0 then
-				RunConsoleCommand("zm_rqueue", self:GetCurrent())
+				net.Start("zm_rqueue")
+					net.WriteEntity(self:GetCurrent())
+					net.WriteBool(false)
+				net.SendToServer()
+				
 				self:UpdateQueue()
 			end
 		end
@@ -108,12 +114,15 @@ function PANEL:Init()
 	self.clearQueue:SetTextColor(color_white)
 	self.clearQueue.DontDisabled = true
 	self.clearQueue.Paint = PaintButton
-	self.clearQueue.Think = ThinkButton
 	self.clearQueue.DoClick = function()
 		if LocalPlayer():IsZM() then
 			if #self.queue:GetItems() > 0 then
 				self.queue:Clear()
-				RunConsoleCommand("zm_rqueue", self:GetCurrent(), "1")
+				
+				net.Start("zm_rqueue")
+					net.WriteEntity(self:GetCurrent())
+					net.WriteBool(true)
+				net.SendToServer()
 			end
 		end
 	end
@@ -127,7 +136,7 @@ function PANEL:Init()
 	self.placeRally.Paint = PaintButton
 	self.placeRally.DoClick = function()
 		if LocalPlayer():IsZM() then
-			gamemode.Call("CreateGhostEntity", false, self:GetCurrent())
+			hook.Call("SetPlacingRallyPoint", GAMEMODE, true, self:GetCurrent())
 			self:Close()
 		end
 	end
@@ -160,35 +169,39 @@ function PANEL:Populate()
 		buttonSingle.Paint = PaintButton
 		buttonSingle.Think = ThinkButtonZombie
 		buttonSingle.DoClick = function()
-			RunConsoleCommand("zm_spawnzombie", self:GetCurrent(), data.Class, 1)
+			net.Start("zm_spawnzombie")
+				net.WriteEntity(self:GetCurrent())
+				net.WriteString(data.Class)
+				net.WriteUInt(1, 6)
+			net.SendToServer()
 		end
 		
 		buttonSingle.OnCursorEntered = function()
 			self.image = vgui.Create("DImage", self)
 			self.image:SetImage(data.Icon)
-			self.image:SetPos(146, 30)
+			self.image:SetPos(154, 30)
 			self.image:SetSize(142, 142)
 
 			self.base = vgui.Create("DPanel", self)
-			self.base:SetPos(120, self:GetTall() - 145)
+			self.base:SetPos(128, self:GetTall() - 145)
 			self.base:SetSize(200, 106)
 			self.base.Paint = function() end
 			
 			self.costLabel = Label("Resources: " .. data.Cost, self.base)
 			self.costLabel:SetFont("DefaultFontBold")
 			self.costLabel:SizeToContents()
-			self.costLabel:SetPos(5, 20)
+			self.costLabel:SetPos(13, 20)
 			
 			self.popLabel = Label("Population: " .. data.PopCost, self.base)
 			self.popLabel:SetFont("DefaultFontBold")
 			self.popLabel:SizeToContents()
-			self.popLabel:SetPos(5, 40)
+			self.popLabel:SetPos(13, 40)
 			
 			self.desc = Label(data.Description, self.base)
 			self.desc:SetFont("DefaultFontBold")
 			self.desc:SizeToContents()
-			self.desc:SetPos(5, 60)
-			self.desc:DockMargin(5, 60, 12, 0)
+			self.desc:SetPos(13, 60)
+			self.desc:DockMargin(13, 60, 12, 0)
 			self.desc:Dock(FILL)
 			self.desc:SetContentAlignment(7)
 			self.desc:SetWrap(true)
@@ -210,7 +223,11 @@ function PANEL:Populate()
 		buttonFive.Paint = PaintButton
 		buttonFive.Think = ThinkButtonZombie
 		buttonFive.DoClick = function()
-			RunConsoleCommand("zm_spawnzombie", self:GetCurrent(), data.Class, 5)
+			net.Start("zm_spawnzombie")
+				net.WriteEntity(self:GetCurrent())
+				net.WriteString(data.Class)
+				net.WriteUInt(5, 6)
+			net.SendToServer()
 		end
 		
 		buttonFive:MoveRightOf(buttonSingle, 5)

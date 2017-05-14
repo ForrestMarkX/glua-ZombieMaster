@@ -48,7 +48,7 @@ function GM:CanSpawnZombie(flag, iZombieFlags)
 end
 
 function GM:GetCurZombiePop()
-	return GetSharedInt("m_iZombiePopCount", 0)
+	return GetGlobalInt("m_iZombiePopCount", 0)
 end
 
 function GM:GetMaxZombiePop()
