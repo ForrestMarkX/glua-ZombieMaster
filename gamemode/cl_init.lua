@@ -272,7 +272,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				placingZombie = false
 				zm_placedpoweritem = true
 			elseif placingTrap then
-				net.Start("zm_place_zombiespot")
+				net.Start("zm_placetrigger")
 					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
 					net.WriteEntity(TriggerEnt)
 				net.SendToServer()

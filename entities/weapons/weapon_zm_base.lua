@@ -155,7 +155,12 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	end
 
 	self.Owner:FireBullets(bullet)
-	self.Owner:DoAttackEvent()
+	
+	if self.Owner.DoAttackEvent then
+		self.Owner:DoAttackEvent()
+	else
+		self.Owner:SetAnimation(PLAYER_ATTACK1)
+	end
 	
 	self:SetNextIdle(CurTime() + self:SequenceDuration())
 end

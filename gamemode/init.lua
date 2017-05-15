@@ -1196,6 +1196,7 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 		
 		pZombie:SetPos(origin)
 		pZombie:SetOwner(pZM)
+		pZombie:SetCollisionGroup(COLLISION_GROUP_NPC)
 		
 		local tr = util.TraceHull({
 			start = origin,

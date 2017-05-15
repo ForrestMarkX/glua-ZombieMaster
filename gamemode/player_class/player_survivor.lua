@@ -273,7 +273,7 @@ end
 
 function PLAYER:OnTakeDamage(attacker, dmginfo)
 	local inflictor = dmginfo:GetInflictor()
-	if attacker:GetClass() == "projectile_molotov" or inflictor:GetClass() == "projectile_molotov" then
+	if (IsValid(attacker) and attacker:GetClass() == "projectile_molotov") or (IsValid(inflictor) and inflictor:GetClass() == "projectile_molotov") then
 		return true
 	end
 end
