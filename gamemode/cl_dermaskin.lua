@@ -150,4 +150,21 @@ function SKIN:PaintScrollBarGrip( panel, w, h )
 	draw.RoundedBox(2, 2, 2, w - 4, h - 4, color_grip_active)
 end
 
+local function PaintNotches( x, y, w, h, num )
+	if not num then return end
+
+	local space = w / num
+
+	for i=0, num do
+		surface.DrawRect(x + i * space, y + 4, 1, 5)
+	end
+end
+
+function SKIN:PaintNumSlider( panel, w, h )
+	surface.SetDrawColor(Color(255, 255, 255, 100))
+	surface.DrawRect(8, h / 2 - 1, w - 15, 1)
+
+	PaintNotches(8, h / 2 - 1, w - 16, 1, panel.m_iNotches)
+end
+
 derma.DefineSkin("zm_skin", "Zombie Master Derma Skin", SKIN, "Default")

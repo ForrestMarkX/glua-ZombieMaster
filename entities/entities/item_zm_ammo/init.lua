@@ -9,7 +9,13 @@ function ENT:Initialize()
 	
 	self:SetTrigger(true)
 	
-	self:SetCollisionBounds(self:OBBMins() * 4, self:OBBMaxs() * 4)
+	local mins, maxs = self:OBBMins(), self:OBBMaxs()
+	mins.x = mins.x * 4
+	mins.y = mins.y * 4
+	maxs.x = maxs.x * 4
+	maxs.y = maxs.y * 4
+	
+	self:SetCollisionBounds(mins, maxs)
 
 	local phys = self:GetPhysicsObject()
 	if phys:IsValid() then

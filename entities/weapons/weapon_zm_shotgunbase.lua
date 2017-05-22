@@ -1,22 +1,22 @@
 DEFINE_BASECLASS("weapon_zm_base")
 
-SWEP.Base = "weapon_zm_base"
-SWEP.HoldType = "shotgun"
+SWEP.Base 			= "weapon_zm_base"
+SWEP.HoldType 		= "shotgun"
 
-SWEP.Primary.Delay = 0.8
-SWEP.ReloadDelay = 1
-SWEP.ReloadSpeed = 1.0
+SWEP.Primary.Delay 	= 0.8
+SWEP.ReloadDelay 	= 1
+SWEP.ReloadSpeed 	= 1.0
 
-SWEP.ReloadSound = Sound("Weapon_Shotgun_ZM.Reload")
-SWEP.Primary.Sound = Sound("Weapon_Shotgun_ZM.Single")
-SWEP.PumpSound = Sound("Weapon_Shotgun_ZM.Special1")
-SWEP.EmptySound = Sound("Weapon_Shotgun_ZM.Empty")
+SWEP.ReloadSound 	= Sound("Weapon_Shotgun_ZM.Reload")
+SWEP.Primary.Sound  = Sound("Weapon_Shotgun_ZM.Single")
+SWEP.PumpSound 		= Sound("Weapon_Shotgun_ZM.Special1")
+SWEP.EmptySound 	= Sound("Weapon_Shotgun_ZM.Empty")
 
-SWEP.Primary.Ammo = "buckshot"
+SWEP.Primary.Ammo 	= "buckshot"
 
-SWEP.CurReload = ACT_VM_RELOAD
-SWEP.EndReloadPump = ACT_SHOTGUN_PUMP
-SWEP.BeginReload = ACT_SHOTGUN_RELOAD_START
+SWEP.CurReload 		= ACT_VM_RELOAD
+SWEP.EndReloadPump  = ACT_SHOTGUN_PUMP
+SWEP.BeginReload 	= ACT_SHOTGUN_RELOAD_START
 
 function SWEP:SetupDataTables()
 	BaseClass.SetupDataTables(self)
@@ -35,7 +35,7 @@ function SWEP:Initialize()
 end
 
 function SWEP:Reload()
-	if not self:IsReloading() and self:CanReload() then
+	if not self:IsReloading() and self:CanReload() and not self:GetOwner():KeyDown(IN_ATTACK) and not self:GetPumping() then
 		self:StartReloading()
 	end
 end
@@ -155,6 +155,11 @@ function SWEP:CanPrimaryAttack()
 	return true
 end
 
+function SWEP:DefaultCallBack(tr, dmginfo)
+	BaseClass.DefaultCallBack(self, tr, dmginfo)
+	dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_BUCKSHOT))
+end
+
 function SWEP:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
 	
@@ -167,7 +172,9 @@ function SWEP:PrimaryAttack()
 	end
 	
 	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-	self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
+	
+	local damage = Either(self.Primary.Damage ~= nil, self.Primary.Damage, math.random(self.Primary.MinDamage or 0, self.Primary.MaxDamage or 0))
+	self:ShootBullet(damage, self.Primary.NumShots, self.Primary.Cone)
 	
 	if self.Owner:IsValid() then
 		self.Owner:ViewPunch( Angle( -5, 0, 0 ) )

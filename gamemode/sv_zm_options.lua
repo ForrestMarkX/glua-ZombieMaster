@@ -17,24 +17,58 @@ concommand.Add("zm_debug_spawn_zombie", function(ply, cmd, args)
 	local tr = util.TraceLine(util.GetPlayerTrace(ply))
 	if not tr.Hit then return end
 	
-	local ent = ents.Create("npc_zombie")
+	local class = args[1] or "npc_zombie"
+	local ent = ents.Create(class)
 	if IsValid(ent) then
-		ent:SetPos(tr.HitPos)
+		ent:SetPos(tr.HitPos + Vector(0, 0, 25))
 		ent:Spawn()
 		ent:Activate()
+		
+		GAMEMODE:CallZombieFunction(ent:GetClass(), "OnSpawned", ent)
 	end
 end)
 
-//Isn't called for reasons unknown
---[[
-cvars.AddChangeCallback("zm_debug_nozombiemaster", function(convar_name, value_old, value_new)
-	timer.Simple(2, function() hook.Call("PreRestartRound", GAMEMODE) end)
-	timer.Simple(3, function() hook.Call("RestartRound", GAMEMODE) end)
+concommand.Add("zm_debug_testspottrace", function(ply, cmd, args)
+	if not IsValid(ply) then return end
+	if not ply:IsSuperAdmin() then return end
+	
+	local tr = util.TraceLine(util.GetPlayerTrace(ply))
+	if not tr.Hit then return end
+	
+	local vecHeadTarget = tr.HitPos
+	vecHeadTarget.z = vecHeadTarget.z + 64
+	
+	for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+		local tr = util.TraceLine({
+			start = tr.HitPos,
+			endpos = pl:GetPos(),
+			filter = pl,
+			mask = MASK_OPAQUE
+		})
+
+		local visible = false
+		if tr.Fraction == 1 then
+			visible = true
+		end
+
+		local tr = util.TraceLine({
+			start = vecHeadTarget,
+			endpos = pl:EyePos(),
+			filter = pl,
+			mask = MASK_OPAQUE
+		})
+		if tr.Fraction == 1 then
+			visible = true
+		end
+
+		if visible then
+			ply:PrintTranslatedMessage(HUD_PRINTCENTER, "human_can_see_location" )
+			return
+		end
+	end
 end)
---]]
 
 CreateConVar("zm_roundlimit","2", FCVAR_NOTIFY, "Sets the number of rounds before the server changes map\n" )
-//CreateConVar("zm_nocollideplayers","0", FCVAR_NOTIFY, "Should players not collide with each other?" )
 CreateConVar("zm_banshee_limit", "-1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Sets maximum number of banshees per survivor that the ZM is allowed to have active at once. Set to 0 or lower to remove the cap. Disabled by default since new population system was introduced that in practice includes a banshee limit.")
 CreateConVar("zm_trap_triggerrange", "96", FCVAR_NONE, "The range trap trigger points have.")
 CreateConVar("zm_spawndelay", "0.75", FCVAR_NOTIFY, "Delay between creation of zombies at zombiespawn.")
@@ -80,9 +114,7 @@ local function ZM_Power_KillZombies(len, ply)
 	for _, ent in pairs(ents.FindByClass("npc_*")) do
 		if ent.bIsSelected then
 			local dmginfo = DamageInfo()
-			dmginfo:SetDamage(ent:Health())
-			dmginfo:SetDamageType(DMG_REMOVENORAGDOLL)
-			
+			dmginfo:SetDamage(ent:Health() * 1.25)
 			ent:TakeDamageInfo(dmginfo) 
 		end
 	end
@@ -111,23 +143,44 @@ local function ZM_Power_SpotCreate_SV(len, ply)
 		return
 	end
 	
-	for k, v in pairs( ents.FindByClass( "trigger_blockspotcreate" ) ) do
-		if IsValid(v) then
-			if v.m_bActive then
-				if v:IsPointInBounds(location) then
-					ply:PrintTranslatedMessage( HUD_PRINTTALK, "zombie_cant_be_created" )
-					return
-				end
+	local vecHeadTarget = location
+	vecHeadTarget.z = vecHeadTarget.z + 64
+	
+	for k, v in pairs(ents.FindByClass("trigger_blockspotcreate")) do
+		if v.m_bActive then
+			if v:IsPointInBounds(location) then
+				ply:PrintTranslatedMessage( HUD_PRINTTALK, "zombie_cant_be_created" )
+				return
 			end
 		end
 	end
 	
 	for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
-		if IsValid(pl) then
-			if LightVisible(pl:GetShootPos(), location) then
-				ply:PrintTranslatedMessage(HUD_PRINTCENTER, "human_can_see_location" )
-				return
-			end
+		local tr = util.TraceLine({
+			start = location,
+			endpos = pl:GetPos(),
+			filter = pl,
+			mask = MASK_OPAQUE
+		})
+
+		local visible = false
+		if tr.Fraction == 1 then
+			visible = true
+		end
+
+		local tr = util.TraceLine({
+			start = vecHeadTarget,
+			endpos = pl:EyePos(),
+			filter = pl,
+			mask = MASK_OPAQUE
+		})
+		if tr.Fraction == 1 then
+			visible = true
+		end
+
+		if visible then
+			ply:PrintTranslatedMessage(HUD_PRINTCENTER, "human_can_see_location" )
+			return
 		end
 	end
 	
@@ -226,7 +279,6 @@ local function ZM_BoxSelect(len, ply)
 		end
 		
 		for _, npc in pairs(net.ReadTable()) do
-			if not IsValid(npc) or not ply:VisibleVec(npc:WorldSpaceCenter()) then return end
 			npc:SetNW2Bool("selected", true)
 		end
 	end
@@ -237,7 +289,7 @@ local function ZM_Select(len, ply)
 	if ply:IsZM() then
 		local entity = net.ReadEntity()
 		local ignore = net.ReadBool()
-		if not IsValid(entity) or not ply:VisibleVec(entity:WorldSpaceCenter()) then return end
+		if not IsValid(entity) then return end
 		
 		if not ply:KeyDown(IN_DUCK) and not ignore then
 			for _, npc in pairs(ents.FindByClass("npc_*")) do
@@ -260,8 +312,7 @@ local function ZM_Command_NPC(len, ply)
 		
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
 			if IsValid(entity) and entity.bIsSelected and entity:IsNPC() then
-				entity:ForceGoto(position)
-				entity.isMoving = true
+				entity:ForceGo(position)
 			end
 		end
 	end
@@ -455,7 +506,10 @@ net.Receive("zm_switch_to_defense", function(len, ply)
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
 			if IsValid(entity) and entity.bIsSelected and entity:IsNPC() then
 				entity:SetSchedule(SCHED_AMBUSH)
-				entity.isMoving = false
+				entity:StopMoving()
+				entity.DefencePoint = entity:GetPos()
+				entity.InDefenceMode = true
+				entity.NextDefenceCheck = CurTime()
 			end
 		end
 		ply:PrintTranslatedMessage(HUD_PRINTTALK, "set_zombies_to_defensive_mode")
@@ -467,10 +521,83 @@ net.Receive("zm_switch_to_offense", function(len, ply)
 		for _, entity in pairs(ents.FindByClass("npc_*")) do
 			if IsValid(entity) and entity.bIsSelected and entity:IsNPC() then
 				entity:SetSchedule(SCHED_ALERT_WALK)
-				entity.isMoving = true
+				entity.DefencePoint = nil
+				entity.InDefenceMode = nil
 			end
 		end
 		ply:PrintTranslatedMessage(HUD_PRINTTALK, "set_zombies_to_offensive_mode")
+	end
+end)
+
+net.Receive("zm_create_ambush_point", function(len, ply)
+	if ply:IsZM() then
+		local position = net.ReadVector() + Vector(0, 0, 7)
+		local bFoundSelected = false
+		local npc_table = {}
+		for _, npc in pairs(ents.FindByClass("npc_*")) do
+			if IsValid(npc) and npc.bIsSelected and npc:IsNPC() then
+				npc:SetSchedule(SCHED_AMBUSH)
+				npc:StopMoving()
+				
+				npc_table[#npc_table + 1] = npc
+				
+				bFoundSelected = true
+			end
+		end
+		
+		if not bFoundSelected then
+			ply:PrintTranslatedMessage(HUD_PRINTTALK, "no_zombies_selected")
+			return
+		else
+			for _, npc in pairs(npc_table) do
+				if IsValid(npc.AmbushPointEnt) then
+					npc.AmbushPointEnt:Remove()
+					break
+				end
+			end
+			
+			local trigger = ents.Create("info_ambush_point")
+			trigger:SetPos(position)
+			trigger:Spawn()
+			trigger.EntOwners = npc_table
+			
+			for _, npc in pairs(npc_table) do
+				npc.AmbushPointEnt = trigger
+			end
+		end
+		
+		ply:PrintTranslatedMessage(HUD_PRINTTALK, "placed_ambush_point")
+	end
+end)
+
+net.Receive("zm_cling_ceiling", function(len, ply)
+	if ply:IsZM() then
+		local bFoundClingZombie = false
+		for _, entity in pairs(ents.FindByClass("npc_*")) do
+			local zombietab = GAMEMODE:GetZombieData(entity:GetClass())
+			if IsValid(entity) and entity.bIsSelected and entity:IsNPC() and zombietab.CanClingToCeiling then
+				if not entity.m_bClinging then
+					if GAMEMODE:CallZombieFunction(entity:GetClass(), "CheckCeiling", entity) then
+						entity:SetNW2Bool("bClingingCeiling", true)
+						entity:SetMoveType(MOVETYPE_NONE)
+						entity.m_flLastClingCheck = CurTime()
+						bFoundCeiling = true
+					end
+				else
+					GAMEMODE:CallZombieFunction(entity:GetClass(), "DetachFromCeiling", entity)
+				end
+				
+				bFoundClingZombie = true
+			end
+		end
+		
+		if not bFoundCeiling then
+			ply:PrintTranslatedMessage(HUD_PRINTTALK, "no_flat_or_range_ceiling")
+		end
+		
+		if not bFoundClingZombie then
+			ply:PrintTranslatedMessage(HUD_PRINTTALK, "no_valid_zombies_selected_for_cling")
+		end
 	end
 end)
 

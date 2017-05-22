@@ -1,6 +1,11 @@
 function GM:HUDDrawTargetID()
 	if LocalPlayer():IsZM() then hook.Call("DrawZMTargetID", self) return end
 	
+	if LocalPlayer():IsSpectator() and IsValid(LocalPlayer():GetObserverTarget()) then
+		hook.Call("DrawSpectatorTargetID", self)
+		return
+	end
+	
 	local tr = util.GetPlayerTrace(LocalPlayer())
 	local trace = util.TraceLine(tr)
 	
@@ -48,4 +53,18 @@ function GM:DrawZMTargetID()
 		
 		draw.SimpleTextBlurry(name, "ZMHUDFontBig", x, y, Color(153, 255, 153, 255), TEXT_ALIGN_CENTER)
 	end
+end
+
+function GM:DrawSpectatorTargetID()
+	local ent = LocalPlayer():GetObserverTarget()
+	if not ent:IsPlayer() then return end
+	
+	local text = ent:Nick() or "ERROR"
+	local font = "TargetID"
+	
+	local health = ent:Health()
+	local healthtext = health < 20 and "Critical" or health < 50 and "Wounded" or health < 75 and "Injured" or "Healthy"
+	
+	surface.SetFont(font)
+	draw.DrawText(text.."("..healthtext..")", "DermaLarge", ScrW() / 96, ScrH() / 1.88, Color(255, 255, 255, 255))
 end

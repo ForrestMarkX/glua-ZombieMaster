@@ -30,6 +30,49 @@ function PLAYER:Spawn()
 	self.Player:Flashlight(false)
 end
 
+local VoiceSetTranslate = {}
+VoiceSetTranslate["models/player/alyx.mdl"] = "alyx"
+VoiceSetTranslate["models/player/barney.mdl"] = "barney"
+VoiceSetTranslate["models/player/breen.mdl"] = "male"
+VoiceSetTranslate["models/player/combine_soldier.mdl"] = "combine"
+VoiceSetTranslate["models/player/combine_soldier_prisonguard.mdl"] = "combine"
+VoiceSetTranslate["models/player/combine_super_soldier.mdl"] = "combine"
+VoiceSetTranslate["models/player/eli.mdl"] = "male"
+VoiceSetTranslate["models/player/gman_high.mdl"] = "male"
+VoiceSetTranslate["models/player/kleiner.mdl"] = "male"
+VoiceSetTranslate["models/player/monk.mdl"] = "monk"
+VoiceSetTranslate["models/player/mossman.mdl"] = "female"
+VoiceSetTranslate["models/player/odessa.mdl"] = "male"
+VoiceSetTranslate["models/player/police.mdl"] = "combine"
+function PLAYER:SetModel()
+	local cl_playermodel = self.Player:GetInfo("cl_playermodel")
+	local modelname = player_manager.TranslatePlayerModel(cl_playermodel)
+	if #cl_playermodel == 0 then
+		modelname = "models/player/kleiner.mdl"
+	end
+	
+	util.PrecacheModel(modelname)
+	self.Player:SetModel(modelname)
+	
+	local skin = self.Player:GetInfoNum("cl_playerskin", 0)
+	self.Player:SetSkin(skin)
+
+	local groups = self.Player:GetInfo("cl_playerbodygroups")
+	if groups == nil then groups = "" end
+	local groups = string.Explode(" ", groups)
+	for k = 0, self.Player:GetNumBodyGroups() - 1 do
+		self.Player:SetBodygroup(k, tonumber(groups[ k + 1 ]) or 0)
+	end
+	
+	if VoiceSetTranslate[modelname] then
+		self.Player.VoiceSet = VoiceSetTranslate[modelname]
+	elseif string.find(modelname, "female", 1, true) then
+		self.Player.VoiceSet = "female"
+	else
+		self.Player.VoiceSet = "male"
+	end
+end
+
 function PLAYER:ShouldDrawLocal() 
 	if self.TauntCam:ShouldDrawLocalPlayer(self.Player, self.Player:IsPlayingTaunt()) then return true end
 end
@@ -213,7 +256,7 @@ function PLAYER:ShouldTaunt(act)
 end
 
 function PLAYER:CanSuicide()
-	return true
+	return not GAMEMODE:GetRoundEnd()
 end
 
 function PLAYER:BindPress(bind, pressed)

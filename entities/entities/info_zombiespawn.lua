@@ -6,7 +6,7 @@ ENT.Model = Model("models/zombiespawner.mdl")
 
 if CLIENT then
 	ENT.GlowMat = Material("models/red2")
-	ENT.GlowColor = Color( 255, 200, 200 )
+	ENT.GlowColor = Color( 237, 37, 37 )
 	ENT.GlowSize = 128
 end
 
@@ -60,7 +60,7 @@ if SERVER then
 						if IsValid(self) then
 							local rally = self:GetRallyEntity()
 							if IsValid(rally) then
-								zombie:ForceGoto(rally:GetPos())
+								zombie:ForceGo(rally:GetPos())
 							end
 						end
 					end)
@@ -87,11 +87,13 @@ if SERVER then
 		elseif key == "rallyname" then
 			self.rallyName = value or self.rallyName
 			
-			if IsValid(self) then
-				for _, entity in ipairs(ents.FindByName(value)) do
+			timer.Simple(1, function()
+				if not IsValid(self) then return end
+				
+				for _, entity in pairs(ents.FindByName(value)) do
 					self:SetRallyEntity(entity)
 				end
-			end
+			end)
 		elseif key == "nodename" then
 			self.nodeName = value or self.nodeName
 		end
@@ -131,18 +133,14 @@ if SERVER then
 
 	local nodePoints = {}
 	function ENT:FindValidSpawnPoint()
-		if not self.m_bDidSpawnSetup then
-			table.Empty(nodePoints)
-			
-			if self.nodeName then
-				local node = ents.FindByName(self.nodeName)[1]
-				while IsValid(node) do
-					table.insert(nodePoints, node)
-					node = node:GetSpawnNode()
-				end
+		table.Empty(nodePoints)
+		
+		if self.nodeName then
+			local node = ents.FindByName(self.nodeName)[1]
+			while IsValid(node) do
+				table.insert(nodePoints, node)
+				node = node:GetSpawnNode()
 			end
-
-			self.m_bDidSpawnSetup = true
 		end
 
 		local vForward = self:GetAngles():Forward()
@@ -174,12 +172,20 @@ if SERVER then
 				
 				local tr = util.TraceHull({
 					start = vSpawnPoint,
-					endpos = vSpawnPoint - Vector( 0, 0, 256 ),
+					endpos = vSpawnPoint - Vector(0, 0, 256),
 					maxs = Vector(13, 13, 72),
 					mins = Vector(-13, -13, 0),
 					mask = MASK_NPCSOLID,
 					filter = ents.FindByClass("npc_*")
 				})
+				if IsValid(tr.Entity) and tr.Entity:IsPlayer() then
+					if node_idx ~= -1 then
+						table.remove(untried_nodes, node_idx)
+					end
+
+					vSpawnPoint:Zero()
+					continue
+				end
 				
 				vSpawnPoint = tr.HitPos
 			end

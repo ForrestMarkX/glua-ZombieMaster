@@ -80,15 +80,15 @@ end
 ENT.IsAmmo = false
 function ENT:Think()
 	if self.Destroyed then
-		local playercount = #team.GetPlayers(TEAM_SURVIVOR)
+		local playercount = player.GetCount()
 		if playercount > 64 then
-			self.itemcount = math.Round(self.itemcount * 3)
+			self.itemcount = math.Round(self.itemcount * 4)
 		elseif playercount > 32 then
-			self.itemcount = math.Round(self.itemcount * 2.5)
+			self.itemcount = math.Round(self.itemcount * 3)
 		elseif playercount > 16 then
-			self.itemcount = math.Round(self.itemcount * 2)
+			self.itemcount = math.Round(self.itemcount * 2.5)
 		elseif playercount > 8 then
-			self.itemcount = math.Round(self.itemcount * 1.2)
+			self.itemcount = math.Round(self.itemcount * 1.5)
 		end
 		
 		if bWasLarge then

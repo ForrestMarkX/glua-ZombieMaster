@@ -37,6 +37,8 @@ end
 
 function PLAYER:CreateMove(cmd)
 	if not isDragging and vgui.CursorVisible() then
+		if system.IsWindows() and not system.HasFocus() then return end
+		
 		local menuopen = hook.Call("IsMenuOpen", GAMEMODE)
 		if not menuopen then
 			local x, y = gui.MousePos()
@@ -104,12 +106,10 @@ function PLAYER:PreDraw(ply)
 			colour.b = math.Approach(0, 20, math.abs(0 - 20) * healthfrac)
 			
 			render.SetMaterial(healthcircleMaterial)
-			render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
-			render.DrawQuadEasy(pos, Vector(0, 0, -1), 40, 40, colour)
+			render.DrawQuadEasy(pos + Vector(0, 0, 1), Vector(0, 0, 1), 40, 40, colour)
 			
 			render.SetMaterial(healtheffect)
-			render.DrawQuadEasy(pos, Vector(0, 0, 1), 38, 28, Color(255, 255, 255))
-			render.DrawQuadEasy(pos, Vector(0, 0, -1), 38, 28, Color(255, 255, 255))
+			render.DrawQuadEasy(pos + Vector(0, 0, 1), Vector(0, 0, 1), 40, 40, Color(255, 255, 255))
 		end
 	end
 	
@@ -159,7 +159,7 @@ function PLAYER:PostThink()
 		local specplayer = players[self.Player.SpectatedPlayerKey]
 
 		if specplayer then
-			self.Player:SetPos(specplayer:GetPos())
+			self.Player:SetPos(specplayer:EyePos())
 		end
 	elseif self.Player:KeyPressed(IN_USE) then
 		self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) - 1
@@ -181,7 +181,7 @@ function PLAYER:PostThink()
 		local specplayer = players[self.Player.SpectatedPlayerKey]
 
 		if specplayer then
-			self.Player:SetPos(specplayer:GetPos())
+			self.Player:SetPos(specplayer:EyePos())
 		end
 	end
 end

@@ -39,15 +39,6 @@
 			"default"	"2"
 		}
 		
-		4
-		{
-			"name"		"zm_nocollideplayers"
-			"text"		"Players Don't Collide"
-			"help"		"Should players not collide with each other?"
-			"type"		"CheckBox"
-			"default"	"0"
-		}
-		
 		5
 		{
 			"name"		"zm_zombiemax"
@@ -235,6 +226,51 @@
 			"help"		"How much a Drifter will add to the global zombie population."
 			"type"		"Numeric"
 			"default"	"3"
+		}
+		
+		26
+		{
+			"name"		"zm_zombie_health"
+			"text"		"Shambler Health"
+			"help"		"How much health a Shambler will have on spawn."
+			"type"		"Numeric"
+			"default"	"55"
+		}
+		
+		27
+		{
+			"name"		"zm_fastzombie_health"
+			"text"		"Banshee Health"
+			"help"		"How much health a Banshee will have on spawn."
+			"type"		"Numeric"
+			"default"	"40"
+		}
+		
+		28
+		{
+			"name"		"zm_zombie_poison_health"
+			"text"		"Hulk Health"
+			"help"		"How much health a Hulk will have on spawn."
+			"type"		"Numeric"
+			"default"	"175"
+		}
+		
+		29
+		{
+			"name"		"zm_burnzombie_health"
+			"text"		"Immolator Health"
+			"help"		"How much health a Immolator will have on spawn."
+			"type"		"Numeric"
+			"default"	"110"
+		}
+		
+		30
+		{
+			"name"		"zm_dragzombie_health"
+			"text"		"Drifter Health"
+			"help"		"How much health a Drifter will have on spawn."
+			"type"		"Numeric"
+			"default"	"60"
 		}
 	}
 }

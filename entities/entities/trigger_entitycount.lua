@@ -80,3 +80,7 @@ function ENT:PassesTriggerFilters(entity)
 	local flag = self.m_iTriggerFlags
 	return (flag == 1 and entity:IsPlayer() and entity:IsSurvivor()) or (flag == 2 and entity:IsNPC()) or (flag == 3 and PassesFlag(entity))
 end
+
+function ENT:UpdateTransmitState()
+	return TRANSMIT_NEVER
+end

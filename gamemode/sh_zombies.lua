@@ -37,6 +37,7 @@ function GM:BuildZombieDataTable()
 			if basetable then
 				table.Inherit(v, basetable)
 			else
+				v.Base = zombieData["class_default"]
 				table.Inherit(v, zombieData["class_default"])
 			end
 		end

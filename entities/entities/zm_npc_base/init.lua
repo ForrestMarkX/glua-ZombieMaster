@@ -1,56 +1,78 @@
--- VST base from Vestige
-
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
-ENT.clawHitSounds = {
-	"npc/zombie/claw_strike1.wav",
-	"npc/zombie/claw_strike2.wav",
-	"npc/zombie/claw_strike3.wav"
+ENT.m_iClass 		= CLASS_ZOMBIE
+ENT.m_fMaxYawSpeed  = 20
+ENT.ClawHitSounds 	= "Zombie.AttackHit"
+ENT.ClawMissSounds 	= "Zombie.AttackMiss"
+ENT.AlertSounds		= "Zombie.Alert"
+ENT.DoorHitSound	= "npc/zombie/zombie_hit.wav"
+ENT.NextIdleMoan 	= CurTime()
+ENT.MoveSounds 		= {
+	"Zombie.FootstepRight",
+	"Zombie.ScuffRight"
 }
+ENT.AttackDamage	= 13
+ENT.AttackRange		= 70
+ENT.NextSwatScan 	= CurTime()
+ENT.CanSwatPhysicsObjects = true
+ENT.FootStepTime 	= 0.3
+ENT.MoveTime		= CurTime()
+ENT.NextBreakableScan = CurTime()
 
-ENT.clawMissSounds = {
-	"npc/zombie/claw_miss1.wav",
-	"npc/zombie/claw_miss2.wav"
-}
+CreateConVar("zm_zombieswatforcemin", "20000", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Specifies the min force that a zombie can apply to a prop when swatting it.")
+CreateConVar("zm_zombieswatforcemax", "70000", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Specifies the max force that a zombie can apply to a prop when swatting it.")
+CreateConVar("zm_zombieswatlift", "20000", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Specifies the amount of lift that is applied to swatted props.")
 
-ENT.doorHitSound	= "npc/zombie/zombie_hit.wav"
-ENT.nextIdle 	= 0
---ENT.DoorTime 	= 0
---ENT.VoiceTime 	= 0
-ENT.moveTime 	= 0
-ENT.sRagdoll 	= true
-ENT.isZombie	= true
-ENT.attackTime = CurTime()
---ENT.damagers = {}
+function ENT:MeleeAttack1Conditions(flDot, flDist)
+	if flDist > self:GetClawAttackRange() then
+		self:SetCondition(COND_TOO_FAR_TO_ATTACK)
+		return false
+	end
 
-ENT.moveSounds = {
-	"npc/zombie/foot1.wav",
-	"npc/zombie/foot2.wav",
-	"npc/zombie/foot3.wav"
-}
+	if flDot < 0.7 then
+		self:SetCondition(COND_NOT_FACING_ATTACK)
+		return false
+	end
 
-function ENT:Initialize()
-	self:SetModel("models/zombie/zm_classic.mdl")
-	
-	self:SetHullSizeNormal()
-	self:SetHullType(HULL_HUMAN)
-	
-	self:SetSolid(SOLID_BBOX)
-	self:SetMoveType(MOVETYPE_STEP)
-	self:CapabilitiesAdd(bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1))
-	
-	self:SetMaxYawSpeed(5000)
-	self:SetHealth(100)
-	
-	self:SetDamageForce(0)
-	
-	self:DropToFloor()
+	local vecMins = self:OBBMins()
+	local vecMaxs = self:OBBMaxs()
+	vecMins.z = vecMins.x
+	vecMaxs.z = vecMaxs.x
 
-	self:UpdateEnemy(self:FindEnemy())
-	self:SetSchedule(SCHED_IDLE_STAND)
+	local forward = self:GetAngles():Forward()
+	local tr = util.TraceHull({
+		start = self:WorldSpaceCenter(),
+		endpos = self:WorldSpaceCenter() + forward * self:GetClawAttackRange(),
+		filter = self,
+		mins = vecMins,
+		maxs = vecMaxs,
+		mask = MASK_NPCSOLID
+	})
+	if tr.fraction == 1.0 or not IsValid(tr.Entity) then
+		self:SetCondition(COND_TOO_FAR_TO_ATTACK)
+		return false
+	end
+
+	if tr.Entity == self:GetEnemy() or tr.Entity:IsNPC() then
+		self:SetCondition(COND_CAN_MELEE_ATTACK1)
+		return true
+	end
+
+	if tr.Entity:IsWorld() then
+		local vecToEnemy = self:GetEnemy():WorldSpaceCenter() - self:WorldSpaceCenter()
+		local vecTrace = tr.endpos - tr.startpos
+
+		if vecTrace:Length2DSqr() < vecToEnemy:Length2DSqr() then
+			//self:SetCondition(COND_ZOMBIE_LOCAL_MELEE_OBSTRUCTION)
+			return true
+		end
+	end
+
+	self:SetCondition(COND_TOO_FAR_TO_ATTACK)
+	return false
 end
 
 function ENT:PlayVoiceSound(sounds)
@@ -58,216 +80,390 @@ function ENT:PlayVoiceSound(sounds)
 	local soundType = type(sounds)
 	
 	if soundType == "table" then
-		local random = table.Random(sounds)
+		local random = sounds[math.random(#sounds)]
 	
 		output = random
-		self:EmitSound(random, 100, math.random(90, 100))
+		self:EmitSound(random)
 	elseif (soundType == "string") then
 		output = sounds
-		self:EmitSound(sounds, 100, math.random(90, 100))
+		self:EmitSound(sounds)
 	end
 	
 	return output
 end
 
-function ENT:Death(killer)
-	gamemode.Call("OnNPCKilled", self, killer, killer)
-	self:PlayVoiceSound(self.deathSounds)
+function ENT:GetRelationship(ent)
+	if self.PendingRemove then
+		return D_LI
+	elseif ent:IsNPC() and ent:Classify() == self.m_iClass then
+		return D_LI
+	elseif ent:IsPlayer() and ent:IsSurvivor() then
+		return D_HT
+	end
 	
-	self:SetSchedule(SCHED_FALL_TO_GROUND)
-	self:Remove()
+	return D_NU
 end
 
 function ENT:OnTakeDamage(dmginfo)
-	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
+	if self.Dead then return true end
+	
+	local attacker, inflictor = dmginfo:GetAttacker() or self, dmginfo:GetInflictor() or self
 	if GAMEMODE:CallZombieFunction(self:GetClass(), "OnTakeDamage", self, attacker, inflictor, dmginfo) then return true end
 	
 	local damage = dmginfo:GetDamage()
-	local position = dmginfo:GetDamagePosition()
+	self:SetHealth(self:Health() - damage)
 	
-	if not position then
-		position = self:GetPos() + Vector(0, 0, 50)
+	if damage > 0 and not self:IsOnFire() then
+		self:SpawnBloodEffect(dmginfo:GetDamagePosition(), damage)
+		
+		if self:Health() > 0 then
+			self:PlayVoiceSound(self.PainSounds)
+		end
 	end
 	
-	local effect = EffectData()
-		effect:SetOrigin(position)
-		effect:SetScale(4)
-	util.Effect("BloodImpact", effect, true, true)
-	
-	self:SetHealth(math.Clamp(self:Health() - damage, 0, 100))
-
 	if self:Health() <= 0 then
 		local killer = dmginfo:GetAttacker()	
 		if killer:IsPlayer() and killer:IsSurvivor() then
 			self:SetDamageForce((self:NearestPoint(killer:EyePos()) - killer:EyePos():GetNormalized()) * math.Clamp(damage * 3, 40, 300))
 		end
-		
-		timer.Simple(0, function() self:Death(killer) end)
-	end
-	
-	if damage > 0 then
-		self:PlayVoiceSound(self.painSounds)
-	end
-
-	return true
-end
-
-function ENT:FindEnemy()
-	if team.NumPlayers(TEAM_SURVIVOR) < 1 then
-		return NULL
-	else
-		local players = team.GetPlayers(TEAM_SURVIVOR)
-		local enemy = table.Random(players)
-		local distance = 2048
-		
-		for k, v in pairs(players) do
-			local compare = v:GetPos():Distance(self:GetPos())
-			
-			if (compare < distance and v:Alive()) then
-				enemy = v
-				distance = compare
-			end
-		end
-		
-		return enemy
 	end
 end
 
-function ENT:UpdateEnemy(enemy)
-	if enemy and enemy:IsValid() and enemy:Alive() and enemy:IsSurvivor() then
-		self:SetEnemy(enemy, true)
-		self:UpdateEnemyMemory(enemy, enemy:GetPos())
-	else
-		self:SetEnemy(NULL)
-	end
+function ENT:SpawnBloodEffect(pos, damage)
+	local effect = EffectData()
+		effect:SetOrigin(pos)
+		effect:SetScale(4)
+		effect:SetEntity(self)
+		effect:SetColor(self:GetBloodColor())
+	util.Effect("BloodImpact", effect, true, true)	
+	
+	local effect = EffectData()
+		effect:SetOrigin(pos)
+		effect:SetScale(6)
+		effect:SetEntity(self)
+		effect:SetColor(self:GetBloodColor())
+		effect:SetFlags(3)
+	util.Effect("bloodspray", effect, true, true)
 end
 
-function ENT:Think()
-	if self.nextIdle < CurTime() then
-		self:PlayVoiceSound(self.tauntSounds)
-		self.nextIdle = CurTime() + math.random(15, 25)
+function ENT:PlayAttackSequence()
+	self:SetSchedule(SCHED_MELEE_ATTACK1)
+	
+	if self.AttackSounds then
+		self:PlayVoiceSound(self.AttackSounds)
 	end
 	
-	if not self.attack and self.nextPhysics and self.nextPhysics < CurTime() then
-		local entity = NULL
-		local entities = ents.GetAll()
-		
-		for k, v in pairs(entities) do
-			local class = v:GetClass()
-			
-			if (string.find(class, "prop_physics*") or class == "func_breakable") then
-				if (self:GetPos() + Vector(0, 0, 25)):Distance(v:GetPos()) < 70 then
-					entity = v
-					break
-				end
-			end
-		end
-
-		if IsValid(entity) then
-			local trace = {}
-			trace.start = self:GetPos()
-			trace.endpos = entity:GetPos()
-			trace.filter = {self}
-			
-			local tr = util.TraceLine(trace)
-			
-			if not tr.HitWorld then
-				local angles = (entity:GetPos() - self:GetPos()):Angle()
-				
-				self:ResetSequence(8)
-				self:SetAngles(Angle(0, angles.y, 0))
-
-				self.isMoving = false
-				
-				local class = entity:GetClass()
-				
-				if string.find(class, "prop_physics*") then
-					local normal = (entity:GetPos() - self:GetPos()):GetNormalized()
-					local velocity = 10000 * normal
-					local physics = entity:GetPhysicsObject()
-					
-					if IsValid(physics) then
-						physics:ApplyForceOffset(velocity, entity:GetPos())
-					else
-						physics:SetVelocity(velocity)
-					end
-				elseif class == "func_breakable" then
-					entity:Fire("Break", "", 0.1)
-				end
-				
-				self:PlayVoiceSound(self.doorHitSound)
-			end
-		end
-		
-		self.nextPhysics = CurTime() + 5
-	end
-	
-	if self.attack and self.attackTime + self.nextAttack < CurTime() then
-		local enemy = self:GetEnemy()
-		local distance = self.hitDistance or 70
-		
-		if IsValid(enemy) and enemy:GetPos():Distance(self:GetPos()) < distance then
-			local effect = EffectData()
-				effect:SetOrigin(enemy:GetPos() + Vector(0, 0, 40))
-				effect:SetScale(2)
-			util.Effect("BloodImpact", effect, true, true)
-		
-			enemy:TakeDamage(self.damage, self)
-			
-			self:PlayVoiceSound(self.clawHitSounds)
-		else
-			self:PlayVoiceSound(self.clawMissSounds)
-		end
-		
-		self.attack = false
-		self.attackTime = CurTime()
-	end
-	
-	if self.isMoving and self.moveTime < CurTime() then
-		local sound = self:PlayVoiceSound(self.moveSounds)
-		self.moveTime = CurTime() + SoundDuration(sound) + math.random(0.5, 1)
-	end
-	
-	if self.CustomThink then
-		self:CustomThink()
-	end
-end
-
-function ENT:GetRelationship(entity)
-	if entity:IsValid() and entity:IsPlayer() and entity:IsSurvivor() then
-		return D_HT
-	end
-	
-	return D_LI
+	local seq = self:SelectWeightedSequence(ACT_MELEE_ATTACK1)
+	local len = self:SequenceDuration(seq)
+	self.AttackEnd = CurTime() + len
+	self.AttackTime = CurTime() + (len * 0.55)
 end
 
 function ENT:SelectSchedule()
-	local enemy = self:GetEnemy()
-	local sched = SCHED_IDLE_STAND
+	if self.Dead then return end
 	
-	if enemy and enemy:IsValid() then
-		local melee = self:HasCondition(23)
-		
-		if melee and not self.attack then 
-			sched = SCHED_MELEE_ATTACK1
-			
-			self.isMoving = false
-			self.attack = true
-			
-			if self.attackSounds then
-				self:PlayVoiceSound(self.attackSounds)
-			end
+	if self:HasCondition(COND_LIGHT_DAMAGE) then
+		self:SetSchedule(SCHED_SMALL_FLINCH)
+	elseif self:HasCondition(COND_HEAVY_DAMAGE) then
+		self:SetSchedule(SCHED_BIG_FLINCH)
+	elseif self:HasCondition(COND_PHYSICS_DAMAGE) then
+		self:SetSchedule(SCHED_FLINCH_PHYSICS)
+	end
+	
+	if self:HasCondition(COND_RECEIVED_ORDERS) then
+		self.FoundBreakable = false
+		self.BreakableEnt = nil
+		self.NextBreakableScan = CurTime() + 5.0
+	end
+	
+	local enemy = self:GetEnemy()
+	if IsValid(enemy) then
+		local melee = self:MeleeAttack1Conditions(self:GetPos():Dot(enemy:GetPos()), self:GetPos():Distance(enemy:GetPos())) or self:HasCondition(COND_CAN_MELEE_ATTACK1)
+		if melee and not self.IsAttacking then 
+			self.IsAttacking = true
+			self:PlayAttackSequence()
 		else
-			sched = SCHED_CHASE_ENEMY
-			
-			self.isMoving = true
-			self.attack = false
+			self:SetSchedule(SCHED_CHASE_ENEMY)
+			self.IsAttacking = false
 		end
 	else
 		self:UpdateEnemy(self:FindEnemy())
 	end
 	
-	self:SetSchedule(sched)
+	--self:SetSchedule(SCHED_IDLE_WANDER)
+end
+
+function ENT:CalculateMeleeDamageForce(info, vecMeleeDir, vecForceOrigin, flScale)
+	info:SetDamagePosition(vecForceOrigin)
+	
+	local flForceScale = info:GetBaseDamage() * (75 * 4)
+	local vecForce = vecMeleeDir
+	vecForce:Normalize()
+	
+	vecForce = vecForce * flForceScale;
+	vecForce = vecForce * GetConVar("phys_pushscale"):GetFloat()
+	
+	if flScale then
+		vecForce = vecForce * flScale
+	end
+	
+	info:SetDamageForce(vecForce)
+end
+
+function ENT:CheckTraceHullAttack(vStart, vEnd, mins, maxs, iDamage, iDmgType, flForceScale, bDamageAnyNPC)
+	local dmgInfo = DamageInfo()
+	dmgInfo:SetAttacker(self)
+	dmgInfo:SetInflictor(self)
+	dmgInfo:SetDamage(iDamage)
+	dmgInfo:SetDamageType(iDmgType)
+	
+	local tr = util.TraceHull({
+		start = vStart,
+		endpos = vEnd,
+		filter = self,
+		mins = mins,
+		maxs = maxs,
+		mask = MASK_SHOT_HULL
+	})
+	local pEntity = tr.Entity
+	if not IsValid(pEntity) or (pEntity:IsPlayer() and not pEntity:Alive()) then
+		return NULL
+	end
+
+	// Must hate the hit entity
+	if self:GetRelationship(pEntity) == D_HT then
+		if iDamage > 0 then
+			self:CalculateMeleeDamageForce(dmgInfo, (vEnd - vStart), vStart, flForceScale)
+			pEntity:TakeDamageInfo(dmgInfo)
+			
+			if bit.band(iDmgType, DMG_BURN) then
+				pEntity:Ignite(2)
+			end
+		end
+	end
+	
+	return pEntity
+end
+
+function ENT:ClawAttack(flDist, iDamage, qaViewPunch, vecVelocityPunch)
+	local iDamageType = DMG_SLASH
+	
+	if self:IsOnFire() then
+		iDamage = iDamage * (math.Rand(1, 2))
+		iDamageType = DMG_BURN
+	end
+
+	if IsValid(self:GetEnemy()) then
+		local tr = util.TraceHull({
+			start = self:WorldSpaceCenter(),
+			endpos = self:GetEnemy():WorldSpaceCenter(),
+			filter = self,
+			mins = -Vector(8,8,8),
+			maxs = Vector(8,8,8),
+			mask = MASK_SOLID_BRUSHONLY
+		})
+		
+		if tr.Fraction < 1 then
+			return NULL
+		end
+	end
+
+	local vecMins = self:OBBMins()
+	local vecMaxs = self:OBBMaxs()
+	vecMins.z = vecMins.x
+	vecMaxs.z = vecMaxs.x
+
+	local pHurt = self:CheckTraceHullAttack(self:EyePos(), self:EyePos() + self:EyeAngles():Forward() * flDist, vecMins, vecMaxs, iDamage, iDamageType)
+	if IsValid(pHurt) then
+		self:PlayVoiceSound(self.ClawHitSounds)
+
+		local pPlayer = pHurt
+		if pPlayer ~= NULL and pPlayer:IsPlayer() and not pPlayer:IsFlagSet(FL_GODMODE) then
+			pPlayer:ViewPunch(qaViewPunch)
+			pPlayer:SetVelocity(pPlayer:GetVelocity() + vecVelocityPunch)
+			
+			local flNoise = 6.0
+			local traceHit
+
+			for i=0, 6 do
+				local vecTraceDir
+				
+				if math.random(0, 10) == 5 then
+					vecTraceDir = pPlayer:EyePos()
+					vecTraceDir.z = vecTraceDir.z - math.Rand(-flNoise, 0.0)
+				else
+					local dir = pPlayer:GetPos() - self:GetPos()
+					dir:Normalize()
+
+					local angles = dir:Angle()
+					local forward = angles:Forward()
+
+					vecTraceDir = self:WorldSpaceCenter() + (forward * 128 )
+
+					vecTraceDir.x = vecTraceDir.x + math.Rand(-flNoise, flNoise)
+					vecTraceDir.y = vecTraceDir.y + math.Rand(-flNoise, flNoise)
+					vecTraceDir.z = vecTraceDir.z + math.Rand(-flNoise, flNoise + 10.0)
+				end
+
+				traceHit = util.TraceLine({
+					start = self:WorldSpaceCenter(),
+					endpos = vecTraceDir,
+					filter = self,
+					mask = MASK_SHOT_HULL
+				})
+				
+				local effect = EffectData()
+					effect:SetOrigin(traceHit.HitPos + Vector(0, 0, 40))
+					effect:SetScale(2)
+				util.Effect("BloodImpact", effect, true, true)
+			end
+		end
+	else 
+		self:PlayVoiceSound(self.ClawMissSounds)
+	end
+
+	return pHurt
+end
+
+function ENT:FindNearestPhysicsObject()
+	local entity = NULL
+	local entities = ents.GetAll()
+	
+	for k, v in pairs(entities) do
+		local class = v:GetClass()
+		
+		if (string.find(class, "prop_physics*") or class == "func_breakable") then
+			if (self:GetPos() + Vector(0, 0, 25)):Distance(v:GetPos()) < 70 then
+				entity = v
+				break
+			end
+		end
+	end
+
+	if IsValid(entity) then
+		local trace = {}
+		trace.start = self:GetPos()
+		trace.endpos = entity:GetPos()
+		trace.filter = {self}
+		
+		local tr = util.TraceLine(trace)
+		
+		if not tr.HitWorld then
+			return entity
+		end
+	end
+end
+
+function ENT:SwatObject(pPhysObj, direction)
+	local targetmass = pPhysObj:GetMass()
+	local liftforce = math.Remap(targetmass, 5, 350, 3000, GetConVar("zm_zombieswatlift"):GetFloat())
+	local uplift = Vector(0, 0, liftforce)
+	local swatforce = math.Remap(targetmass, 5, 500, GetConVar("zm_zombieswatforcemin"):GetFloat(), GetConVar("zm_zombieswatforcemax"):GetFloat())
+	
+	pPhysObj:ApplyForceCenter(direction * swatforce + uplift)
+	self.ePhysicsEnt = nil
+end
+
+function ENT:GetClawAttackRange()
+	return self.AttackRange
+end
+
+function ENT:PerformAttack()
+	if self.IsAttacking then
+		local forward = self:GetAngles():Forward()
+		local qaPunch = Angle(45, math.random(-5,5), math.random(-5,5))
+		
+		forward = forward * 200
+		
+		self:ClawAttack(self:GetClawAttackRange(), self.AttackDamage, qaPunch, forward)
+	elseif self.bPlayingSwatSeq then
+		local swat_ent = self.ePhysicsEnt
+		if IsValid(self.ePhysicsEnt) then
+			local phys = self.ePhysicsEnt:GetPhysicsObject()
+			if IsValid(phys) then
+				self:PlayVoiceSound(self.DoorHitSound)
+				
+				if self.ePhysicsEnt:GetClass() == "func_breakable" then
+					self.ePhysicsEnt:TakeDamage(self.AttackDamage, self, self)
+					self.bPlayingSwatSeq = false
+					return 
+				end
+
+				local physicsCenter = self:LocalToWorld(phys:GetMassCenter())
+				
+				if not IsValid(self:GetEnemy()) then 
+					self.bPlayingSwatSeq = false
+					return 
+				end
+				
+				local v = self:GetEnemy():WorldSpaceCenter() - physicsCenter
+				v:Normalize()
+				
+				self:SwatObject(phys, v)
+			end
+		end
+		
+		self.bPlayingSwatSeq = false
+	end
+end
+
+function ENT:PerformSwatScan()
+	local swatent = self:FindNearestPhysicsObject()
+	if IsValid(swatent) then
+		local enemy = self:GetEnemy()
+		if IsValid(enemy) then
+			self.bPlayingSwatSeq = true
+			self.ePhysicsEnt = swatent
+			
+			if not self.IsSwatting then
+				self:PlayAttackSequence()
+				self.IsSwatting = true
+			end
+		end
+	else
+		self.ePhysicsEnt = nil
+	end
+end
+
+function ENT:PerformAttackEnd()
+	self.IsAttacking = false
+	self.IsSwatting = false
+end
+
+function ENT:Think()
+	if self.Dead then return end
+	
+	if self.NextIdleMoan < CurTime() then
+		self:PlayVoiceSound(self.MoanSounds)
+		self.NextIdleMoan = CurTime() + math.random(15, 25)
+	end
+	
+	if not self.IsAttacking and CurTime() >= self.NextSwatScan then
+		self:PerformSwatScan()
+		self.NextSwatScan = CurTime() + math.random(5, 15)
+	end
+	
+	if self.IsAttacking or self.bPlayingSwatSeq then
+		if self.AttackTime and self.AttackTime < CurTime() then
+			self:PerformAttack()
+			self.AttackTime = nil
+		end
+		
+		if self.AttackEnd and self.AttackEnd < CurTime() then
+			self:PerformAttackEnd()
+		end
+	end
+
+	if self:IsMoving() and self:IsOnGround() and self:GetGroundEntity() ~= nil then
+		if self.MoveTime < CurTime() then
+			self:PlayVoiceSound(self.MoveSounds)
+			self.MoveTime = CurTime() + self.FootStepTime
+		end
+	end
+	
+	if self.CustomThink then
+		self:CustomThink()
+	end
 end
 
 function ENT:Classify()

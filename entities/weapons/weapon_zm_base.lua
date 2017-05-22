@@ -33,7 +33,7 @@ SWEP.TracerType                 = "Tracer"
 SWEP.InfiniteAmmo               = false
 SWEP.DeploySpeed                = 1
 
-SWEP.Primary.Sound				= "Weapon_AK47.Single"
+SWEP.Primary.Sound				= ""
 SWEP.Primary.NumShots			= 1
 SWEP.Primary.Recoil				= 0
 
@@ -42,7 +42,7 @@ SWEP.IsMelee					= false
 
 SWEP.Primary.ClipSize			= -1
 SWEP.Primary.DefaultClip		= -1
-SWEP.Primary.Ammo			    = "smg1"
+SWEP.Primary.Ammo			    = "none"
 SWEP.Primary.RandomPitch		= false
 SWEP.Primary.MinPitch			= 100
 SWEP.Primary.MaxPitch			= 100
@@ -83,6 +83,9 @@ function SWEP:Initialize()
 
 	self:SetNextIdle(0)
     self:SetDeploySpeed(self.DeploySpeed)
+	
+	self:SetSolid(SOLID_BBOX)
+	self:SetCollisionBounds(self:OBBMins(), self:OBBMaxs())
 end
 
 function SWEP:PlayPrimaryFireSound()
@@ -108,7 +111,9 @@ function SWEP:PrimaryAttack()
 	
 	self:PlayPrimaryFireSound()
 	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-	self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
+	
+	local damage = Either(self.Primary.Damage ~= nil, self.Primary.Damage, math.random(self.Primary.MinDamage or 0, self.Primary.MaxDamage or 0))
+	self:ShootBullet(damage, self.Primary.NumShots, self.Primary.Cone)
 	
 	if not self.InfiniteAmmo then
 		self:TakePrimaryAmmo(1)
@@ -126,13 +131,15 @@ function SWEP:DefaultCallBack(tr, dmginfo)
 end
 
 function SWEP:ShootBullet(dmg, numbul, cone)
+	local owner = self:GetOwner()
+	
 	numbul 	= numbul or 1
 	cone 	= cone or 0.01
 
 	local bullet = {}
 	bullet.Num 		= numbul
-	bullet.Src 		= self.Owner:GetShootPos()
-	bullet.Dir 		= self.Owner:GetAimVector()
+	bullet.Src 		= owner:GetShootPos()
+	bullet.Dir 		= owner:GetAimVector()
 	bullet.Spread 	= Vector(cone, cone, 0)
 	bullet.Tracer	= self.TracerFreq
 	bullet.TracerName = self.TracerType
@@ -140,8 +147,8 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	bullet.Damage	= dmg
 	bullet.Callback = self.DefaultCallBack
 
-	local PlayerPos = self.Owner:GetShootPos()
-	local PlayerAim = self.Owner:GetAimVector()
+	local PlayerPos = owner:GetShootPos()
+	local PlayerAim = owner:GetAimVector()
 
 	local fx = EffectData()
 	fx:SetEntity(self)
@@ -151,15 +158,17 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	if self.UseCustomMuzzleFlash then
 		util.Effect(self.MuzzleEffect,fx)
 	else
-		self.Owner:MuzzleFlash()
+		owner:MuzzleFlash()
 	end
 
-	self.Owner:FireBullets(bullet)
+	owner:FireBullets(bullet)
 	
-	if self.Owner.DoAttackEvent then
-		self.Owner:DoAttackEvent()
+	if not IsValid(owner) then return end
+	
+	if owner.DoAttackEvent then
+		owner:DoAttackEvent()
 	else
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
+		owner:SetAnimation(PLAYER_ATTACK1)
 	end
 	
 	self:SetNextIdle(CurTime() + self:SequenceDuration())
@@ -189,8 +198,7 @@ function SWEP:EquipAmmo(ply)
 end
 
 function SWEP:OnDrop()
-	self:SetSolid(SOLID_BBOX)
-	self:SetCollisionBounds(self:OBBMins() * 4, self:OBBMaxs() * 4)
+	self.Dropped = true
 end
 
 if not CLIENT then return end

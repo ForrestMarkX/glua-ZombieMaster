@@ -6,7 +6,7 @@ ENT.Model = Model("models/manipulatable.mdl")
 
 if CLIENT then
 	ENT.GlowMat = Material("models/orange")
-	ENT.GlowColor = Color( 255, 200, 200 )
+	ENT.GlowColor = Color( 248, 124, 0 )
 	ENT.GlowSize = 128
 end
 

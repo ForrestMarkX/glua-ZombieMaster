@@ -59,12 +59,16 @@ CreateConVar("zm_zombiemax", "50", { FCVAR_ARCHIVE, FCVAR_NOTIFY, FCVAR_REPLICAT
 CreateConVar("zm_ambush_triggerrange", "96", FCVAR_REPLICATED, "The range ambush trigger points have.")
 CreateConVar("zm_max_ragdolls", "15", FCVAR_REPLICATED, "Max ragdolls that can exist at one time.")
 CreateConVar("zm_maxresource_increase", "35", FCVAR_REPLICATED, "Max increase in resources and income based on player count.")
-CreateConVar("zm_ragdoll_fadetime", "30", FCVAR_REPLICATED, "Time before ragdolls will start to fadeout.")
 
-//Could probably just use the sk_ cvars but oh well
 CreateConVar("zm_maxammo_pistol", "80", FCVAR_REPLICATED, "Max pistol ammo that players can hold.")
 CreateConVar("zm_maxammo_smg1", "60", FCVAR_REPLICATED, "Max smg1 ammo that players can hold.")
 CreateConVar("zm_maxammo_357", "20", FCVAR_REPLICATED, "Max 357 ammo that players can hold.")
 CreateConVar("zm_maxammo_buckshot", "24", FCVAR_REPLICATED, "Max buckshot ammo that players can hold.")
 CreateConVar("zm_maxammo_revolver", "24", FCVAR_REPLICATED, "Max revolver ammo that players can hold.")
 CreateConVar("zm_maxammo_molotov", "3", FCVAR_REPLICATED, "Max molotov ammo that players can hold.")
+
+CreateConVar("zm_zombie_health", "55", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Shambler.")
+CreateConVar("zm_fastzombie_health", "40", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Banshee.")
+CreateConVar("zm_zombie_poison_health", "175", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Hulk.")
+CreateConVar("zm_burnzombie_health", "110", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Immolator.")
+CreateConVar("zm_dragzombie_health", "60", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Drifter.")

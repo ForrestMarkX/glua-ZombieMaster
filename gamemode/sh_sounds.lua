@@ -555,7 +555,7 @@ sound.Add( {
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = "npc/banshee/fz_frenzy1.wav"
+	sound = {"npc/banshee/fz_frenzy1.wav", "npc/banshee/fz_frenzy2.wav", "npc/banshee/fz_frenzy3.wav", "npc/banshee/fz_frenzy4.wav", "npc/banshee/fz_frenzy5.wav", "npc/banshee/fz_frenzy6.wav", "npc/banshee/fz_frenzy7.wav"}
 } )
 
 sound.Add( {
@@ -564,7 +564,7 @@ sound.Add( {
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = "npc/banshee/breathe_loop1.wav"
+	sound = "common/null.wav"
 } )
 
 sound.Add( {
@@ -575,3 +575,94 @@ sound.Add( {
 	pitch = 100,
 	sound = "npc/banshee/gurgle_loop1.wav"
 } )
+
+sound.Add( {
+	name = "NPC_DragZombie.Die",
+	channel = CHAN_VOICE,
+	volume = 1.0,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/barnacle/barnacle_tongue_pull1.wav", "npc/barnacle/barnacle_tongue_pull2.wav", "npc/barnacle/barnacle_tongue_pull3.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_DragZombie.Idle",
+	channel = CHAN_VOICE,
+	volume = 0.600,
+	level = 60,
+	pitch = {95, 105},
+	sound = {"npc/barnacle/barnacle_digesting1.wav", "npc/barnacle/barnacle_digesting2.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_DragZombie.Pain",
+	channel = CHAN_VOICE,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/barnacle/barnacle_pull1.wav", "npc/barnacle/barnacle_pull2.wav", "npc/barnacle/barnacle_pull3.wav", "npc/barnacle/barnacle_pull4.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_DragZombie.Alert",
+	channel = CHAN_VOICE,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = {"npc/barnacle/barnacle_pull1.wav", "npc/barnacle/barnacle_pull2.wav", "npc/barnacle/barnacle_pull3.wav", "npc/barnacle/barnacle_pull4.wav"}
+} )
+
+sound.Add( {
+	name = "NPC_DragZombie.MeleeAttack",
+	channel = CHAN_VOICE,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = "npc/antlion_grub/squashed.wav"
+} )
+
+sound.Add( {
+	name = "NPC_BurnZombie.Pain",
+	channel = CHAN_BODY,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = "npc/barnacle/neck_snap1.wav"
+} )
+
+sound.Add( {
+	name = "NPC_BurnZombie.Die",
+	channel = CHAN_BODY,
+	volume = 0.600,
+	level = 75,
+	pitch = {95, 105},
+	sound = "npc/barnacle/neck_snap2.wav"
+} )
+
+sound.Add( {
+	name = "NPC_BurnZombie.Alert",
+	channel = CHAN_ITEM,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/stalker/go_alert2.wav"
+} )
+
+sound.Add( {
+	name = "NPC_BurnZombie.Idle",
+	channel = CHAN_ITEM,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/stalker/breathing3.wav"
+} )
+
+sound.Add( {
+	name = "NPC_BurnZombie.Scream",
+	channel = CHAN_ITEM,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = "npc/stalker/go_alert2a.wav"
+} )
+

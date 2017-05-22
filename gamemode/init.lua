@@ -171,26 +171,8 @@ function GM:ConvertWeapon(wep)
 		ent:SetAngles(wep:GetAngles())
 		ent:Spawn()
 		
-		ent:SetSolid(SOLID_BBOX)
-		ent:SetCollisionBounds(ent:OBBMins() * 4, ent:OBBMaxs() * 4)
-		
 		wep:Remove()
 	end
-end
-
-function GM:SetupNPCZombieModels(ent)
-	if not IsValid(ent) then return end
-	
-	local zombie = self:GetZombieData(ent:GetClass())
-	if not zombie then return end
-	
-	local models = zombie.Model
-	if not models then return end
-	
-	local randmodel = models[math.random(#models)]
-	if not randmodel then return end
-	
-	ent:SetModel(randmodel)
 end
 
 function GM:CreateCustomWeapons(ent)
@@ -203,8 +185,6 @@ function GM:CreateCustomWeapons(ent)
 				wep:SetPos(ent:GetPos())
 				wep:SetAngles(ent:GetAngles())
 				wep:Spawn()
-				wep:SetSolid(SOLID_BBOX)
-				wep:SetCollisionBounds(ent:OBBMins() * 4, ent:OBBMaxs() * 4)
 				
 				return wep
 			end
@@ -223,7 +203,6 @@ function GM:CreateCustomAmmo(ent)
 				ammoent:SetPos(ent:GetPos())
 				ammoent:SetAngles(ent:GetAngles())
 				ammoent:Spawn()
-				ammoent:SetCollisionBounds(ammoent:OBBMins() * 2, ammoent:OBBMaxs() * 2)
 				
 				return ammoent
 			end
@@ -240,8 +219,6 @@ function GM:OnEntityCreated(ent)
 	
 	if ent:IsWeapon() then
 		if not ent.Dropped then ent = hook.Call("CreateCustomWeapons", GAMEMODE, ent) end
-		ent:SetSolid(SOLID_BBOX)
-		ent:SetCollisionBounds(ent:OBBMins() * 4, ent:OBBMaxs() * 4)
 		self:ConvertWeapon(ent)
 	end
 	
@@ -258,9 +235,9 @@ function GM:OnEntityCreated(ent)
 		timer.Simple(0, function()
 			if not IsValid(ent) then return end
 			
-			if string.find(ent:GetClass(), "fastzombie") then
-				ent:SetModelScale(0.855)
-				ent:SetHullSizeNormal()
+			if not ent.SpawnedFromNode then
+				self:CallZombieFunction(ent:GetClass(), "OnSpawned", ent)
+				self:CallZombieFunction(ent:GetClass(), "SetupModel", ent)
 			end
 			
 			if ent.GetNumBodyGroups and ent.SetBodyGroup then
@@ -269,7 +246,6 @@ function GM:OnEntityCreated(ent)
 				end
 			end
 			
-			hook.Call("SetupNPCZombieModels", self, ent)
 			ent:SetShouldServerRagdoll(false)
 		end)
 		
@@ -281,17 +257,20 @@ end
 
 function GM:AddNPCFriends(npc, ent)
 	local zombie = self:GetZombieData(npc:GetClass())
-	if not zombie then return end
+	if not zombie or not zombie.Friends then return end
 	
 	local zombiefriends = {}
 	for _, fri in pairs(zombie.Friends) do
 		if fri ~= npc:GetClass() then
-			table.Merge(zombiefriends, ents.FindByClass(fri))
+			local fritab = ents.FindByClass(fri)
+			if fritab then
+				table.Merge(zombiefriends, fritab)
+			end
 		end
 	end
 	
 	for _, zom in pairs(zombiefriends) do
-		npc:AddEntityRelationship(zom, D_NU, 99)
+		npc:AddEntityRelationship(zom, D_LI, 99)
 	end
 end
 
@@ -335,6 +314,8 @@ function GM:PostGamemodeLoaded()
 	util.AddNetworkString("zm_switch_to_defense")
 	util.AddNetworkString("zm_switch_to_offense")
 	util.AddNetworkString("zm_player_ready")
+	util.AddNetworkString("zm_create_ambush_point")
+	util.AddNetworkString("zm_cling_ceiling")
 	
 	game.ConsoleCommand("fire_dmgscale 1\nmp_falldamage 1\nsv_gravity 600\n")
 	
@@ -596,6 +577,7 @@ function GM:PreRestartRound()
 	for _, pl in pairs(player.GetAll()) do
 		pl:StripWeapons()
 		pl:Spectate(OBS_MODE_ROAMING)
+		pl:GodDisable()
 	end
 end
 
@@ -633,7 +615,7 @@ function GM:CreateGibs(pos, headoffset)
 end
 
 function GM:TeamVictorious(won, message)
-	if player.GetCount() == 1 then return end
+	if player.GetCount() == 1 or self:GetRoundEnd() then return end
 	
 	local winscore = Either(won, HUMAN_WIN_SCORE, HUMAN_LOSS_SCORE)
 	local winningteam = Either(won, TEAM_SURVIVOR, TEAM_ZOMBIEMASTER)
@@ -662,6 +644,10 @@ function GM:TeamVictorious(won, message)
 			ply:PrintTranslatedMessage(HUD_PRINTTALK, message)
 		else
 			ply:PrintMessage(HUD_PRINTTALK, message)
+		end
+		
+		if ply:IsSurvivor() then
+			ply:GodEnable()
 		end
 	end
 	
@@ -797,6 +783,12 @@ function GM:EntityTakeDamage(ent, dmginfo)
 	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
 	local damage = dmginfo:GetDamage()
 	
+	if attacker:IsNPC() then
+		self:CallZombieFunction(attacker:GetClass(), "OnDamagedEnt", attacker, ent, dmginfo)
+	elseif inflictor:IsNPC() then
+		self:CallZombieFunction(inflictor:GetClass(), "OnDamagedEnt", inflictor, ent, dmginfo)
+	end
+
 	if ent:IsPlayerHolding() and damage > 10 then
 		DropEntityIfHeld(ent)
 		ent:SetCollisionGroup(ent._OldCG or COLLISION_GROUP_NONE)
@@ -874,6 +866,7 @@ function GM:GetRoundStartTime()
 end
 
 function GM:PlayerPostThink(pl)
+	self:CheckIfPlayerStuck(pl)
 	player_manager.RunClass(pl, "PostThink")
 end
 
@@ -897,8 +890,6 @@ local NextTick = 0
 function GM:Think()
 	local time = CurTime()
 
-	-- Originally from TTT
-	-- Why is this type of for loop faster?
 	local players = player.GetAll()
 	for i= 1, #players do
 		local ply = players[i]
@@ -907,6 +898,23 @@ function GM:Think()
 	
 	if NextTick <= time then
 		NextTick = time + 1
+		
+		local playercount = player.GetCount()
+		if playercount >= 32 then
+			if not self.SetNoCollidePlayers then
+				for i= 1, #players do
+					local ply = players[i]
+					ply:SetNoCollideWithTeammates(true)
+				end
+				
+				self.SetNoCollidePlayers = true
+			end
+		elseif self.SetNoCollidePlayers then
+			for i= 1, #players do
+				local ply = players[i]
+				ply:SetNoCollideWithTeammates(false)
+			end
+		end
 		
 		if self:GetRoundActive() and not self:GetRoundEnd() and (team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 and team.NumPlayers(TEAM_SURVIVOR) >= 1) then
 			hook.Call("SetupZombieMasterVolunteers", self, true)
@@ -1075,6 +1083,15 @@ function GM:GetZombieMasterVolunteer()
 end
 
 function GM:AllowPlayerPickup(pl, ent)
+	if player_manager.RunClass(pl, "AllowPickup", ent) then	
+		pl.HeldObject = ent
+		ent._OldCG = Either(ent:GetCollisionGroup() == COLLISION_GROUP_WEAPON, COLLISION_GROUP_NONE, ent:GetCollisionGroup())
+		ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+		pl:PickupObject(ent)
+		
+		return false
+	end
+	
 	return false
 end
 
@@ -1083,28 +1100,27 @@ function GM:PlayerCanHearPlayersVoice(listener, talker)
 end
 
 function GM:FindUseEntity(ply, defaultEnt)
-	if not IsValid(defaultEnt) then
-		local tr = util.TraceHull({
-			start = ply:EyePos(),
-			endpos = ply:EyePos() + ply:EyeAngles():Forward() * 64,
-			mins = Vector(-8, -8, -8),
-			maxs = Vector(8, 8, 8),	
-			mask = bit.bor(MASK_SHOT, CONTENTS_GRATE),
-			filter = player.GetAll()
-		})
-		local ent = tr.Entity
-		
-		if IsValid(ent) then 
-			return ent 
+	local tr = util.TraceHull({
+		start = ply:EyePos(),
+		endpos = ply:EyePos() + ply:EyeAngles():Forward() * 64,
+		mins = Vector(-8, -8, -8),
+		maxs = Vector(8, 8, 8),	
+		mask = bit.bor(MASK_SHOT, CONTENTS_GRATE),
+		filter = function(ent)
+			if ent:IsPlayer() or ent:IsWeapon() or ent:GetClass() == "item_zm_ammo" then return false end
+			return true
 		end
+	})
+	local ent = tr.Entity
+	if IsValid(ent) then
+		return ent
+	else
+		return defaultEnt
 	end
-	
-	return defaultEnt
 end
 
 function GM:PlayerUse(pl, ent)
 	if not pl:Alive() or pl:IsZM() or pl:IsSpectator() then return false end
-	if ent:IsPlayerHolding() then return false end
 
 	local entclass = ent:GetClass()
 	if entclass == "prop_door_rotating" then
@@ -1112,23 +1128,6 @@ function GM:PlayerUse(pl, ent)
 			return false
 		end
 		ent.m_AntiDoorSpam = CurTime() + 0.85
-    elseif pl:IsSurvivor() then
-		local phys = ent:GetPhysicsObject()
-		if ent:GetMoveType() == MOVETYPE_VPHYSICS and IsValid(phys) and phys:IsMoveable() and player_manager.RunClass(pl, "AllowPickup", ent) then	
-			local washolding = ent:IsPlayerHolding()
-			DropEntityIfHeld(ent)
-			ent:SetCollisionGroup(ent._OldCG or ent:GetCollisionGroup())
-			ent._OldCG = nil
-			
-			if washolding then return false end
-			
-            if not ent:IsPlayerHolding() then
-				pl:PickupObject(ent)
-				pl.HeldObject = ent
-				ent._OldCG = ent:GetCollisionGroup()
-				ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
-            end
-        end
 	end
 
 	return true
@@ -1213,16 +1212,12 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 		angles.z = 0.0
 		pZombie:SetAngles(angles)
 
+		pZombie.SpawnedFromNode = true
 		pZombie:Spawn()
 		pZombie:Activate()
 		
-		if not bHidden then
-			pZombie:Fire("Wake")
-			pZombie:SetNPCState(NPC_STATE_ALERT)
-			pZombie:CheckForEnemies()
-		end
-		
-		self:CallZombieFunction(entname, "OnSpawned", pZombie)
+		self:CallZombieFunction(entname, "SetupModel", pZombie)
+		timer.Simple(0, function() if IsValid(pZombie) then self:CallZombieFunction(entname, "OnSpawned", pZombie) end end)
 		
 		pZM:TakeZMPoints(cost)
 		self:AddCurZombiePop(popcost)
@@ -1231,6 +1226,44 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 	end
 	
 	return NULL
+end
+
+-- Antistuck code by Heox and Soldner42
+local NextCheck = 0
+function GM:CheckIfPlayerStuck(pl)
+	if self.SetNoCollidePlayers then return end
+	
+	if NextCheck < CurTime() and pl:IsSurvivor() then
+		NextCheck = CurTime() + 0.1
+		
+		local Offset = Vector(5, 5, 5)
+		local Stuck = false
+		
+		if pl.Stuck == nil then
+			pl.Stuck = false
+		end
+		
+		if pl.Stuck then
+			Offset = Vector(2, 2, 2) //This is because we don't want the script to enable when the players touch, only when they are inside eachother. So, we make the box a little smaller when they aren't stuck.
+		end
+
+		for _,ent in pairs(ents.FindInBox(pl:GetPos() + pl:OBBMins() + Offset, pl:GetPos() + pl:OBBMaxs() - Offset)) do
+			if IsValid(ent) and ent ~= pl and ent:IsPlayer() and ent:Alive() and ent:IsSurvivor() then
+			
+				pl:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+				pl:SetVelocity(Vector(-10, -10, 0) * 20)
+				
+				ent:SetVelocity(Vector(10, 10, 0) * 20)
+				
+				Stuck = true
+			end
+		end
+	   
+		if not Stuck then
+			pl.Stuck = false
+			pl:SetCollisionGroup(COLLISION_GROUP_PLAYER)
+		end
+	end
 end
 
 function GM:AddResources()

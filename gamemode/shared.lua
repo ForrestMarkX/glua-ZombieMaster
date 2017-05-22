@@ -9,7 +9,6 @@ GM.Credits = {
 	{"William \"JetBoom\" Moodhe", "http://www.noxiousnet.com", "Code snippets from Zombie Survival"},
 	{"Chewgum", "", "Vestige gamemode code"},
 	{"Mka0207", "http://steamcommunity.com/id/mka0207/myworkshopfiles", "Building the base and icon work"},
-	{"xyzzy", "", "Some bits of code from iNPC to make the engine NPCs less stupid"},
 	
 	{"AzoNa, Gabil", "", "French translation"},
 	{"FoxHound", "", "English (UK) translation"},
@@ -43,10 +42,6 @@ include("player_class/player_spectator.lua")
 GM.NetworkVarCallbacks = {}
 
 function GM:Initialize()
-	for name, mdl in pairs(player_manager.AllValidModels()) do
-		util.PrecacheModel(mdl)
-	end
-	
 	for _, mdl in pairs(file.Find("models/zombie/*.mdl", "GAME")) do
 		util.PrecacheModel(mdl)
 	end
@@ -68,6 +63,8 @@ end
 function GM:SetupNetworkingCallbacks()
 	self:AddNetworkingCallbacks("holding", function(ent, value) ent.bIsHolding = value end)
 	self:AddNetworkingCallbacks("selected", function(ent, value) ent.bIsSelected = value end)
+	self:AddNetworkingCallbacks("bDead", function(ent, value) ent.Dead = value end)
+	self:AddNetworkingCallbacks("bClingingCeiling", function(ent, value) ent.m_bClinging = value end)
 end
 
 function GM:CreateTeams()
@@ -154,6 +151,6 @@ function GM:EntityNetworkedVarChanged(ent, name, oldval, newval)
 	if self.NetworkVarCallbacks[name] ~= nil then self.NetworkVarCallbacks[name](ent, newval) end
 	
 	if CLIENT and ent.PostNetReceive then
-		ent:PostNetReceive()
+		ent:PostNetReceive(name, oldval, newval)
 	end
 end

@@ -25,5 +25,8 @@ function ENT:Initialize()
 				self:SetTrapCost(self:GetCost() + 100)
 			end
 		end)
+	else
+		self.SphereColor = table.Copy(self.GlowColor)
+		self.SphereColor.a = 200
 	end
 end

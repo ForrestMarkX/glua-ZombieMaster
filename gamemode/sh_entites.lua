@@ -20,6 +20,10 @@ function meta:TakeSpecialDamage(damage, damagetype, attacker, inflictor, hitpos)
 	return dmginfo
 end
 
+function meta:SetModelDelayed(delay, mdl)
+	timer.Simple(delay, function() if IsValid(self) then self:SetModel(mdl) end end)
+end
+
 function meta:IsPointInBounds(vecWorldPt)
 	local vecLocalSpace = self:WorldToLocal(vecWorldPt)
 	local m_vecMins = self:OBBMins()

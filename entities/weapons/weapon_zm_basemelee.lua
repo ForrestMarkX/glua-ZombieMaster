@@ -23,12 +23,18 @@ SWEP.DrawCrosshair          = true
 SWEP.IsMelee				= true
 SWEP.HoldType 				= "melee"
 
+function SWEP:DefaultCallBack(tr, dmginfo)
+	BaseClass.DefaultCallBack(self, tr, dmginfo)
+	dmginfo:SetDamageType(DMG_CLUB)
+end
+
 function SWEP:PrimaryAttack()
     self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
     
 	local owner = self.Owner
 	owner:DoAttackEvent()
 	
+	local damage = Either(self.Primary.Damage ~= nil, self.Primary.Damage, math.random(self.Primary.MinDamage or 0, self.Primary.MaxDamage or 0))
 	local trace = util.TraceLine( {
 		start = owner:GetShootPos(),
 		endpos = owner:GetShootPos() + (self.Owner:GetAimVector() * self.Primary.Reach),
@@ -45,7 +51,7 @@ function SWEP:PrimaryAttack()
 		bullet.Spread = Vector(0, 0, 0)
 		bullet.Tracer = 0
 		bullet.Force  = self.Primary.Force
-		bullet.Damage = self.Primary.Damage
+		bullet.Damage = damage
 		bullet.Callback = self.DefaultCallBack
 		
 		owner:FireBullets(bullet)

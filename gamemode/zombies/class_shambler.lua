@@ -5,6 +5,8 @@ NPC.Icon = "VGUI/zombies/info_shambler"
 NPC.Flag = FL_SPAWN_SHAMBLER_ALLOWED
 NPC.Cost = GetConVar("zm_cost_shambler"):GetInt()
 NPC.PopCost = GetConVar("zm_popcost_shambler"):GetInt()
+NPC.Health = GetConVar("zm_zombie_health"):GetInt()
+NPC.DieSound = "Zombie.Die"
 
 NPC.Model = {
 	"models/zombie/zm_classic.mdl",
@@ -18,3 +20,12 @@ NPC.Model = {
 	"models/zombie/zm_classic_08.mdl",
 	"models/zombie/zm_classic_09.mdl"
 }
+
+function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
+	if bit.band(dmginfo:GetDamageType(), DMG_BLAST) then
+		dmginfo:SetDamageType(DMG_GENERIC)
+		dmginfo:SetDamage(dmginfo:GetDamage() * 2)
+	end
+	
+	self.BaseClass.OnTakeDamage(self, npc, attacker, inflictor, dmginfo)
+end

@@ -269,62 +269,130 @@ function MakepOptions()
 	label:SetPos(wide * 0.5 - label:GetWide() * 0.5, y)
 	y = y + label:GetTall() + 8
 
-	local list = vgui.Create("DPanelList", pOptions)
-	list:EnableVerticalScrollbar()
-	list:EnableHorizontal(false)
+	local list = vgui.Create("DScrollPanel", pOptions)
 	list:SetSize(wide - 24, tall - y - 12)
 	list:SetPos(12, y)
 	list:SetPadding(8)
-	list:SetSpacing(4)
 
 	hook.Call("AddExtraOptions", GAMEMODE, list, Window)
 	
-	local check = vgui.Create("DCheckBoxLabel", Window)
+	local label = Label("Volunteer Settings", list)
+	label:SetFont("ZMHUDFontSmall")
+	label:SetTextColor(Color(255, 239, 0))
+	label:CenterVertical()
+	label:SizeToContents()
+	label:Dock(TOP)
+	label:DockMargin(list:GetWide() * 0.5 - label:GetWide() * 0.5, 4, 0, 8)
+	
+	local check = vgui.Create("DCheckBoxLabel", list)
 	check:SetText("Don't show volunteer menu")
 	check:SetConVar("zm_nopreferredmenu")
 	check:SizeToContents()
-	list:AddItem(check)
+	check:Dock(TOP)
+	check:DockMargin(0, 8, 0, 8)
 	
-	local but = vgui.Create("DButton", Window)
+	local but = vgui.Create("DButton", list)
 	but:SetTall(24)
 	but:SetFont("ZMHUDFontSmaller")
 	but:SetText("Open Volunteer Menu")
+	but:Dock(TOP)
+	but:DockMargin(0, 8, 0, 8)
 	but.DoClick = function()
 		RunConsoleCommand("zm_open_preferred_menu")
 	end
-	list:AddItem(but)
 	
-	local label = Label("Drop Weapon Key", Window)
+	local label = Label("Key Binds", list)
+	label:SetFont("ZMHUDFontSmall")
+	label:SetTextColor(Color(255, 239, 0))
+	label:CenterVertical()
+	label:SizeToContents()
+	label:Dock(TOP)
+	label:DockMargin(list:GetWide() * 0.5 - label:GetWide() * 0.5, 8, 0, 8)
+	
+	local label = Label("Drop Weapon Key", list)
 	label:SetFont("ZMHUDFontSmallest")
 	label:SizeToContents()
-	list:AddItem(label)
+	label:Dock(TOP)
+	label:DockMargin(0, 4, 0, 4)
 	
-	local binder = vgui.Create("DBinder", Window)
+	local binder = vgui.Create("DBinder", list)
 	binder:SetTall(24)
 	binder:SetFont("ZMHUDFontSmaller")
 	binder:SetConVar("zm_dropweaponkey")
 	binder:SizeToContents()
+	binder:Dock(TOP)
+	binder:DockMargin(0, 4, 0, 4)
 	function binder:SetSelectedNumber(num)
 		self.m_iSelectedNumber = num
 		RunConsoleCommand("zm_dropweaponkey", num)
 	end
-	list:AddItem(binder)
+	function binder:UpdateText()
+		local str = input.GetKeyName(self.m_iSelectedNumber)
+		if not str then str = "NONE" end
+
+		str = language.GetPhrase(str)
+
+		self:SetText(string.upper(str))
+	end
 	
-	local label = Label("Drop Ammo Key", Window)
+	local label = Label("Drop Ammo Key", list)
 	label:SetFont("ZMHUDFontSmallest")
 	label:SizeToContents()
-	list:AddItem(label)
+	label:Dock(TOP)
+	label:DockMargin(0, 4, 0, 4)
 	
-	local binder = vgui.Create("DBinder", Window)
+	local binder = vgui.Create("DBinder", list)
 	binder:SetTall(24)
 	binder:SetFont("ZMHUDFontSmaller")
 	binder:SetConVar("zm_dropammokey")
 	binder:SizeToContents()
+	binder:Dock(TOP)
+	binder:DockMargin(0, 4, 0, 4)
 	function binder:SetSelectedNumber(num)
 		self.m_iSelectedNumber = num
 		RunConsoleCommand("zm_dropammokey", num)
 	end
-	list:AddItem(binder)
+	function binder:UpdateText()
+		local str = input.GetKeyName(self.m_iSelectedNumber)
+		if not str then str = "NONE" end
+
+		str = language.GetPhrase(str)
+
+		self:SetText(string.upper(str))
+	end
+	
+	local label = Label("Ragdoll Settings", list)
+	label:SetFont("ZMHUDFontSmall")
+	label:SetTextColor(Color(255, 239, 0))
+	label:CenterVertical()
+	label:SizeToContents()
+	label:Dock(TOP)
+	label:DockMargin(list:GetWide() * 0.5 - label:GetWide() * 0.5, 8, 0, 8)
+	
+	local check = vgui.Create("DCheckBoxLabel", list)
+	check:SetText("Should ragdolls fadeout")
+	check:SetConVar("zm_shouldragdollsfade")
+	check:SizeToContents()
+	check:Dock(TOP)
+	check:DockMargin(0, 8, 0, 8)
+	
+	local slider = vgui.Create("DNumSlider", list)
+	slider:SetDecimals(0)
+	slider:SetMinMax(1, 1000)
+	slider:SetConVar("g_ragdoll_fadespeed")
+	slider:SetText("Fade Speed")
+	slider:SizeToContents()
+	slider:Dock(TOP)
+	slider:DockMargin(0, 4, 0, 4)
+	
+	local slider = vgui.Create("DNumSlider", list)
+	slider:SetDecimals(0)
+	slider:SetMinMax(1, 300)
+	slider:SetConVar("zm_cl_ragdoll_fadetime")
+	slider:SetText("Time before fadeout")
+	slider:SizeToContents()
+	slider:Dock(TOP)
+	slider:DockMargin(0, 4, 0, 4)
 
 	Window:SetAlpha(0)
 	Window:AlphaTo(255, 0.5, 0)
@@ -365,7 +433,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 0, 12, 12)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() RunConsoleCommand("playermodel_selector") menu:Remove() end
+	but.DoClick = function() RunConsoleCommand("playermodel_selector") end
 	
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("ZMHUDFontSmaller")
@@ -392,7 +460,7 @@ function GM:ShowOptions()
 	but:DockMargin(12, 24, 12, 0)
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
-	but.DoClick = function() menu:Remove() LocalPlayer().HadMenuOpen = false end
+	but.DoClick = function() gui.EnableScreenClicker(false) menu:Remove() LocalPlayer().HadMenuOpen = false end
 
 	menu:InvalidateLayout(true)
 	menu:SizeToChildren(false, true)
@@ -406,6 +474,13 @@ function GM:ShowHelp()
 	if IsValid(self.objmenu) then
 		self.objmenu:SetVisible(not self.objmenu:IsVisible())
 		self.objmenuimage:SetVisible(not self.objmenuimage:IsVisible())
+		
+		if self.objmenu:IsVisible() then
+			gui.EnableScreenClicker(true)
+		else
+			gui.EnableScreenClicker(false)
+		end
+		
 		return
 	end
 	

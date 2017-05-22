@@ -2,32 +2,33 @@ AddCSLuaFile()
 DEFINE_BASECLASS("weapon_zm_base")
 
 if CLIENT then
-	SWEP.PrintName = "Revolver"
+	SWEP.PrintName 				= "Revolver"
 
-	SWEP.ViewModelFlip = false
-	SWEP.ViewModelFOV = 50
+	SWEP.ViewModelFlip 			= false
+	SWEP.ViewModelFOV 			= 50
 	
 	SWEP.WeaponSelectIconLetter	= "e"
 end
 
-SWEP.Author = "Mka0207 & Forrest Mark X"
+SWEP.Author 					= "Mka0207 & Forrest Mark X"
 
-SWEP.Slot = 1
-SWEP.SlotPos = 0
+SWEP.Slot 						= 1
+SWEP.SlotPos 					= 0
 
-SWEP.ViewModel	= "models/weapons/c_revolver_zm.mdl"
-SWEP.WorldModel	= Model( "models/weapons/w_357.mdl" )
-SWEP.UseHands = true
+SWEP.ViewModel					= "models/weapons/c_revolver_zm.mdl"
+SWEP.WorldModel					= Model( "models/weapons/w_357.mdl" )
+SWEP.UseHands 					= true
 
-SWEP.ReloadSound = Sound("weapons/revolver_zm/revolver_reload.wav")
-SWEP.Primary.Sound = Sound("weapons/revolver_zm/revolver_fire.wav")
-SWEP.EmptySound = Sound("weapons/pistol_zm/pistol_zm_empty.wav")
+SWEP.ReloadSound 				= Sound("weapons/revolver_zm/revolver_reload.wav")
+SWEP.Primary.Sound 				= Sound("weapons/revolver_zm/revolver_fire.wav")
+SWEP.EmptySound 				= Sound("weapons/pistol_zm/pistol_zm_empty.wav")
 
-SWEP.HoldType = "revolver"
+SWEP.HoldType 					= "revolver"
 
 SWEP.Primary.ClipSize			= 6
 SWEP.Primary.DefaultClip		= 6
-SWEP.Primary.Damage				= 48
+SWEP.Primary.MinDamage			= 20
+SWEP.Primary.MaxDamage			= 30
 SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 1.2
 SWEP.Primary.Cone 				= 0.0200
@@ -35,16 +36,18 @@ SWEP.Primary.Cone 				= 0.0200
 SWEP.Primary.Automatic   		= false
 SWEP.Primary.Ammo         		= "revolver"
 
-SWEP.Secondary.Delay = 0.3
-SWEP.Secondary.ClipSize = 1
-SWEP.Secondary.DefaultClip = 1
-SWEP.Secondary.Automatic = false
-SWEP.Secondary.Ammo = "dummy"
+SWEP.Secondary.Delay 			= 0.3
+SWEP.Secondary.ClipSize 		= 1
+SWEP.Secondary.DefaultClip 		= 1
+SWEP.Secondary.Automatic 		= false
+SWEP.Secondary.Ammo 			= "dummy"
 
 function SWEP:Think()
 	if self.firing and self.firetimer < CurTime() then
 		self:PlayPrimaryFireSound()
-		self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
+		
+		local damage = Either(self.Primary.Damage ~= nil, self.Primary.Damage, math.random(self.Primary.MinDamage or 0, self.Primary.MaxDamage or 0))
+		self:ShootBullet(damage, self.Primary.NumShots, self.Primary.Cone)
 		
 		if not self.InfiniteAmmo then
 			self:TakePrimaryAmmo(1)
@@ -67,7 +70,9 @@ function SWEP:SecondaryAttack()
 	
 	self:PlayPrimaryFireSound()
 	self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
-	self:ShootBullet(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone)
+	
+	local damage = Either(self.Primary.Damage ~= nil, self.Primary.Damage, math.random(self.Primary.MinDamage or 0, self.Primary.MaxDamage or 0))
+	self:ShootBullet(damage, self.Primary.NumShots, self.Primary.Cone)
 	
 	if not self.InfiniteAmmo then
 		self:TakePrimaryAmmo(1)

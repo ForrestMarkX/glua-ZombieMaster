@@ -89,9 +89,3 @@ function meta:DropAllAmmo()
 		end
 	end
 end
-
-meta.OldDropWeapon = meta.OldDropWeapon or meta.DropWeapon
-function meta:DropWeapon(wep)
-	wep.Dropped = true
-	self:OldDropWeapon(wep)
-end

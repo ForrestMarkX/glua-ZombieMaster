@@ -115,6 +115,8 @@ local startVal = 0
 local endVal = 1
 local fadeSpeed = 1.6
 local function FadeToDraw(self)
+	if GAMEMODE:CallZombieFunction(self:GetClass(), "PreDraw", self) then return end
+	
 	if self.fadeAlpha < 1 then
 		self.fadeAlpha = self.fadeAlpha + fadeSpeed * FrameTime()
 		self.fadeAlpha = math.Clamp(self.fadeAlpha, startVal, endVal)
@@ -125,11 +127,12 @@ local function FadeToDraw(self)
 	else
 		self:DrawModel()
 	end
+	
+	GAMEMODE:CallZombieFunction(self:GetClass(), "PostDraw", self)
 end
 function GM:OnEntityCreated(ent)
 	if ent:IsNPC() then
 		local entname = string.lower(ent:GetClass())
-		
 		if string.sub(entname, 1, 12) == "npc_headcrab" then
 			ent:DrawShadow(false)
 			ent.RenderOverride = function(self)
@@ -138,10 +141,18 @@ function GM:OnEntityCreated(ent)
 			
 			return
 		end
-	
+		
 		if string.lower(entname) == "npc_zombie" or string.lower(entname) == "npc_poisonzombie" or string.lower(entname) == "npc_fastzombie" then
 			ent.fadeAlpha = 0
 			ent.RenderOverride = FadeToDraw
+		else
+			ent:SetNoDraw(true)
+			
+			timer.Simple(0, function()
+				ent:SetNoDraw(false)
+				ent.fadeAlpha = 0
+				ent.RenderOverride = FadeToDraw
+			end)
 		end
 	end
 end
@@ -174,6 +185,11 @@ end
 local placingZombie = false
 function GM:SetPlacingSpotZombie(b)
 	placingZombie = b
+end
+
+local placingAmbush = false
+function GM:SetPlacingAmbush(b)
+	placingAmbush = b
 end
 
 local TriggerEnt = nil
@@ -243,6 +259,10 @@ local rallyringMaterial = CreateMaterial("RallyRingMat", "UnlitGeneric", {
 local click_delta = 0
 local zm_ring_pos = Vector(0, 0, 0)
 local zm_ring_ang = Angle(0, 0, 0)
+local function SelectionTrace(ent)
+	if ent:GetClass() == "info_zombiespawn" or ent:GetClass() == "info_manipulate" then return true end
+	return false
+end
 function GM:GUIMousePressed(mouseCode, aimVector)
 	oldMousePos = aimVector
 	
@@ -283,11 +303,20 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				
 				net.Start("zm_placerally")
 					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
-					net.WriteEntity(TriggerEnt)
 				net.SendToServer()
 				
 				placingRally = false			
-				zm_placedrally = true
+				zm_placedrally = true			
+			elseif placingAmbush then
+				if zm_placedambush then zm_placedambush = false end
+				
+				net.Start("zm_create_ambush_point")
+					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
+					net.WriteEntity(TriggerEnt)
+				net.SendToServer()
+				
+				placingAmbush = false			
+				zm_placedambush = true
 			else
 				local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 56756, function(ent) if ent:IsNPC() and not ent.bIsSelected then return true end end)
 				if tr.Entity and tr.Entity:IsNPC() then
@@ -300,18 +329,18 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				end
 			end
 			
-			if zm_placedpoweritem or zm_placedrally then
+			if zm_placedpoweritem or zm_placedrally or zm_placedambush then
 				click_delta = CurTime()
 
 				local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll())
-				zm_ring_pos = tr.HitPos
+				zm_ring_pos = tr.HitPos + tr.HitNormal
 				zm_ring_ang = tr.HitNormal:Angle()
 				zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
 			end
 		end
 		
 		if mouseCode == MOUSE_LEFT and not placingShockwave and not placingZombie then
-			local ent = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).Entity
+			local ent = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, SelectionTrace).Entity
 			if IsValid(ent) then
 				local class = ent:GetClass()
 				gamemode.Call("SpawnTrapMenu", class, ent)
@@ -333,6 +362,9 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			elseif placingRally then
 				zm_placedrally = false
 				return
+			elseif placingAmbush then
+				zm_placedambush = false
+				return
 			end
 			
 			if zm_rightclicked then zm_rightclicked = false end
@@ -340,7 +372,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			click_delta = CurTime()
 
 			local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll())
-			zm_ring_pos = tr.HitPos
+			zm_ring_pos = tr.HitPos + tr.HitNormal
 			zm_ring_ang = tr.HitNormal:Angle()
 			zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
 			
@@ -421,60 +453,24 @@ function GM:IsMenuOpen()
 	return false
 end
 
-local entnum = 0
 function GM:CreateClientsideRagdoll(ent, ragdoll)
+	if string.find(ragdoll:GetModel(), "headcrab") then
+		ragdoll:SetNoDraw(true)
+		ragdoll:SetSaveValue("m_bFadingOut", true)
+	end
+	
 	if IsValid(ent) and ent:IsNPC() then
-		local instantfade = false
+		if not GetConVar("zm_shouldragdollsfade"):GetBool() then return end
+		
 		local ragdollnum = #ents.FindByClass(ragdoll:GetClass())
 		if ragdollnum > GetConVar("zm_max_ragdolls"):GetInt() then
-			instantfade = true
+			ragdoll:SetSaveValue("m_bFadingOut", true)
 		end
 		
-		ragdoll:SetModel(ent:GetModel())
-		ragdoll.fadeAlpha = 255
-		
-		local entname = tostring(ent)
-		local fadetime = instantfade and 0 or GetConVar("zm_ragdoll_fadetime"):GetInt()
+		local fadetime = GetConVar("zm_cl_ragdoll_fadetime"):GetInt()
 		timer.Simple(fadetime, function()
 			if not IsValid(ragdoll) then return end
-			
-			ragdoll:SetRenderMode(RENDERMODE_TRANSALPHA)
-			
-			local col = Color(255, 255, 255)
-			local timername = "FadeRagdoll_"..entname.."_"..entnum
-			entnum = entnum + 1
-			timer.Create(timername, 0, 0, function()
-				if not IsValid(ragdoll) then 
-					timer.Destroy(timername) 
-					return 
-				end
-				
-				if ragdoll.fadeAlpha == nil then ragdoll.fadeAlpha = 255 end
-				
-				if ragdoll.fadeAlpha and ragdoll.fadeAlpha <= 0 then
-					entnum = entnum - 1
-					
-					timer.Destroy(timername)
-					ragdoll:Remove()
-					
-					if IsValid(ent) then
-						ent:Remove()
-					end
-					
-					return
-				elseif not ragdoll.fadeAlpha then
-					ragdoll:Remove()
-					if IsValid(ent) then
-						ent:Remove()
-					end
-				end
-				
-				ragdoll.fadeAlpha = ragdoll.fadeAlpha - (255 * FrameTime())
-				ragdoll.fadeAlpha = math.Clamp(ragdoll.fadeAlpha, 0, 255)
-				
-				col.a = ragdoll.fadeAlpha
-				ragdoll:SetColor(col)
-			end)
+			ragdoll:SetSaveValue("m_bFadingOut", true)
 		end)
 	end
 end
@@ -487,7 +483,7 @@ function GM:PostDrawOpaqueRenderables()
 			for _, entity in pairs(zombies) do
 				if string.sub(entity:GetClass(), 1, 12) == "npc_headcrab" then continue end
 				
-				if IsValid(entity) and entity:Health() > 0 then
+				if IsValid(entity) and entity:Health() > 0 and not entity.Dead then
 					local Health, MaxHealth = entity:Health(), entity:GetMaxHealth()
 					local pos = entity:GetPos() + Vector(0, 0, 2)
 					local colour = Color(0, 0, 0, 125)
@@ -499,38 +495,37 @@ function GM:PostDrawOpaqueRenderables()
 					
 					render.SetMaterial(healthcircleMaterial)
 					render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
-					render.DrawQuadEasy(pos, Vector(0, 0, -1), 40, 40, colour)
+					render.DrawQuadEasy(pos, -Vector(0, 0, 1), 40, 40, colour)
 					
 					if entity.bIsSelected then
 						render.SetMaterial(circleMaterial)
-						
-						render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
-						render.DrawQuadEasy(pos, Vector(0, 0, -1), 40, 40, colour)
+						render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour, (CurTime() * 50) % 360)
+						render.DrawQuadEasy(pos, -Vector(0, 0, 1), 40, 40, colour, (CurTime() * 50) % 360)
 					end
 				end
 			end
 		cam.End3D()
 		
+		render.SuppressEngineLighting(true)
+		render.OverrideDepthEnable(true, true)
 		if zm_rightclicked then
 			cam.Start3D2D(zm_ring_pos, zm_ring_ang, 1)
 				local size = 64 * (1 - (CurTime() - click_delta) * 4)
 					
 				render.SetMaterial(selectringMaterial)
 				render.DrawQuadEasy(Vector( 0, 0, 0 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
-				render.DrawQuadEasy(Vector( 0, 0, 0 ), Vector(0, 0, -1), size, size, Color(255, 255, 255))
 				
 				if size <= 0 then
 					zm_rightclicked = false
 					didtrace = false
 				end
-			cam.End3D2D()		
+			cam.End3D2D()			
 		elseif zm_placedrally then
 			cam.Start3D2D(zm_ring_pos, zm_ring_ang, 1)
 				local size = 64 * (1 - (CurTime() - click_delta) * 4)
 					
 				render.SetMaterial(rallyringMaterial)
 				render.DrawQuadEasy(Vector( 0, 0, 0 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
-				render.DrawQuadEasy(Vector( 0, 0, 0 ), Vector(0, 0, -1), size, size, Color(255, 255, 255))
 				
 				if size <= 0 then
 					zm_placedrally = false
@@ -550,6 +545,8 @@ function GM:PostDrawOpaqueRenderables()
 				end
 			cam.End3D2D()
 		end
+		render.OverrideDepthEnable(false, false)
+		render.SuppressEngineLighting(false)
 	end
 end
 
@@ -590,8 +587,13 @@ function GM:RestartRound()
 	
 	GAMEMODE.ZombieGroups = nil
 	GAMEMODE.SelectedZombieGroups = nil
+	GAMEMODE.nightVision = nil
 	
 	hook.Call("ResetZombieMenus", self)
+	
+	hook.Remove("PreRender", "PreRender.Fullbright")
+	hook.Remove("PostRender", "PostRender.Fullbright")
+	hook.Remove("PreDrawHUD", "PreDrawHUD.Fullbright")
 	
 	placingShockWave = false
 	placingZombie = false

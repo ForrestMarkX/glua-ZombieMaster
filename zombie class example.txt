@@ -1,0 +1,115 @@
+-- NPC class to spawn
+NPC.Class = ""
+
+-- NPC name used in the spawn menu
+NPC.Name = ""
+
+-- NPC description used in the spawn menu
+NPC.Description = ""
+
+-- NPC icon material used by the spawn menu
+NPC.Icon = ""
+
+-- NPC spawn flag, used by the zombie node to check if the spawn is allowed
+NPC.Flag = 0
+
+-- Used by the zombie node to calculate the cost
+NPC.Cost = 0
+
+-- The population cost of the zombie
+NPC.PopCost = 0
+
+-- Internal index used by a few systems
+NPC.SortIndex = 0
+
+-- The class_ base used for inheritence
+NPC.Base = "class_default"
+
+-- Hides the class
+NPC.Hidden = false
+
+-- Sets if the zombie can cling to the ceiling or not
+NPC.CanClingToCeiling = false
+
+-- Delays setting the model for a frame
+NPC.DelaySetModel = false
+
+-- Checks if the NPC is a engine NPC or not
+NPC.IsEngineNPC = false
+
+-- How much health the NPC will have
+NPC.Health = 0
+
+-- The NPC model to use, can also be a table
+NPC.Model = ""
+
+-- The hull type to set the NPC to
+NPC.HullType = HULL_HUMAN
+
+-- The solid type to set the NPC to
+NPC.SolidType = SOLID_BBOX
+
+-- The movetype the NPC will use
+NPC.MoveType = MOVETYPE_STEP
+
+-- The max amount of skins to use on the NPC (Uses SetSkin)
+NPC.SkinNum = 3
+
+-- The blood color of the NPC
+NPC.BloodColor = BLOOD_COLOR_RED
+
+-- The hull sizes of the NPC
+NPC.HullSizeMins = Vector(-13, -13, 0)
+NPC.HullSizeMaxs = Vector(13, 13, 72)
+
+-- The sound to play when the zombie dies
+NPC.DieSound = "Zombie.Die"
+
+-- How fast the NPC will be able to turn
+NPC.MaxYawSpeed = 20
+
+if SERVER then
+	-- The spawn flags to use for the NPC on spawn
+	NPC.SpawnFlags = SF_NPC_ALWAYSTHINK
+	
+	-- The capabilities to use for the NPC
+	NPC.Capabilities = CAP_MOVE_GROUND
+end
+
+-- Called when the NPC is spawned
+function NPC:OnSpawned(npc)
+end
+
+-- Called from the spawn function to set the zombie model
+function NPC:SetupModel(npc, bDelay)
+end
+
+-- Called to scale the npc damage
+function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
+end
+
+-- Called when the NPC takes damage
+function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
+end
+
+-- Called when the NPC dies
+function NPC:OnKilled(npc, attacker, inflictor)
+end
+
+-- Called when the NPC damages a ent
+function NPC:OnDamagedEnt(npc, ent, dmginfo)
+end
+
+-- Called every frame
+function NPC:Think(npc)
+end
+
+if not CLIENT then return end
+
+-- Called before the NPC is drawn
+function NPC:PreDraw(npc)
+end
+
+-- Called after the NPC is drawn
+function NPC:PostDraw(npc)
+end

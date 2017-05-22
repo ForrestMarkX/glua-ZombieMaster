@@ -3,6 +3,15 @@ DEFINE_BASECLASS("player_zm")
 
 local PLAYER = {}
 
+function PLAYER:Spawn()
+	BaseClass.Spawn(self)
+	
+	self.Player:Spectate(OBS_MODE_ROAMING)
+	self.Player:CrosshairDisable()
+	self.Player:SetMoveType(MOVETYPE_NOCLIP)
+	self.Player:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+end
+
 function PLAYER:CanSuicide()
 	return false
 end
@@ -36,7 +45,7 @@ function PLAYER:PostThink()
 	if obmode == OBS_MODE_FIXED then
 		local target = self.Player:GetObserverTarget()
 		if IsValid(target) then
-			self.Player:SetPos(target:GetPos() + Vector(0, 0, 10))
+			self.Player:SetPos(target:EyePos())
 		end
 	end
 
@@ -48,24 +57,19 @@ function PLAYER:PostThink()
 		end
 	elseif self.Player:KeyPressed(IN_ATTACK) then
 		self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) + 1
-		local players = {}
 
-		for k, v in pairs(player.GetAll()) do
-			if v:Alive() and v ~= self.Player and v:Team() ~= TEAM_SPECTATOR and not v.bHideFromWallSpy then
-				table.insert(players, v)
-			end
-		end
-		
+		local players = team.GetPlayers(TEAM_SURVIVOR)
 		if self.Player.SpectatedPlayerKey > #players then
-			self.Player.SpectatedPlayerKey = 0
-			return
+			self.Player:Spectate(OBS_MODE_ROAMING)
+			self.Player:SpectateEntity(NULL)
+			self.Player.SpectatedPlayerKey = 1
 		end
 
 		self.Player:StripWeapons()
 		local specplayer = players[self.Player.SpectatedPlayerKey]
 
 		if specplayer then
-			self.Player:Spectate(self.Player:GetInfoNum("zs_spectator_view", 0) == 0 and OBS_MODE_CHASE or self.Player:GetInfoNum("zs_spectator_view", 0) == 1 and OBS_MODE_FIXED or OBS_MODE_IN_EYE)
+			self.Player:Spectate(OBS_MODE_CHASE)
 			self.Player:SpectateEntity(specplayer)
 		else
 			self.Player:Spectate(OBS_MODE_ROAMING)
@@ -73,26 +77,20 @@ function PLAYER:PostThink()
 			self.Player.SpectatedPlayerKey = nil
 		end
 	elseif self.Player:KeyPressed(IN_ATTACK2) then
-		self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) - 1
+		self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 2) - 1
 
-		local players = {}
-
-		for k, v in pairs(player.GetAll()) do
-			if v:Alive() and v ~= self.Player and v:Team() ~= TEAM_SPECTATOR and not v.bHideFromWallSpy then
-				table.insert(players, v)
-			end
-		end
-		
-		if self.Player.SpectatedPlayerKey < 0 then
+		local players = team.GetPlayers(TEAM_SURVIVOR)
+		if self.Player.SpectatedPlayerKey <= 0 then
+			self.Player:Spectate(OBS_MODE_ROAMING)
+			self.Player:SpectateEntity(NULL)
 			self.Player.SpectatedPlayerKey = #players
-			return
 		end
 
 		self.Player:StripWeapons()
 		local specplayer = players[self.Player.SpectatedPlayerKey]
 
 		if specplayer then
-			self.Player:Spectate(self.Player:GetInfoNum("zs_spectator_view", 0) == 0 and OBS_MODE_CHASE or self.Player:GetInfoNum("zs_spectator_view", 0) == 1 and OBS_MODE_FIXED or OBS_MODE_IN_EYE)
+			self.Player:Spectate(OBS_MODE_CHASE)
 			self.Player:SpectateEntity(specplayer)
 		else
 			self.Player:Spectate(OBS_MODE_ROAMING)

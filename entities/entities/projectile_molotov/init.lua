@@ -20,13 +20,21 @@ function ENT:Initialize()
 end
 
 function ENT:PhysicsCollide(data, physObject)
+	if self.bRemove then return end
+	
 	local contents = util.PointContents(self:GetPos())
 	if bit.band(contents, MASK_WATER) ~= 0 then
-		self:Remove()
+		self.bRemove = true
 		return
 	end
 	
-	util.BlastDamageEx(self, self.Owner, self:GetPos(), 128, 40, DMG_BURN)
+	local dmginfo = DamageInfo()
+		dmginfo:SetAttacker(self.Owner)
+		dmginfo:SetInflictor(self)
+		dmginfo:SetDamage(40)
+		dmginfo:SetDamagePosition(self:GetPos())
+		dmginfo:SetDamageType(DMG_BURN)
+	util.BlastDamageInfo(dmginfo, self:GetPos(), 128)
 	
 	local effectdata = EffectData()
 		effectdata:SetOrigin(self:GetPos())
@@ -35,13 +43,21 @@ function ENT:PhysicsCollide(data, physObject)
 	self:EmitSound("Grenade_Molotov.Detonate")
 	self:EmitSound("Grenade_Molotov.Detonate2")
 	
-	self:Remove()
+	self.bRemove = true
+end
+
+function ENT:Think()
+	if self.bRemove then
+		self:Remove()
+	end
 end
 
 function ENT:OnRemove()
     for _, v in pairs(ents.FindInSphere(self:GetPos(), 128)) do
-		if v:IsNPC() or v == self:GetOwner() then
+		if v:IsNPC() then
 			v:Ignite(100)
+		elseif v == self:GetOwner() then
+			v:Ignite(3)
 		end
     end
 	

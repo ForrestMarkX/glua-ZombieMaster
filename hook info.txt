@@ -27,6 +27,9 @@ GM:SetPlacingRallyPoint(bool b, Entity rallyEnt)
 Hook. Set if the player is placing a trap trigger
 GM:SetPlacingTrapEntity(bool b, Entity trapEnt)
 
+Hook. Set if the player is placing a ambush trigger
+GM:SetPlacingAmbush(bool b)
+
 Hook. Set if the player is dragging his mouse across the screen
 GM:SetDragging(bool b)
 
@@ -96,9 +99,6 @@ GM:InitClient(player ply)
 
 Hook. Called after the client has fully loaded
 GM:InitPostClient(player ply)
-
-Hook. Used to set the base NPC models such as npc_zombie
-GM:SetupNPCZombieModels()
 
 Hook. Called when the player class is being changed
 GM:OnPlayerClassChanged(player pl, string classname)

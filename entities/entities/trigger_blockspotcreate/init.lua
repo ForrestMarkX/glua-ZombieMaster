@@ -38,3 +38,7 @@ end
 function ENT:InputEnable()
 	self.m_bActive = true
 end
+
+function ENT:UpdateTransmitState()
+	return TRANSMIT_NEVER
+end

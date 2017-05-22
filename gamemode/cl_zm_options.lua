@@ -5,6 +5,9 @@ CreateClientConVar("zm_scrollwheelsensativity", "20", true, false, "How sensitiv
 CreateClientConVar("zm_dropweaponkey", "12", true, false, "Key enum to use for dropping your currently held weapon.")
 CreateClientConVar("zm_dropammokey", "32", true, false, "Key enum to use for dropping your currently held weapons ammo.")
 
+CreateClientConVar("zm_shouldragdollsfade", "1", true, false, "Should ragdolls spawned by zombies fade out?")
+CreateClientConVar("zm_cl_ragdoll_fadetime", "30", true, false, "How much time in seconds before the ragdolls fadeout.")
+
 local function ZM_Open_Preferred_Menu(ply)
 	if not IsValid(ply) then return end
 	GAMEMODE:MakePreferredMenu()
@@ -32,6 +35,17 @@ local function ZM_Power_SpotCreate(ply)
 	GAMEMODE:SetPlacingSpotZombie(true)
 end
 concommand.Add("zm_power_spotcreate", ZM_Power_SpotCreate, nil, "Creates a Shambler at target location, if it is unseen to players")
+
+local function ZM_Power_AmbushCreate(ply)
+	if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) then
+		return
+	end
+	
+	ply:PrintTranslatedMessage(HUD_PRINTTALK, "enter_ambush_mode")
+	
+	hook.Call("SetPlacingAmbush", GAMEMODE, true)
+end
+concommand.Add("zm_power_ambushpoint", ZM_Power_AmbushCreate, nil, "Creates a ambush point for zombies")
 
 local LightingModeChanged = false
 local function StartOfLightingMod()

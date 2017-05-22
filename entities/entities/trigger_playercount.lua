@@ -68,3 +68,7 @@ end
 function ENT:PassesTriggerFilters(ent)
 	return ent:IsPlayer() and ent:IsSurvivor()
 end
+
+function ENT:UpdateTransmitState()
+	return TRANSMIT_NEVER
+end

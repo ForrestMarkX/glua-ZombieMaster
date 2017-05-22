@@ -25,55 +25,6 @@ function PLAYER:Spawn()
 	if self.Player:GetMaterial() ~= "" then
 		self.Player:SetMaterial("")
 	end
-	
-	self.Player:SetNoCollideWithTeammates(true)
-	self.Player:SetAvoidPlayers(false)
-	timer.Simple(3, function() 
-		self.Player:SetNoCollideWithTeammates(false)
-		self.Player:SetAvoidPlayers(true)
-	end)
-end
-
-local VoiceSetTranslate = {}
-VoiceSetTranslate["models/player/alyx.mdl"] = "alyx"
-VoiceSetTranslate["models/player/barney.mdl"] = "barney"
-VoiceSetTranslate["models/player/breen.mdl"] = "male"
-VoiceSetTranslate["models/player/combine_soldier.mdl"] = "combine"
-VoiceSetTranslate["models/player/combine_soldier_prisonguard.mdl"] = "combine"
-VoiceSetTranslate["models/player/combine_super_soldier.mdl"] = "combine"
-VoiceSetTranslate["models/player/eli.mdl"] = "male"
-VoiceSetTranslate["models/player/gman_high.mdl"] = "male"
-VoiceSetTranslate["models/player/kleiner.mdl"] = "male"
-VoiceSetTranslate["models/player/monk.mdl"] = "monk"
-VoiceSetTranslate["models/player/mossman.mdl"] = "female"
-VoiceSetTranslate["models/player/odessa.mdl"] = "male"
-VoiceSetTranslate["models/player/police.mdl"] = "combine"
-function PLAYER:SetModel()
-	local cl_playermodel = string.lower(self.Player:GetInfo("cl_playermodel"))
-	local modelname = string.lower(player_manager.TranslatePlayerModel(#cl_playermodel == 0 and GAMEMODE.RandomPlayerModels[math.random(#GAMEMODE.RandomPlayerModels)] or cl_playermodel))
-	if GAMEMODE.RestrictedPMs[cl_playermodel] then
-		self.Player:SetModel(player_manager.TranslatePlayerModel(GAMEMODE.RandomPlayerModels[math.random(#GAMEMODE.RandomPlayerModels)]))
-	else
-		self.Player:SetModel(modelname)
-	end
-	
-	local skin = self.Player:GetInfoNum("cl_playerskin", 0)
-	self.Player:SetSkin(skin)
-
-	local groups = self.Player:GetInfo("cl_playerbodygroups")
-	if groups == nil then groups = "" end
-	local groups = string.Explode(" ", groups)
-	for k = 0, self.Player:GetNumBodyGroups() - 1 do
-		self.Player:SetBodygroup(k, tonumber(groups[ k + 1 ]) or 0)
-	end
-	
-	if VoiceSetTranslate[modelname] then
-		self.Player.VoiceSet = VoiceSetTranslate[modelname]
-	elseif string.find(modelname, "female", 1, true) then
-		self.Player.VoiceSet = "female"
-	else
-		self.Player.VoiceSet = "male"
-	end
 end
 
 function PLAYER:Loadout()
@@ -273,8 +224,20 @@ end
 
 function PLAYER:OnTakeDamage(attacker, dmginfo)
 	local inflictor = dmginfo:GetInflictor()
-	if (IsValid(attacker) and attacker:GetClass() == "projectile_molotov") or (IsValid(inflictor) and inflictor:GetClass() == "projectile_molotov") then
-		return true
+	if IsValid(attacker) then
+		if attacker:GetClass() == "projectile_molotov" then
+			return true
+		elseif attacker:IsNPC() and attacker.Dead then
+			return true
+		end
+	end
+	
+	if IsValid(inflictor) then
+		if inflictor:GetClass() == "projectile_molotov" then
+			return true
+		elseif inflictor:IsNPC() and inflictor.Dead then
+			return true
+		end
 	end
 end
 

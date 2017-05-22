@@ -59,6 +59,10 @@ function PANEL:Setup(pl)
 	self.Ping:SetPlayer(pl)
 	self:Think(self)
 	
+	if pl == LocalPlayer() and IsValid(self.Mute) then
+		self.Mute:SetEnabled(false)
+	end
+	
 	if gamemode.Call("IsSpecialPerson", pl, self.SpecialImage) then
 		self.SpecialImage:SetVisible(true)
 	else
@@ -89,7 +93,7 @@ function PANEL:Think()
 		self.Deaths:SetText( self.NumDeaths )
 	end
 
-	if self.Muted == nil or self.Muted ~= self.Player:IsMuted() then
+	if (self.Muted == nil or self.Muted ~= self.Player:IsMuted()) and self.Player ~= LocalPlayer() then
 		self.Mute:SetColor(color_black)
 		
 		self.Muted = self.Player:IsMuted()

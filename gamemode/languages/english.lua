@@ -38,6 +38,10 @@ LANGUAGE.set_zombies_to_offensive_mode      = "Selected zombies are now in offen
 LANGUAGE.humans_have_won                    = "The living have prevailed!\n"
 LANGUAGE.humans_failed_obj                  = "The living have failed their objectives!\n"
 LANGUAGE.queue_is_full                      = "Queue is full!"
+LANGUAGE.no_zombies_selected                = "No zombies selected! Cannot create an ambush.\n"
+LANGUAGE.placed_ambush_point                = "Created a new ambush point.\n" 
+LANGUAGE.no_valid_zombies_selected_for_cling = "No valid zombies selected! Only zombies that can cling to the ceiling can perform this action.\n" 
+LANGUAGE.no_flat_or_range_ceiling 			= "Zombie was unable to find a solid ceiling within range above it!\n" 
 
 LANGUAGE.tooltip_select_all                 = "Select all: Select all your zombies."
 LANGUAGE.tooltip_defend                     = "Defend: Order selected units to defend their current location."
@@ -48,6 +52,8 @@ LANGUAGE.tooltip_expire_zombies             = "Expire: Relinquish your control o
 LANGUAGE.tooltip_hidden_zombie_cost_x       = "Hidden Summon: Click in the world to create a Shambler. Only works out of sight of the humans. (Costs %d)"
 LANGUAGE.tooltip_create_squad               = "Create squad: Create a squad from selected units."
 LANGUAGE.tooltip_select_squad               = "Select squad: Select the chosen squad. The units in this squad will be selected."
+LANGUAGE.tooltip_ambush             		= "Ambush: Set up an ambush using selected units. The units will stay put until a human comes near the ambush trigger."
+LANGUAGE.tooltip_ceiling             		= "Ceiling ambush: Order applicable and selected zombies to cling to the ceiling and hide until humans pass underneath."
 
 LANGUAGE.npc_class_shambler                 = "Shambler"
 LANGUAGE.npc_class_banshee                  = "Banshee"

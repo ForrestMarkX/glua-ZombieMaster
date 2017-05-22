@@ -35,7 +35,9 @@ function PANEL:Init()
 	self.button1.buttons = {
 		{image = "VGUI/miniselectall", func = function() net.Start("zm_selectall_zombies") net.SendToServer() end, tooltip = translate.Get("tooltip_select_all")},
 		{image = "VGUI/minishield", func = function() net.Start("zm_switch_to_defense") net.SendToServer() end, tooltip = translate.Get("tooltip_defend")},
-		{image = "VGUI/minicrosshair", func = function() net.Start("zm_switch_to_offense") net.SendToServer() end, tooltip = translate.Get("tooltip_attack")}
+		{image = "VGUI/minicrosshair", func = function() net.Start("zm_switch_to_offense") net.SendToServer() end, tooltip = translate.Get("tooltip_attack")},
+		{image = "VGUI/miniarrows", func = function() RunConsoleCommand("zm_power_ambushpoint") end, tooltip = translate.Get("tooltip_ambush")},
+		{image = "VGUI/miniceiling", func = function() net.Start("zm_cling_ceiling") net.SendToServer() end, tooltip = translate.Get("tooltip_ceiling")}
 	}
 	
 	self.button1.Image = image1
@@ -65,11 +67,6 @@ function PANEL:Init()
 				self.toolpan:InvalidateLayout(true)
 				self.toolpan:Center()
 				self.toolpan:AlignBottom(10)
-				
-				self.toolpan.Paint = function(self, w, h)
-					draw.RoundedBox(8, 0, 0, w, h, Color(89, 0, 0))
-					draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color(60, 0, 0))
-				end
 				
 				self.toollab = vgui.Create("DLabel", self.toolpan)
 				self.toollab:SetTextColor(color_white)
@@ -124,6 +121,7 @@ function PANEL:Init()
 			self.list:Add(dropdown)
 		end
 	end
+	self.button1:OnMousePressed()
 	
 	self.button2 = vgui.Create("DPanel", self)
 	self.button2:SetPos(self:GetWide() /2 - 17, 0)

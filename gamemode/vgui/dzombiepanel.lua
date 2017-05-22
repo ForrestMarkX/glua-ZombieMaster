@@ -74,15 +74,18 @@ function PANEL:Init()
 		DisableClipping(false)
 	end
 	
-	self.queue = vgui.Create("DPanelList", self)
+	self.queue = vgui.Create("DIconLayout", self)
 	self.queue:SetPos(self:GetWide() - 98, 24)
 	self.queue:SetSize(125, self:GetTall() - 62)
-	self.queue:SetPadding(1)
-	self.queue:SetSpacing(1)
-	self.queue:EnableHorizontal(true)
+	self.queue:SetSpaceY(0)
+	self.queue:SetSpaceX(0)
 	
-	self.queue.Paint = function(self, w, h)
-		draw.DrawSimpleRect(1, 0, 1, h * 0.93, color_black)
+	self.bardraw = vgui.Create("DPanel", self)
+	self.bardraw:SetPos(self:GetWide() - 98, 24)
+	self.bardraw:SetSize(125, self:GetTall() - 62)
+	
+	self.bardraw.Paint = function(self, w, h)
+		draw.DrawSimpleRect(1, 0, 1, self:GetParent():GetTall() - 62, color_black)
 	end
 	
 	self.removeOne = vgui.Create("DButton", self)
@@ -95,7 +98,7 @@ function PANEL:Init()
 	self.removeOne.Paint = PaintButton
 	self.removeOne.DoClick = function()
 		if LocalPlayer():IsZM() then
-			if #self.queue:GetItems() > 0 then
+			if self.queue.PanelList and #self.queue.PanelList > 0 then
 				net.Start("zm_rqueue")
 					net.WriteEntity(self:GetCurrent())
 					net.WriteBool(false)
@@ -116,8 +119,10 @@ function PANEL:Init()
 	self.clearQueue.Paint = PaintButton
 	self.clearQueue.DoClick = function()
 		if LocalPlayer():IsZM() then
-			if #self.queue:GetItems() > 0 then
-				self.queue:Clear()
+			if self.queue.PanelList and #self.queue.PanelList > 0 then
+				for _, img in pairs(self.queue.PanelList) do
+					img:Remove()
+				end
 				
 				net.Start("zm_rqueue")
 					net.WriteEntity(self:GetCurrent())
@@ -252,12 +257,27 @@ function PANEL:AddQueue(type)
 	image:SetImage(smallImage)
 	image:SetSize(32, 32)
 	
-	self.queue:AddItem(image)
+	self.queue:Add(image)
+	
+	if not self.queue.PanelList then self.queue.PanelList = {} end
+	self.queue.PanelList[#self.queue.PanelList + 1] = image
 end
 
 function PANEL:UpdateQueue()
-	local items = self.queue:GetItems()
-	self.queue:RemoveItem(table.GetFirstValue(items))
+	if not self.queue.PanelList then return end
+	
+	local items = self.queue.PanelList
+	local item
+	for i=1, #items do
+		if IsValid(items[i]) then
+			item = items[i]
+			break
+		end
+	end
+	
+	if not IsValid(item) then return end
+	
+	item:Remove()
 end
 
 function PANEL:Close()

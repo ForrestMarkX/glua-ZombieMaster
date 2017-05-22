@@ -3,41 +3,28 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
-function ENT:Initialize()
-	self:SetModel("models/zombie/burnzie.mdl")
-	
-	self:SetHullSizeNormal()
-	self:SetHullType(HULL_HUMAN)
-	
-	self:SetSolid(SOLID_BBOX)
-	self:SetMoveType(MOVETYPE_STEP)
-	self:CapabilitiesAdd(CAP_MOVE_GROUND)
-	
-	self:SetMaxYawSpeed(5000)
-	self:SetHealth(100)
-	
-	self:ClearSchedule()
-	
-	self:UpdateEnemy(self:FindEnemy())
-	self:SetSchedule(SCHED_IDLE_STAND)
+ENT.AttackDamage = 8
+ENT.CanSwatPhysicsObjects = false
+ENT.FootStepTime = 0.3
 
-	self.damage = 8
+ENT.AttackSounds = "NPC_BurnZombie.Scream"
+ENT.DeathSounds  = "NPC_BurnZombie.Die"
+ENT.PainSounds   = "NPC_BurnZombie.Pain"
+ENT.MoanSounds   = "NPC_BurnZombie.Idle"
+ENT.AlertSounds	 = "NPC_BurnZombie.Alert"
 
-	self.attackSounds = "npc/stalker/go_alert2.wav"
-	self.deathSounds = "npc/barnacle/neck_snap2.wav"
-	self.painSounds = "npc/barnacle/neck_snap1.wav"
-	self.tauntSounds = "npc/stalker/breathing3.wav"
-end
-
-function ENT:Think()
-	if self.nextIdle < CurTime() then
-		self:PlayVoiceSound(self.tauntSounds)
-		self.nextIdle = CurTime() + math.random(15, 25)
+function ENT:CustomThink()
+	if self:WaterLevel() >= 2 then
+		self:TakeDamage(self:Health(), self, self)
+		return
+	end
+	
+	if self.OnFire and self:GetMovementActivity() ~= ACT_WALK_ON_FIRE then
+		self:SetMovementActivity(ACT_WALK_ON_FIRE)
 	end
 	
 	local enemy = self:GetEnemy()
-	
- 	if IsValid(enemy) and not self.onFire and enemy:GetPos():Distance(self:GetPos()) < 250 then
+ 	if IsValid(enemy) and not self.OnFire and enemy:GetPos():Distance(self:GetPos()) < 250 and enemy:IsPlayer() then
 		for i = 1, 2 do
 			local fire = ents.Create("env_fire")
 			fire:SetParent(self)
@@ -51,32 +38,38 @@ function ENT:Think()
 			fire:SetKeyValue("spawnflags", "132")
 			fire:Spawn()
 			fire:Fire("StartFire", "", 0)
+			fire:SetOwner(self)
 		end
 		
-		timer.Simple(3, function()
-			if IsValid(self) then
-				util.BlastDamageEx(self, enemy, self:GetPos(), 128, math.random(10, 20), DMG_BURN)
-				
-				local effect = EffectData()
-					effect:SetOrigin(self:GetPos())
-					effect:SetScale(2)
-				util.Effect("Explosion", effect, true, true)
+		timer.Simple(5, function()
+			if not IsValid(self) or self.Dead then return end
 			
-				self:Death()
-			end
+			self:EmitSound("PropaneTank.Burst")
+			
+			local dmginfo = DamageInfo()
+				dmginfo:SetAttacker(enemy)
+				dmginfo:SetInflictor(self)
+				dmginfo:SetDamage(math.random(10, 20))
+				dmginfo:SetDamagePosition(self:GetPos())
+				dmginfo:SetDamageType(DMG_BURN)
+			util.BlastDamageInfo(dmginfo, self:GetPos(), 128)
+			
+			local effect = EffectData()
+				effect:SetOrigin(self:GetPos())
+				effect:SetScale(2)
+			util.Effect("Explosion", effect, true, true)
+		
+			self:TakeDamage(self:Health(), self, self)
 		end)
 
-		self:PlayVoiceSound(self.attackSounds)
-		self.onFire = true
-	end
-
-	if self.isMoving and self.moveTime < CurTime() then
-		local sound = self:PlayVoiceSound(self.moveSounds)
-		self.moveTime = CurTime() + SoundDuration(sound)
+		self:PlayVoiceSound(self.AttackSounds)
+		self.OnFire = true
 	end
 end
 
-function ENT:OnRemove()
+function ENT:OnDeath(killer)
+	if self:WaterLevel() >= 2 then return end
+	
 	for i = 1, 5 do
 		local fire = ents.Create("env_fire")
 		fire:SetPos(self:GetPos() + Vector(math.random(-40, 40), math.random(-40, 40), 0))
@@ -89,13 +82,19 @@ function ENT:OnRemove()
 		fire:SetKeyValue("spawnflags", "132")
 		fire:Spawn()
 		fire:Fire("StartFire", "", 0)
-		
-		fire:SetOwner(self)
 	end
 end
 
 function ENT:OnTakeDamage(dmginfo)
 	local attacker, inflictor = dmginfo:GetAttacker(), dmginfo:GetInflictor()
+	if not IsValid(attacker) then
+		attacker = self
+	end
+	
+	if not IsValid(inflictor) then
+		inflictor = self
+	end
+	
 	local attackowner = attacker:GetOwner()
 	if IsValid(attacker) and attacker:GetClass() == "env_fire" and IsValid(attackowner) and attackowner:GetClass() == self:GetClass() then
 		dmginfo:SetDamage(0)
@@ -104,18 +103,4 @@ function ENT:OnTakeDamage(dmginfo)
 	end
 	
 	self.BaseClass.OnTakeDamage(self, dmginfo)
-end
-
-function ENT:SelectSchedule()
-	local enemy = self:GetEnemy()
-	local sched = SCHED_IDLE_STAND
-	
-	if enemy and enemy:IsValid() then
-		sched = SCHED_CHASE_ENEMY
-		self.isMoving = true
-	else
-		self:UpdateEnemy(self:FindEnemy())
-	end
-	
-	self:SetSchedule(sched)
 end

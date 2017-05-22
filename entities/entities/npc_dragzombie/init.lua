@@ -3,53 +3,15 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
-function ENT:Initialize()
-	self:SetModel("models/humans/zm_draggy.mdl")
-	
-	self:SetHullSizeNormal()
-	self:SetHullType(HULL_HUMAN)
-	
-	self:SetSolid(SOLID_BBOX)
-	self:SetMoveType(MOVETYPE_STEP)
-	self:CapabilitiesAdd(bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1))
-	
-	self:SetMaxYawSpeed(5000)
-	self:SetHealth(100)
-	
-	self:ClearSchedule()
-	
-	self:UpdateEnemy(self:FindEnemy())
-	self:SetSchedule(SCHED_IDLE_STAND)
+ENT.AttackDamage = 10
+ENT.AttackRange	 = 64
+ENT.NextDoorFind = CurTime()
+ENT.CanSwatPhysicsObjects = false
 
-	self.damage = 10
-	self.nextAttack = 0.8
-	self.nextDoorFind = CurTime()
-	
-	self.deathSounds = {
-		"npc/barnacle/barnacle_tongue_pull1.wav",
-		"npc/barnacle/barnacle_tongue_pull2.wav",
-		"npc/barnacle/barnacle_tongue_pull3.wav"
-	}
-	
-	self.painSounds = {
-		"npc/barnacle/barnacle_pull1.wav",
-		"npc/barnacle/barnacle_pull2.wav",
-		"npc/barnacle/barnacle_pull3.wav",
-		"npc/barnacle/barnacle_pull4.wav"
-	}
-	
-	self.tauntSounds = {
-		"npc/barnacle/barnacle_digesting1.wav",
-		"npc/barnacle/barnacle_digesting2.wav"
-	}
-	
-	self.attackSounds = {
-		"npc/barnacle/barnacle_pull1.wav",
-		"npc/barnacle/barnacle_pull2.wav",
-		"npc/barnacle/barnacle_pull3.wav",
-		"npc/barnacle/barnacle_pull4.wav"
-	}
-end
+ENT.DeathSounds  = "NPC_DragZombie.Die"
+ENT.PainSounds   = "NPC_DragZombie.Pain"
+ENT.MoanSounds   = "NPC_DragZombie.Idle"
+ENT.AlertSounds  = "NPC_DragZombie.Alert"
 
 function ENT:FindDoor()
 	local position = self:GetPos() + Vector(0, 0, 25)
@@ -67,70 +29,33 @@ function ENT:FindDoor()
 	return NULL
 end
 
-function ENT:Think()
-	if self.nextIdle < CurTime() then
-		self:PlayVoiceSound(self.tauntSounds)
-		self.nextIdle = CurTime() + math.random(15, 25)
+function ENT:PerformAttack()
+	if self.IsAttacking then
+		local enemy = self:GetEnemy()
+		if IsValid(enemy) and enemy:GetPos():Distance(self:GetPos()) <= self:GetClawAttackRange() then
+			local effect = EffectData()
+				effect:SetOrigin(enemy:GetPos() + Vector(0, 0, 40))
+				effect:SetScale(4)
+				effect:SetEntity(enemy)
+				effect:SetColor(enemy:GetBloodColor())
+			util.Effect("BloodImpact", effect, true, true)
+		
+			enemy:TakeDamage(self.AttackDamage, self)
+			self:EmitSound("NPC_DragZombie.MeleeAttack")
+		end
 	end
-	
-	if not self.attack and self.nextDoorFind + 4 < CurTime() then
+end
+
+function ENT:CustomThink()
+	if not self.IsAttacking and self.NextDoorFind + 4 < CurTime() then
 		local door = self:FindDoor()
 		
 		if IsValid(door) then
 			door:Fire("open", "", 0.1)
-			
-			-- YARRRR.
-			self:PlayVoiceSound(self.tauntSounds)
-			self.nextIdle = CurTime() + math.random(15, 25)
+			self:PlayVoiceSound(self.MoanSounds)
+			self.NextIdleMoan = CurTime() + math.random(15, 25)
 		end
 		
-		self.nextDoorFind = CurTime()
+		self.NextDoorFind = CurTime()
 	end
-	
-	if self.attack and self.attackTime + self.nextAttack < CurTime() then
-		local enemy = self:GetEnemy()
-
-		if enemy and enemy:IsValid() and enemy:GetPos():Distance(self:GetPos()) < 64 then
-			local effect = EffectData()
-				effect:SetOrigin(enemy:GetPos() +Vector(0, 0, 40))
-				effect:SetScale(4)
-			util.Effect("BloodImpact", effect, true, true)
-		
-			enemy:TakeDamage(self.damage, self)
-			self:EmitSound(Sound("npc/antlion_grub/squashed.wav"), 100, math.random(90, 110))
-		end
-		
-		self.attack = false
-		self.attackTime = CurTime()
-	end
-	
-	if self.isMoving and self.moveTime < CurTime() then
-		local sound = self:PlayVoiceSound(self.moveSounds)
-		self.moveTime = CurTime() +SoundDuration(sound) +math.random(0.5, 1)
-	end
-end
-
-function ENT:SelectSchedule()
-	local enemy = self:GetEnemy()
-	local sched = SCHED_IDLE_STAND
-	
-	if enemy and enemy:IsValid() then
-		local melee = self:HasCondition(23)
-		
-		if melee and not self.attack then 
-			sched = SCHED_MELEE_ATTACK1
-			
-			self.isMoving = false
-			self.attack = true
-		else
-			sched = SCHED_CHASE_ENEMY
-			
-			self.isMoving = true
-			self.attack = false
-		end
-	else
-		self:UpdateEnemy(self:FindEnemy())
-	end
-	
-	self:SetSchedule(sched)
 end
