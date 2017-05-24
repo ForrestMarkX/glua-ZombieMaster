@@ -112,16 +112,15 @@ function ENT:Think()
 					pSpawn.AmmoAmount = GAMEMODE.AmmoCache[GAMEMODE.AmmoClass[class]]
 					pSpawn.AmmoType = GAMEMODE.AmmoClass[class]
 					pSpawn.ClassName = class
+					
+					pSpawn = hook.Call("CreateCustomAmmo", GAMEMODE, pSpawn, true)
+				else
+					pSpawn = hook.Call("CreateCustomWeapons", GAMEMODE, pSpawn, true)
 				end
 				
-				local vecOrigin = Vector(math.Rand(-0.25, 0.25), math.Rand(-0.25, 0.25), math.Rand(-0.25, 0.25))
-				pSpawn:SetPos( self:GetPos() + vecOrigin )
-
-				local vecAngles = Angle(math.Rand( -20.0, 20.0 ), math.Rand( 0.0, 360.0 ), math.Rand( -20.0, 20.0 ))
-				pSpawn:SetAngles( self:GetAngles() + vecAngles )
-
-				local vecActualVelocity = Vector(math.random(-10.0, 10.0), math.random(-10.0, 10.0), math.random(-10.0, 10.0))
-				pSpawn:SetVelocity( self:GetVelocity() + vecActualVelocity )
+				pSpawn:SetPos( self:GetPos() + VectorRand() )
+				pSpawn:SetAngles( self:GetAngles() + AngleRand() )
+				pSpawn:SetVelocity( VectorRand() * 3 )
 
 				pSpawn:Spawn()
 			end

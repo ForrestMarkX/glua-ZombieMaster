@@ -31,7 +31,7 @@ SWEP.Primary.MinDamage			= 20
 SWEP.Primary.MaxDamage			= 30
 SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 1.2
-SWEP.Primary.Cone 				= 0.0200
+SWEP.Primary.Cone 				= 0.0075
 
 SWEP.Primary.Automatic   		= false
 SWEP.Primary.Ammo         		= "revolver"

@@ -30,14 +30,7 @@ local function ModelSelectionOpen()
 
 	local PanelSelect = sheet:Add("DPanelSelect")
 
-	local playermodels = player_manager.AllValidModels()
-	playermodels["zombie"] = nil
-	playermodels["zombiefast"] = nil
-	playermodels["corpse"] = nil
-	playermodels["charple"] = nil
-	playermodels["skeleton"] = nil
-	playermodels["zombine"] = nil
-	for name, model in SortedPairs(playermodels) do
+	for name, model in SortedPairs(player_manager.AllValidModels()) do
 		local icon = vgui.Create("SpawnIcon")
 		icon:SetModel(model)
 		icon:SetSize(64, 64)

@@ -129,9 +129,11 @@ end
 function PLAYER:Think()
 	BaseClass.Think(self)
 	
-	if GAMEMODE.Income_Time ~= 0 and GAMEMODE.Income_Time <= CurTime() then
+	if GAMEMODE.Income_Time and GAMEMODE.Income_Time ~= 0 and GAMEMODE.Income_Time <= CurTime() then
 		self.Player:AddZMPoints(self.Player:GetZMPointIncome())
-		GAMEMODE.Income_Time = CurTime() + GetConVar("zm_incometime"):GetInt()
+		
+		local time = GetConVar("zm_incometime"):GetInt()
+		GAMEMODE.Income_Time = CurTime() + math.random(time, time * 2)
 	end
 end
 

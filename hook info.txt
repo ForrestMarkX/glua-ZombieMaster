@@ -108,3 +108,6 @@ GM:GetZombieMasterVolunteer()
 
 Hook. Adds all the friend relationships defined in the zombies Friends table
 GM:AddNPCFriends(Entity npc, Entity ent)
+
+Hook. Randomly replaces a ent with a item crate based on player count. Class argument is optional
+GM:ReplaceItemWithCrate(Entity ent, String class)

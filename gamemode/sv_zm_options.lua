@@ -1,6 +1,13 @@
 CreateConVar("zm_physexp_forcedrop_radius", "128", FCVAR_NOTIFY, "Radius in which players are forced to drop what they carry so that the physexp can affect the objects.")
 CreateConVar("zm_loadout_disable", "0", FCVAR_NOTIFY, "If set to 1, any info_loadout entity will not hand out weapons. Not recommended unless you're intentionally messing with game balance and playing on maps that support this move.")
 
+CreateConVar("zm_disableplayercollision", "0", FCVAR_NOTIFY, "Disables player to player collisions.")
+cvars.AddChangeCallback("zm_disableplayercollision", function(convar_name, value_old, value_new)
+	for _, ply in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+		ply:SetCustomCollisionCheck(true)
+	end
+end)
+
 CreateConVar("zm_debug_nozombiemaster", "0", FCVAR_NOTIFY + FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE, "Used for debug, will not cause players to become the ZM.")
 
 concommand.Add("zm_forceround_reboot", function(ply, cmd, args)
@@ -72,7 +79,7 @@ CreateConVar("zm_roundlimit","2", FCVAR_NOTIFY, "Sets the number of rounds befor
 CreateConVar("zm_banshee_limit", "-1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Sets maximum number of banshees per survivor that the ZM is allowed to have active at once. Set to 0 or lower to remove the cap. Disabled by default since new population system was introduced that in practice includes a banshee limit.")
 CreateConVar("zm_trap_triggerrange", "96", FCVAR_NONE, "The range trap trigger points have.")
 CreateConVar("zm_spawndelay", "0.75", FCVAR_NOTIFY, "Delay between creation of zombies at zombiespawn.")
-CreateConVar("zm_incometime", "5", FCVAR_NOTIFY, "Amount of time in seconds the Zombie Master gains resources.")
+CreateConVar("zm_incometime", "8", FCVAR_NOTIFY, "Amount of time in seconds the Zombie Master gains resources.")
 CreateConVar("zm_resourcegainperplayerdeathmin", "50", FCVAR_NOTIFY, "Min amount of resources the Zombie Master gains per player death.")
 CreateConVar("zm_resourcegainperplayerdeathmax", "100", FCVAR_NOTIFY, "Max amount of resources the Zombie Master gains per player death.")
 CreateConVar("zm_notimeslowonwin", "0", FCVAR_NOTIFY, "Disables time slowing down when someone wins a game.")

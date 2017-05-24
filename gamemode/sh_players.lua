@@ -41,15 +41,13 @@ function meta:GetZMPointIncome()
 	return self:GetDTInt(2)
 end
 
-if not meta.OldAlive then
-	meta.OldAlive = meta.Alive
-	function meta:Alive()
-		if self:IsZM() then
-			return true
-		end
-
-		return self:OldAlive()
+meta.OldAlive = meta.OldAlive or meta.Alive
+function meta:Alive()
+	if self:IsZM() then
+		return true
 	end
+
+	return self:OldAlive()
 end
 
 local VoiceSets = {}

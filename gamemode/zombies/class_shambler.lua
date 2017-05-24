@@ -22,9 +22,10 @@ NPC.Model = {
 }
 
 function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
-	if bit.band(dmginfo:GetDamageType(), DMG_BLAST) then
+	if bit.band(dmginfo:GetDamageType(), DMG_BLAST) ~= 0 then
 		dmginfo:SetDamageType(DMG_GENERIC)
 		dmginfo:SetDamage(dmginfo:GetDamage() * 2)
+		npc:Ignite(8)
 	end
 	
 	self.BaseClass.OnTakeDamage(self, npc, attacker, inflictor, dmginfo)

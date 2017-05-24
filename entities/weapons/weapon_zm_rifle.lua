@@ -64,7 +64,7 @@ function SWEP:SecondaryAttack()
 	if zoomed then
 		owner:SetFOV(owner:GetInfo("fov_desired"), 0.15)
 	else
-		owner:SetFOV(owner:GetInfo("fov_desired") * 0.25, 0.15)
+		owner:SetFOV(owner:GetInfo("fov_desired") * 0.25, 0.3)
 	end
 end
 

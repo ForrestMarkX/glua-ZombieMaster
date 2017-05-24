@@ -10,7 +10,8 @@ NPC.DieSound = "NPC_PoisonZombie.Die"
 
 NPC.Model = "models/zombie/hulk.mdl"
 NPC.HullType = HULL_MEDIUM_TALL
-NPC.SolidType = SOLID_OBB
+NPC.HullSizeMins = Vector(18, 18, 90)
+NPC.HullSizeMaxs = Vector(-18, -18, 0)
 
 function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 	if hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG then

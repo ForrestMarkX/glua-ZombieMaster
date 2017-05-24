@@ -5,6 +5,7 @@ function PANEL:Init()
 	self.AvatarButton:AlignLeft(18)
 	self.AvatarButton:SetSize(32, 32)
 	self.AvatarButton.DoClick = function() self.Player:ShowProfile() end
+	self.AvatarButton.Paint = function() return true end
 
 	self.Avatar = vgui.Create("AvatarImage", self.AvatarButton)
 	self.Avatar:SetSize(32, 32)

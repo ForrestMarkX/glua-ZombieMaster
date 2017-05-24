@@ -130,7 +130,7 @@ function PLAYER:PreDeath(inflictor, attacker)
 	if attacker:IsPlayer() then
 		net.Start("PlayerKilledByPlayer")
 			net.WriteEntity(self.Player)
-			net.WriteString(inflictor:GetClass())
+			net.WriteString(IsValid(inflictor) and inflictor:GetClass() or "")
 			net.WriteEntity(attacker)
 		net.Broadcast()
 		
@@ -154,7 +154,7 @@ function PLAYER:PreDeath(inflictor, attacker)
 		
 		net.Start("PlayerKilledByNPC")
 			net.WriteEntity(self.Player)
-			net.WriteString(inflictor:GetClass())
+			net.WriteString(IsValid(inflictor) and inflictor:GetClass() or "")
 			net.WriteString(attackername)
 		net.Broadcast()
 		
@@ -163,8 +163,8 @@ function PLAYER:PreDeath(inflictor, attacker)
 	
 	net.Start("PlayerKilled")
 		net.WriteEntity(self.Player)
-		net.WriteString(inflictor:GetClass())
-		net.WriteString(attacker:GetClass())
+		net.WriteString(IsValid(inflictor) and inflictor:GetClass() or "")
+		net.WriteString(IsValid(attacker) and attacker:GetClass() or "")
 	net.Broadcast()
 	
 	MsgAll(self.Player:Nick() .. " was killed by " .. attacker:GetClass() .. "\n")

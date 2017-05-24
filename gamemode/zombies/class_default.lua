@@ -51,6 +51,7 @@ function NPC:OnSpawned(npc)
 	npc:SetSolid(self.SolidType)
 	npc:SetMoveType(self.MoveType)
 	npc:SetNW2Bool("selected", false)
+	npc:SetNW2Bool("bDead", false)
 	
 	if self.Health and self.Health ~= 0 then
 		npc:SetHealth(self.Health)
@@ -59,6 +60,8 @@ function NPC:OnSpawned(npc)
 	if self.MaxYawSpeed then
 		npc:SetMaxYawSpeed(self.MaxYawSpeed)
 	end
+	
+	npc:SetHullSizeNormal()
 
 	npc:UpdateEnemy(npc:FindEnemy())
 end

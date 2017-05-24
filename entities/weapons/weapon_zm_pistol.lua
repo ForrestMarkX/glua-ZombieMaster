@@ -33,7 +33,7 @@ SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 0.25
 SWEP.Primary.Cone 				= 0.023
 
-SWEP.Primary.Automatic   		= false
+SWEP.Primary.Automatic   		= true
 SWEP.Primary.Ammo         		= "pistol"
 
 SWEP.Secondary.Delay 			= 0.3

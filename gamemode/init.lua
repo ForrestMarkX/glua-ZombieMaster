@@ -45,6 +45,7 @@ GM.DeadPlayers = {}
 GM.ReadyTimer = 0
 GM.DontConvertProps = true
 GM.PostMapSetup = false
+GM.PlayerHeldObjects = {}
 
 GM.Income_Time = 0
 
@@ -56,7 +57,7 @@ function GM:InitPostEntity()
 	RunConsoleCommand("mapcyclefile", "mapcycle_zombiemaster.txt")
 	hook.Call("InitPostEntityMap", self)
 	
-	local ammotbl = hook.Call("GetCustomAmmo", GAMEMODE)
+	local ammotbl = hook.Call("GetCustomAmmo", self)
 	if #ammotbl > 0 then
 		for _, ammo in pairs(ammotbl) do
 			CreateConVar("zm_maxammo_"..ammo.Type, ammo.MaxCarry, FCVAR_REPLICATED, "Max "..ammo.Type.." ammo that players can hold.")
@@ -89,6 +90,26 @@ function GM:InitPostEntityMap()
 		
 		for _, ent in pairs(ents.FindByClass("func_physbox")) do
 			self:ConvertEntTo(ent, "func_physbox_multiplayer")
+		end
+	end
+	
+	for _, wep in pairs(ents.FindByClass("weapon_zm_*")) do
+		hook.Call("ReplaceItemWithCrate", self, wep)
+		
+		if IsValid(wep) then
+			hook.Call("CreateCustomWeapons", self, wep)
+		end
+	end
+	
+	for _, ewep in pairs(ents.FindByClass("weapon_*")) do
+		self:ConvertWeapon(ewep)
+	end
+	
+	for _, ammo in pairs(ents.FindByClass("item_zm_ammo")) do
+		hook.Call("ReplaceItemWithCrate", self, ammo, ammo.ClassName)
+		
+		if IsValid(ammo) then
+			hook.Call("CreateCustomAmmo", self, ammo)
 		end
 	end
 	
@@ -175,8 +196,8 @@ function GM:ConvertWeapon(wep)
 	end
 end
 
-function GM:CreateCustomWeapons(ent)
-	local weptbl = hook.Call("GetCustomWeapons", GAMEMODE)
+function GM:CreateCustomWeapons(ent, bNoSpawn)
+	local weptbl = hook.Call("GetCustomWeapons", self)
 	if #weptbl > 0 then
 		local weptab = weptbl[ent:GetClass()]
 		if weptab and math.random() > weptab.Chance then
@@ -184,7 +205,7 @@ function GM:CreateCustomWeapons(ent)
 			if IsValid(wep) then
 				wep:SetPos(ent:GetPos())
 				wep:SetAngles(ent:GetAngles())
-				wep:Spawn()
+				if not bNoSpawn then wep:Spawn() end
 				
 				return wep
 			end
@@ -194,15 +215,16 @@ function GM:CreateCustomWeapons(ent)
 	return ent
 end
 
-function GM:CreateCustomAmmo(ent)
-	local ammotbl = hook.Call("GetCustomAmmo", GAMEMODE)
+function GM:CreateCustomAmmo(ent, bNoSpawn)
+	local ammotbl = hook.Call("GetCustomAmmo", self)
 	if #ammotbl > 0 then
-		if math.random() > ammotbl[ent.AmmoType].Chance then
-			local ammoent = ents.Create(ammotbl[ent.AmmoType].Class)
+		local ammotab = ammotbl[ent.AmmoType]
+		if ammotab and math.random() > ammotab.Chance then
+			local ammoent = ents.Create(ammotab.Class)
 			if IsValid(ammoent) then
 				ammoent:SetPos(ent:GetPos())
 				ammoent:SetAngles(ent:GetAngles())
-				ammoent:Spawn()
+				if not bNoSpawn then ammoent:Spawn() end
 				
 				return ammoent
 			end
@@ -215,15 +237,6 @@ end
 function GM:OnEntityCreated(ent)
 	if self.PostMapSetup and (string.sub(ent:GetClass(), 1, 10) == "item_ammo_" or string.sub(ent:GetClass(), 1, 9) == "item_box_") then
 		timer.Simple(0.335, function() self:ConvertAmmo(ent) end)
-	end
-	
-	if ent:IsWeapon() then
-		if not ent.Dropped then ent = hook.Call("CreateCustomWeapons", GAMEMODE, ent) end
-		self:ConvertWeapon(ent)
-	end
-	
-	if ent:GetClass() == "item_zm_ammo" then
-		ent = hook.Call("CreateCustomAmmo", GAMEMODE, ent)
 	end
 	
 	if ent:IsNPC() then
@@ -251,6 +264,25 @@ function GM:OnEntityCreated(ent)
 		
 		for _, npc in pairs(ents.FindByClass("npc_*")) do
 			hook.Call("AddNPCFriends", self, npc, ent)
+		end
+	end
+end
+
+function GM:ReplaceItemWithCrate(ent, class)
+	local playercount = player.GetCount()
+	if math.random() < math.min(playercount / 100, 1) then
+		local crate = ents.Create("item_item_crate")
+		if IsValid(crate) then
+			local itemcount = math.ceil(playercount / 10)
+			if itemcount > 1 then
+				crate:SetPos(ent:GetPos())
+				crate:SetAngles(ent:GetAngles())
+				crate:SetKeyValue("itemclass", class or ent:GetClass())
+				crate:SetKeyValue("itemcount", itemcount)
+				crate:Spawn()
+				
+				ent:Remove()
+			end
 		end
 	end
 end
@@ -509,8 +541,9 @@ end
 
 function GM:PlayerSay(sender, text, teamChat)
 	if string.lower(text) == "!roundsleft" then
-		local roundsleft = GetConVar("zm_roundlimit"):GetInt() - self.RoundsPlayed
-		PrintMessage(HUD_PRINTTALK, "There is currently "..roundsleft.." rounds left.")
+		local roundsleft = (GetConVar("zm_roundlimit"):GetInt() - self.RoundsPlayed) + 1
+		local roundtext = Either(roundsleft == 1, "round", "rounds")
+		PrintMessage(HUD_PRINTTALK, "There is currently "..roundsleft.." "..roundtext.." left.")
 	end
 	
 	return BaseClass.PlayerSay(self, sender, text, teamChat)
@@ -791,7 +824,6 @@ function GM:EntityTakeDamage(ent, dmginfo)
 
 	if ent:IsPlayerHolding() and damage > 10 then
 		DropEntityIfHeld(ent)
-		ent:SetCollisionGroup(ent._OldCG or COLLISION_GROUP_NONE)
 		
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
@@ -855,6 +887,11 @@ function GM:EntityTakeDamage(ent, dmginfo)
             ent.LastExplosionTime = CurTime()
         end
     end
+	
+	hook.Call("PostEntityTakeDamage", self, ent, dmginfo)
+end
+
+function GM:PostEntityTakeDamage(ent, dmginfo)
 end
 
 function GM:SetRoundStartTime(time)
@@ -866,18 +903,7 @@ function GM:GetRoundStartTime()
 end
 
 function GM:PlayerPostThink(pl)
-	self:CheckIfPlayerStuck(pl)
 	player_manager.RunClass(pl, "PostThink")
-end
-
-function GM:StartCommand(ply, ucmd)
-	if ply:IsSurvivor() and (ucmd:KeyDown(IN_ATTACK) or ucmd:KeyDown(IN_ATTACK2)) then
-		if IsValid(ply.HeldObject) then
-			ply.HeldObject:SetCollisionGroup(ply.HeldObject._OldCG or COLLISION_GROUP_NONE)
-			ply.HeldObject._OldCG = nil
-			ply.HeldObject = nil
-		end
-	end
 end
 
 function GM:Tick()
@@ -896,23 +922,36 @@ function GM:Think()
 		player_manager.RunClass(ply, "Think")
 	end
 	
+	for ent, b in pairs(self.PlayerHeldObjects) do
+		if not IsValid(ent) then continue end
+		
+		if not ent:IsPlayerHolding() then 
+			local colgroup = Either(ent._OldCG == COLLISION_GROUP_WEAPON, COLLISION_GROUP_NONE, ent._OldCG) or COLLISION_GROUP_NONE
+			ent:SetCollisionGroup(colgroup)
+			
+			self.PlayerHeldObjects[ent] = nil
+		end
+	end
+	
 	if NextTick <= time then
 		NextTick = time + 1
 		
-		local playercount = player.GetCount()
-		if playercount >= 32 then
-			if not self.SetNoCollidePlayers then
+		if not GetConVar("zm_disableplayercollision"):GetBool() then
+			local playercount = player.GetCount()
+			if playercount > 16 then
+				if not self.SetNoCollidePlayers then
+					for i= 1, #players do
+						local ply = players[i]
+						ply:SetCustomCollisionCheck(true)
+					end
+					
+					self.SetNoCollidePlayers = true
+				end
+			elseif self.SetNoCollidePlayers then
 				for i= 1, #players do
 					local ply = players[i]
-					ply:SetNoCollideWithTeammates(true)
+					ply:SetCustomCollisionCheck(false)
 				end
-				
-				self.SetNoCollidePlayers = true
-			end
-		elseif self.SetNoCollidePlayers then
-			for i= 1, #players do
-				local ply = players[i]
-				ply:SetNoCollideWithTeammates(false)
 			end
 		end
 		
@@ -954,15 +993,15 @@ function GM:ShowSpare1(pl)
 end
 
 function GM:PlayerDisconnected(ply)
-	if self:GetRoundActive() then
-		timer.Simple(0.1, function()
+	timer.Simple(0.1, function()
+		if (player.GetCount() == 1 or player.GetCount() == 0) or self:GetRoundActive() then
 			if team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 then
 				hook.Call("TeamVictorious", self, true, "zombiemaster_left")
 			elseif team.NumPlayers(TEAM_SURVIVOR) <= 0 then
 				hook.Call("TeamVictorious", self, false, "all_humans_left")
 			end
-		end)
-	end
+		end
+	end)
 	
 	self.DeadPlayers[ply:SteamID()] = true
 end
@@ -1088,6 +1127,8 @@ function GM:AllowPlayerPickup(pl, ent)
 		ent._OldCG = Either(ent:GetCollisionGroup() == COLLISION_GROUP_WEAPON, COLLISION_GROUP_NONE, ent:GetCollisionGroup())
 		ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 		pl:PickupObject(ent)
+		
+		self.PlayerHeldObjects[ent] = true
 		
 		return false
 	end
@@ -1231,7 +1272,7 @@ end
 -- Antistuck code by Heox and Soldner42
 local NextCheck = 0
 function GM:CheckIfPlayerStuck(pl)
-	if self.SetNoCollidePlayers then return end
+	if self.SetNoCollidePlayers or GetConVar("zm_disableplayercollision"):GetBool() then return end
 	
 	if NextCheck < CurTime() and pl:IsSurvivor() then
 		NextCheck = CurTime() + 0.1

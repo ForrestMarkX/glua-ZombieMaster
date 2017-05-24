@@ -11,6 +11,8 @@ NPC.Model = "models/zombie/zm_fast.mdl"
 NPC.DelaySetModel = true
 NPC.DieSound = "NPC_FastZombie.Die"
 NPC.CanClingToCeiling = true
+NPC.HullSizeMins = Vector(13, 13, 50)
+NPC.HullSizeMaxs = Vector(-13, -13, 0)
 
 if SERVER then
 	NPC.Capabilities = bit.bor(CAP_MOVE_GROUND, CAP_MOVE_JUMP, CAP_MOVE_CLIMB, CAP_INNATE_MELEE_ATTACK1, CAP_INNATE_RANGE_ATTACK1, CAP_SKIP_NAV_GROUND_CHECK)
@@ -21,11 +23,6 @@ function NPC:OnSpawned(npc)
 	
 	npc.NextLeap = CurTime()
 	npc:SetNW2Bool("bClingingCeiling", false)
-	
-	timer.Simple(0, function()
-		npc:SetModelScale(0.855)
-		npc:SetHullSizeNormal()
-	end)
 end
 
 function NPC:OnKilled(npc, attacker, inflictor)
@@ -69,6 +66,8 @@ function NPC:CheckCeiling(npc, maxheight)
 			local targetang = npc:GetAngles()
 			targetang.roll = -180
 			
+			npc.OldPos = startpos
+			
 			local timername = "npc_gotoceiling:"..npc:EntIndex()
 			timer.Create(timername, 0, 0, function()
 				if not IsValid(npc) or not npc.m_bClinging then timer.Remove(timername) return end
@@ -92,14 +91,15 @@ function NPC:CheckCeiling(npc, maxheight)
 end
 
 function NPC:GetClingAmbushTarget(npc)
-	local count = ents.FindInSphere(npc:GetPos(), 64)
+	local pos = npc.OldPos or npc:GetPos()
+	local count = ents.FindInSphere(pos, 64)
 	
 	local nearest = NULL
 	local nearest_dist = 0
 	for _, ent in pairs(count) do
 		if not ent:IsPlayer() or not ent:IsSurvivor() then continue end
 
-		local current_dist = npc:GetPos():Distance(ent:GetPos())
+		local current_dist = pos:Distance(ent:GetPos())
 		if not IsValid(nearest) or nearest_dist > current_dist then
 			nearest = ent
 			nearest_dist = current_dist
@@ -119,7 +119,7 @@ function NPC:DetachFromCeiling(npc)
 	npc:SetNW2Bool("bClingingCeiling", false)
 	npc:SetMoveType(self.MoveType)
 	
-	npc:SetPos(npc:GetPos() - Vector(0, 0, npc:OBBMaxs().z * 0.95))
+	npc:SetPos(npc:GetPos() - Vector(0, 0, npc:OBBMaxs().z))
 	npc:SetAngles(Angle(0, 0, 0))
 end
 
@@ -135,6 +135,6 @@ function NPC:Think(npc)
 			return
 		end
 		
-		npc.m_flLastClingCheck = CurTime() + 1.0
+		npc.m_flLastClingCheck = CurTime() + 0.25
 	end
 end

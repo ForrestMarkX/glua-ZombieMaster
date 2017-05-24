@@ -111,6 +111,10 @@ function GM:PostPlayerDraw(pl)
 	if not player_manager.RunClass(LocalPlayer(), "PostDraw", pl) then return true end
 end
 
+function GM:Think()
+	player_manager.RunClass(LocalPlayer(), "Think")
+end
+
 local startVal = 0
 local endVal = 1
 local fadeSpeed = 1.6
@@ -303,7 +307,13 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				
 				net.Start("zm_placerally")
 					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
+					net.WriteEntity(TriggerEnt)
 				net.SendToServer()
+				
+				if IsValid(GAMEMODE.ZombiePanelMenu) then
+					GAMEMODE.ZombiePanelMenu:SetVisible(true)
+					GAMEMODE.ZombiePanelMenu = nil
+				end
 				
 				placingRally = false			
 				zm_placedrally = true			
@@ -312,7 +322,6 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				
 				net.Start("zm_create_ambush_point")
 					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
-					net.WriteEntity(TriggerEnt)
 				net.SendToServer()
 				
 				placingAmbush = false			

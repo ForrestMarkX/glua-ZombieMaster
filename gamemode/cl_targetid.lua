@@ -20,9 +20,11 @@ function GM:HUDDrawTargetID()
 	
 	local health = ent:Health()
 	local healthtext = health < 20 and "Critical" or health < 50 and "Wounded" or health < 75 and "Injured" or "Healthy"
+	local green = math.Clamp(ent:Health() / ent:GetMaxHealth(), 0, 1) * 255
+	local healthCol = Color(255 - green, green, 0)
 	
 	surface.SetFont(font)
-	draw.DrawText(text.."("..healthtext..")", "DermaLarge", ScrW() / 96, ScrH() / 1.88, Color(255, 255, 255, 255))
+	draw.DrawText(text.." ("..healthtext..")", "DermaLarge", ScrW() / 96, ScrH() / 1.88, healthCol)
 end
 
 function GM:DrawZMTargetID()
@@ -64,7 +66,9 @@ function GM:DrawSpectatorTargetID()
 	
 	local health = ent:Health()
 	local healthtext = health < 20 and "Critical" or health < 50 and "Wounded" or health < 75 and "Injured" or "Healthy"
+	local green = math.Clamp(ent:Health() / ent:GetMaxHealth(), 0, 1) * 255
+	local healthCol = Color(255 - green, green, 0)
 	
 	surface.SetFont(font)
-	draw.DrawText(text.."("..healthtext..")", "DermaLarge", ScrW() / 96, ScrH() / 1.88, Color(255, 255, 255, 255))
+	draw.DrawText(text.." ("..healthtext..")", "DermaLarge", ScrW() / 96, ScrH() / 1.88, healthCol)
 end

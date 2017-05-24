@@ -80,10 +80,6 @@ function GM:CreateTeams()
 	team.SetSpawnPoint(TEAM_SPECTATOR, {"info_player_deathmatch", "info_player_zombiemaster", "worldspawn"})
 end
 
-function GM:PlayerIsAdmin(pl)
-	return pl:IsAdmin()
-end
-
 function GM:FindZM()
 	return team.GetPlayers(TEAM_ZOMBIEMASTER)[1]
 end
@@ -153,4 +149,8 @@ function GM:EntityNetworkedVarChanged(ent, name, oldval, newval)
 	if CLIENT and ent.PostNetReceive then
 		ent:PostNetReceive(name, oldval, newval)
 	end
+end
+
+function GM:ShouldCollide(ent1, ent2)
+	return not (ent1:IsPlayer() and ent2:IsPlayer())
 end

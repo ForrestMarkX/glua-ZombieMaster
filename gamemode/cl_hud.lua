@@ -486,15 +486,10 @@ function GM:ShowHelp()
 	
 	gui.EnableScreenClicker(true)
 	
-	local frame = vgui.Create("DFrame")
+	local frame = vgui.Create("DPanel")
 	frame:SetWide(ScrW() * 0.75)
 	frame:SetTall(math.min(ScrH() - (ScrH() * 0.1), 900))
-	frame:SetTitle(" ")
-	frame:SetKeyboardInputEnabled(false)
-	frame:SetMouseInputEnabled(true)
 	frame:Center()
-	frame.btnMinim:SetVisible(false)
-	frame.btnMaxim:SetVisible(false)
 	
 	frame.Paint = function(self, w, h)
 		draw.RoundedBoxEx(8, 0, 64, w, h - 64, Color(5, 5, 5, 180), false, false, true, true)
@@ -561,14 +556,12 @@ function GM:ShowHelp()
 end
 
 function GM:MakePreferredMenu()
-	gui.EnableScreenClicker(true)
+	timer.Simple(0, function() gui.EnableScreenClicker(true) end)
 	
 	local frame = vgui.Create("DFrame")
 	frame:SetWide(326.4)
 	frame:SetTall(345)
 	frame:SetTitle(" ")
-	frame:SetKeyboardInputEnabled(false)
-	frame:SetMouseInputEnabled(true)
 	frame:AlignTop(20)
 	frame:AlignLeft(20)
 	frame.btnMinim:SetVisible(false)

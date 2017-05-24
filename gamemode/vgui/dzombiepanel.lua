@@ -142,7 +142,9 @@ function PANEL:Init()
 	self.placeRally.DoClick = function()
 		if LocalPlayer():IsZM() then
 			hook.Call("SetPlacingRallyPoint", GAMEMODE, true, self:GetCurrent())
-			self:Close()
+			self:SetVisible(false)
+			
+			GAMEMODE.ZombiePanelMenu = self
 		end
 	end
 	

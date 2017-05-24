@@ -25,6 +25,16 @@ function PLAYER:Spawn()
 	if self.Player:GetMaterial() ~= "" then
 		self.Player:SetMaterial("")
 	end
+	
+	if GetConVar("zm_disableplayercollision"):GetBool() then
+		self.Player:SetCustomCollisionCheck(true)
+	end
+	
+	self.Player:SendLua([[
+		if IsValid(GAMEMODE.powerMenu) then
+			GAMEMODE.powerMenu:Remove()
+		end
+	]])
 end
 
 function PLAYER:Loadout()
@@ -34,27 +44,45 @@ end
 function PLAYER:Think()
 	BaseClass.Think(self)
 	
-	if self.Player:WaterLevel() == 3 then
-		if self.Player:IsOnFire() then
-			self.Player:Extinguish()
-		end
+	if SERVER then
+		GAMEMODE:CheckIfPlayerStuck(self.Player)
+		
+		if self.Player:WaterLevel() == 3 then
+			if self.Player:IsOnFire() then
+				self.Player:Extinguish()
+			end
 
-		if self.Player.drowning then
-			if self.Player.drowning < CurTime() then
-				local dmginfo = DamageInfo()
-				dmginfo:SetDamage(15)
-				dmginfo:SetDamageType(DMG_DROWN)
-				dmginfo:SetAttacker(game.GetWorld())
+			if self.Player.Drowning then
+				if self.Player.Drowning < CurTime() then
+					local dmginfo = DamageInfo()
+					dmginfo:SetDamage(15)
+					dmginfo:SetDamageType(DMG_DROWN)
+					dmginfo:SetAttacker(game.GetWorld())
 
-				self.Player:TakeDamageInfo(dmginfo)
+					self.Player:TakeDamageInfo(dmginfo)
 
-				self.Player.drowning = CurTime() + 1
+					self.Player.Drowning = CurTime() + 1
+				end
+			else
+				self.Player.Drowning = CurTime() + 15
 			end
 		else
-			self.Player.drowning = CurTime() + 30
+			if self.Player.DrownDamage then
+				local timername = "zm_playerdrown_regen."..self.Player:EntIndex()
+				timer.Create(timername, 2, 0, function()
+					if not IsValid(self.Player) or self.Player:Health() == self.Player:GetMaxHealth() then timer.Remove(timername) return end
+					self.Player:SetHealth(self.Player:Health() + 5)
+					self.Player.DrownDamage = self.Player.DrownDamage - 5
+					
+					if self.Player.DrownDamage <= 0 then
+						self.Player.DrownDamage = nil
+						timer.Remove(timername)
+					end
+				end)
+			end
+			
+			self.Player.Drowning = nil
 		end
-	else
-		self.Player.drowning = nil
 	end
 end
 
@@ -204,7 +232,7 @@ function PLAYER:OnDeath(attacker, dmginfo)
 		local income = math.random(GetConVar("zm_resourcegainperplayerdeathmin"):GetInt(), GetConVar("zm_resourcegainperplayerdeathmax"):GetInt())
 		
 		pZM:AddZMPoints(income)
-		pZM:SetZMPointIncome(pZM:GetZMPointIncome() + 10)
+		pZM:SetZMPointIncome(pZM:GetZMPointIncome() - 5)
 	end
 end
 
@@ -238,6 +266,10 @@ function PLAYER:OnTakeDamage(attacker, dmginfo)
 		elseif inflictor:IsNPC() and inflictor.Dead then
 			return true
 		end
+	end
+	
+	if bit.band(dmginfo:GetDamageType(), DMG_DROWN) ~= 0 and dmginfo:GetDamage() > 0 then
+		self.Player.DrownDamage = (self.Player.DrownDamage or 0) + dmginfo:GetDamage()
 	end
 end
 
