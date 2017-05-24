@@ -28,8 +28,8 @@ SWEP.HoldType 					= "ar2"
 
 SWEP.Primary.ClipSize			= 11
 SWEP.Primary.DefaultClip		= 11
-SWEP.Primary.MinDamage			= 25
-SWEP.Primary.MaxDamage			= 45
+SWEP.Primary.MinDamage			= 55
+SWEP.Primary.MaxDamage			= 65
 SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 1.6
 SWEP.Primary.Cone				= 0
@@ -62,9 +62,9 @@ function SWEP:SecondaryAttack()
 	self:SetZoomed(not zoomed)
 
 	if zoomed then
-		owner:SetFOV(owner:GetInfo("fov_desired"), 0.15)
+		owner:SetFOV(owner:GetInfo("fov_desired"), 0.35)
 	else
-		owner:SetFOV(owner:GetInfo("fov_desired") * 0.25, 0.3)
+		owner:SetFOV(owner:GetInfo("fov_desired") * 0.25, 0.5)
 	end
 end
 
@@ -88,6 +88,14 @@ function SWEP:OnRemove()
 	if owner:IsValid() and self:GetZoomed() then
 		owner:SetFOV(owner:GetInfo("fov_desired"), 0.5)
 	end
+end
+
+function SWEP:AdjustMouseSensitivity()
+	if self:GetZoomed() then
+		return 0.5
+	end
+	
+	return 1.0
 end
 
 if not CLIENT then return end

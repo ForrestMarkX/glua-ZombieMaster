@@ -394,6 +394,10 @@ function GM:PlayerSpawnAsSpectator(pl)
 		if IsValid(GAMEMODE.powerMenu) then
 			GAMEMODE.powerMenu:Remove()
 		end
+		
+		if IsValid(GAMEMODE.trapMenu) then
+			GAMEMODE.trapMenu:Remove()
+		end		
 	]])
 	
 	pl:SetClass("player_spectator")
@@ -610,7 +614,6 @@ function GM:PreRestartRound()
 	for _, pl in pairs(player.GetAll()) do
 		pl:StripWeapons()
 		pl:Spectate(OBS_MODE_ROAMING)
-		pl:GodDisable()
 	end
 end
 
@@ -678,10 +681,6 @@ function GM:TeamVictorious(won, message)
 		else
 			ply:PrintMessage(HUD_PRINTTALK, message)
 		end
-		
-		if ply:IsSurvivor() then
-			ply:GodEnable()
-		end
 	end
 	
 	hook.Call("FinishingRound", self, won, rounds)
@@ -727,6 +726,9 @@ function GM:InitClient(pl)
 	if self.RoundStarted and self.RoundStarted ~= 0 and self:GetRoundActive() then
 		if self.RoundStarted + GetConVar("zm_postroundstarttimer"):GetInt() >= CurTime() and not self.DeadPlayers[pl:SteamID()] then
 			hook.Call("SetupPlayer", self, pl)
+			
+			local randply = table.Random(team.GetPlayers(TEAM_SURVIVOR))
+			pl:SetPos(randply:GetPos() + VectorRand() + randply:OBBMaxs())
 		end
 	end
 	
@@ -822,9 +824,7 @@ function GM:EntityTakeDamage(ent, dmginfo)
 		self:CallZombieFunction(inflictor:GetClass(), "OnDamagedEnt", inflictor, ent, dmginfo)
 	end
 
-	if ent:IsPlayerHolding() and damage > 10 then
-		DropEntityIfHeld(ent)
-		
+	if ent:IsPlayerHolding() then
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
 		dmginfo:SetDamageType(DMG_BULLET)

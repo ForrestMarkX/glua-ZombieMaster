@@ -44,38 +44,61 @@ if SERVER then
 	end
 	
 	function ENT:Think()
-		if #self.query > 0 then
-			local data = self.query[1]
-			
-			if data and IsValid(data.ply) then
-				local resources, population = data.ply:GetZMPoints(), GAMEMODE:GetCurZombiePop()
+		return self:SpawnThink()
+	end
 
-				if population + data.popCost < GAMEMODE:GetMaxZombiePop() and data.ply:CanAfford(data.cost) then
-					local spawnPoint = self:FindValidSpawnPoint()
-					if spawnPoint:IsZero() then return end
-					
-					local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
-					
-					timer.Simple(0.25, function()
-						if IsValid(self) then
-							local rally = self:GetRallyEntity()
-							if IsValid(rally) then
-								zombie:ForceGo(rally:GetPos())
-							end
-						end
-					end)
-				
-					net.Start("zm_remove_queue")
-						net.WriteInt(self:EntIndex(), 32)
-					net.Send(data.ply)
-				
-					table.remove(self.query, 1)
+	function ENT:SpawnThink()
+		if #self.query <= 0 then
+			self.m_bSpawning = false
+			return false
+		end
+
+		self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat())
+
+		local current_type = self.query[1]
+		if not current_type then return end
+		
+		local pZM = current_type.ply
+		if not IsValid(pZM) then return end
+
+		if (GAMEMODE:GetCurZombiePop() + current_type.popCost) > GAMEMODE:GetMaxZombiePop() or not pZM:CanAfford(current_type.cost) then
+			self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat() + math.Rand(0.1, 0.2))
+			return
+		end
+
+		self:CreateUnit(current_type)
+
+		net.Start("zm_remove_queue")
+			net.WriteInt(self:EntIndex(), 32)
+		net.Send(pZM)
+	
+		table.remove(self.query, 1)
+		
+		return true
+	end
+	
+	function ENT:CreateUnit(data)
+		if self.m_bActive == false then return false end
+
+		local spawnPoint = self:FindValidSpawnPoint()
+		if spawnPoint:IsZero() then return false end
+		
+		local pZM = data.ply
+		if not IsValid(pZM) then return false end
+		
+		local zombie = gamemode.Call("SpawnZombie", data.ply, data.type, spawnPoint + Vector(0, 0, 3), data.ply:GetAngles(), data.cost)
+		if not IsValid(zombie) then return false end
+		
+		timer.Simple(0.25, function()
+			if IsValid(self) then
+				local rally = self:GetRallyEntity()
+				if IsValid(rally) then
+					zombie:ForceGo(rally:GetPos())
 				end
 			end
-		end
-		
-		self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat())
-		return true
+		end)
+
+		return false
 	end
 	
 	function ENT:KeyValue( key, value )

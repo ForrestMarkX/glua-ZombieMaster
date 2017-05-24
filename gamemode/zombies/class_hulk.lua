@@ -15,7 +15,7 @@ NPC.HullSizeMaxs = Vector(-18, -18, 0)
 
 function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 	if hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG then
-		dmginfo:ScaleDamage(1.25)
+		dmginfo:ScaleDamage(2)
 	end
 end
 

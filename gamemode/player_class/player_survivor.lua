@@ -34,6 +34,10 @@ function PLAYER:Spawn()
 		if IsValid(GAMEMODE.powerMenu) then
 			GAMEMODE.powerMenu:Remove()
 		end
+		
+		if IsValid(GAMEMODE.trapMenu) then
+			GAMEMODE.trapMenu:Remove()
+		end		
 	]])
 end
 

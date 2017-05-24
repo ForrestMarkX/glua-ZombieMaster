@@ -117,12 +117,15 @@ function ENT:Think()
 				else
 					pSpawn = hook.Call("CreateCustomWeapons", GAMEMODE, pSpawn, true)
 				end
-				
-				pSpawn:SetPos( self:GetPos() + VectorRand() )
-				pSpawn:SetAngles( self:GetAngles() + AngleRand() )
-				pSpawn:SetVelocity( VectorRand() * 3 )
 
 				pSpawn:Spawn()
+				
+				local mins, maxs = self:OBBMins() * 0.85, self:OBBMaxs() * 0.85
+				local pos = self:LocalToWorld(Vector(math.Rand(mins.x, maxs.x), math.Rand(mins.y, maxs.y), math.Rand(mins.z, maxs.z)))
+				pSpawn:SetPos( pos )
+				
+				pSpawn:SetAngles( self:GetAngles() + AngleRand() )
+				pSpawn:SetAbsVelocity( VectorRand() * 3 )
 			end
 		end
 		

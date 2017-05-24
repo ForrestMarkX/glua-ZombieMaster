@@ -121,7 +121,17 @@ function PLAYER:BindPress(bind, pressed)
 		RunConsoleCommand("zm_power_nightvision")
 		return true
 	elseif bind == "+speed" and pressed then
-		gui.EnableScreenClicker(not vgui.CursorVisible())
+		if not self.Player:KeyDown(IN_DUCK) then
+			gui.EnableScreenClicker(not vgui.CursorVisible())
+			return true
+		end
+	elseif bind == "+duck" then
+		if pressed then
+			RunConsoleCommand("+speed")
+		else
+			RunConsoleCommand("-speed")
+		end
+		
 		return true
 	end
 end

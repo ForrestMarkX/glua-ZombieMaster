@@ -113,6 +113,16 @@ end
 
 function GM:Think()
 	player_manager.RunClass(LocalPlayer(), "Think")
+	
+	if IsValid(self.HiddenCSEnt) then
+		local tr = util.QuickTrace(LocalPlayer():GetShootPos(), gui.ScreenToVector(gui.MousePos()) * 10000, player.GetAll())
+		self.HiddenCSEnt:SetPos(tr.HitPos)
+		
+		local ang = LocalPlayer():EyeAngles()
+		ang.x = 0.0
+		ang.z = 0.0
+		self.HiddenCSEnt:SetAngles(ang)
+	end
 end
 
 local startVal = 0
@@ -187,7 +197,25 @@ function GM:SetPlacingShockwave(b)
 end
 
 local placingZombie = false
+local function SpotZombieCheck(self)
+	render.SetBlend(0.65)
+	self:DrawModel()
+	render.SetBlend(1)
+end
 function GM:SetPlacingSpotZombie(b)
+	if not IsValid(self.HiddenCSEnt) then
+		self.HiddenCSEnt = ClientsideModel("models/zombie/zm_classic.mdl")
+		
+		local tr = util.QuickTrace(LocalPlayer():GetShootPos(), gui.ScreenToVector(gui.MousePos()) * 10000, player.GetAll())
+		self.HiddenCSEnt:SetPos(tr.HitPos)
+		self.HiddenCSEnt.RenderOverride = SpotZombieCheck
+		
+		local ang = LocalPlayer():EyeAngles()
+		ang.x = 0.0
+		ang.z = 0.0
+		self.HiddenCSEnt:SetAngles(ang)
+	end
+	
 	placingZombie = b
 end
 
@@ -268,8 +296,6 @@ local function SelectionTrace(ent)
 	return false
 end
 function GM:GUIMousePressed(mouseCode, aimVector)
-	oldMousePos = aimVector
-	
 	if LocalPlayer():IsZM() then
 		if mouseCode == MOUSE_LEFT then
 			if not isDragging then
@@ -292,6 +318,10 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				net.Start("zm_place_zombiespot")
 					net.WriteVector(aimVector)
 				net.SendToServer()
+				
+				if IsValid(self.HiddenCSEnt) then
+					self.HiddenCSEnt:Remove()
+				end
 				
 				placingZombie = false
 				zm_placedpoweritem = true

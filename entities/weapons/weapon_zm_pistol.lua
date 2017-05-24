@@ -30,7 +30,7 @@ SWEP.Primary.DefaultClip		= 20
 SWEP.Primary.MinDamage			= 11
 SWEP.Primary.MaxDamage			= 16
 SWEP.Primary.NumShots 			= 1
-SWEP.Primary.Delay 				= 0.25
+SWEP.Primary.Delay 				= 0.255
 SWEP.Primary.Cone 				= 0.023
 
 SWEP.Primary.Automatic   		= true

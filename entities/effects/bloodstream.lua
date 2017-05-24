@@ -23,7 +23,7 @@ local function CollideCallback(oldparticle, hitpos, hitnormal)
 	if math.random(3) == 3 then
 		sound.Play("physics/flesh/flesh_squishy_impact_hard"..math.random(4)..".wav", hitpos, 50, math.Rand(95, 105))
 	end
-	util.Decal("Blood", pos, hitpos - hitnormal)
+	util.Decal("Blood", pos, hitpos - hitnormal, ents.GetAll())
 
 	local num = math.random(-4, 4)
 	if num < 1 then return end
