@@ -272,10 +272,10 @@ function GM:ReplaceItemWithCrate(ent, class)
 	local playercount = player.GetCount()
 	local chance = math.min(playercount / 100, 1) * 2
 	if math.random() <= chance then
-		local crate = ents.Create("item_item_crate")
-		if IsValid(crate) then
-			local itemcount = math.ceil(playercount * 0.5)
-			if itemcount > 1 then
+		local itemcount = math.ceil(playercount / 10)
+		if itemcount > 1 then
+			local crate = ents.Create("item_item_crate")
+			if IsValid(crate) then
 				crate:SetPos(ent:GetPos())
 				crate:SetAngles(ent:GetAngles())
 				crate:SetKeyValue("itemclass", class or ent:GetClass())
