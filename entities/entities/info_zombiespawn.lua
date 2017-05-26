@@ -52,6 +52,10 @@ if SERVER then
 			self.m_bSpawning = false
 			return false
 		end
+		
+		if not self.m_bSpawning then
+			return true
+		end
 
 		self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat())
 
@@ -284,7 +288,16 @@ if SERVER then
 		end
 	end
 	
+	function ENT:StartSpawning()
+		self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat())
+		self.m_bSpawning = true
+	end
+	
 	function ENT:AddQuery(ply, zombietype, amount)
+		if not self.m_bSpawning then
+			self:StartSpawning()
+		end
+			
 		local data = GAMEMODE:GetZombieData(zombietype)
 
 		if data and #self.query < 18 then

@@ -33,6 +33,19 @@ if SERVER then
 				return
 			end
 		end
+		
+		if self.EntOwners then
+			local bIsValid = false
+			for _, ent in pairs(self.EntOwners) do
+				if IsValid(ent) then
+					bIsValid = true
+				end
+			end
+			
+			if not bIsValid then
+				self:Remove()
+			end
+		end
 
 		self:NextThink( CurTime() + 0.5 )
 		return true

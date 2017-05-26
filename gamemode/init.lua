@@ -270,10 +270,11 @@ end
 
 function GM:ReplaceItemWithCrate(ent, class)
 	local playercount = player.GetCount()
-	if math.random() < math.min(playercount / 100, 1) then
+	local chance = math.min(playercount / 100, 1) * 2
+	if math.random() <= chance then
 		local crate = ents.Create("item_item_crate")
 		if IsValid(crate) then
-			local itemcount = math.ceil(playercount / 10)
+			local itemcount = math.ceil(playercount * 0.5)
 			if itemcount > 1 then
 				crate:SetPos(ent:GetPos())
 				crate:SetAngles(ent:GetAngles())
@@ -939,19 +940,23 @@ function GM:Think()
 		if not GetConVar("zm_disableplayercollision"):GetBool() then
 			local playercount = player.GetCount()
 			if playercount > 16 then
-				if not self.SetNoCollidePlayers then
-					for i= 1, #players do
-						local ply = players[i]
-						ply:SetCustomCollisionCheck(true)
-					end
+				for i= 1, #players do
+					local ply = players[i]
+					if ply:GetCustomCollisionCheck() then continue end
 					
-					self.SetNoCollidePlayers = true
+					ply:SetCustomCollisionCheck(true)
 				end
+				
+				if not self.SetNoCollidePlayers then self.SetNoCollidePlayers = true end
 			elseif self.SetNoCollidePlayers then
 				for i= 1, #players do
 					local ply = players[i]
+					if not ply:GetCustomCollisionCheck() then continue end
+					
 					ply:SetCustomCollisionCheck(false)
 				end
+				
+				if self.SetNoCollidePlayers then self.SetNoCollidePlayers = false end	
 			end
 		end
 		
