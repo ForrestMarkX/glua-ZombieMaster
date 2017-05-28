@@ -12,9 +12,7 @@ CreateConVar("zm_debug_nozombiemaster", "0", FCVAR_NOTIFY + FCVAR_ARCHIVE + FCVA
 
 concommand.Add("zm_forceround_reboot", function(ply, cmd, args)
 	if IsValid(ply) and not ply:IsSuperAdmin() then return end
-	
-	timer.Simple(2, function() hook.Call("PreRestartRound", GAMEMODE) end)
-	timer.Simple(3, function() hook.Call("RestartRound", GAMEMODE) end)
+	timer.Simple(4, function() hook.Call("EndRound", GAMEMODE) end)
 end)
 
 concommand.Add("zm_debug_spawn_zombie", function(ply, cmd, args)
@@ -82,7 +80,7 @@ CreateConVar("zm_spawndelay", "0.75", FCVAR_NOTIFY, "Delay between creation of z
 CreateConVar("zm_incometime", "8", FCVAR_NOTIFY, "Amount of time in seconds the Zombie Master gains resources.")
 CreateConVar("zm_resourcegainperplayerdeathmin", "50", FCVAR_NOTIFY, "Min amount of resources the Zombie Master gains per player death.")
 CreateConVar("zm_resourcegainperplayerdeathmax", "100", FCVAR_NOTIFY, "Max amount of resources the Zombie Master gains per player death.")
-CreateConVar("zm_notimeslowonwin", "0", FCVAR_NOTIFY, "Disables time slowing down when someone wins a game.")
+//CreateConVar("zm_notimeslowonwin", "0", FCVAR_NOTIFY, "Disables time slowing down when someone wins a game.")
 CreateConVar("zm_postroundstarttimer", "30", FCVAR_NOTIFY, "How many seconds after the game starts that first joiners will not be human.")
 
 local function ZM_Power_PhysExplode_SV(len, ply)

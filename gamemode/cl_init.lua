@@ -156,7 +156,11 @@ function GM:OnEntityCreated(ent)
 			return
 		end
 		
-		if string.lower(entname) == "npc_zombie" or string.lower(entname) == "npc_poisonzombie" or string.lower(entname) == "npc_fastzombie" then
+		if self:GetZombieData(entname) ~= nil then
+			self.iZombieList[ent] = entname
+		end
+		
+		if entname == "npc_zombie" or entname == "npc_poisonzombie" or entname == "npc_fastzombie" then
 			ent.fadeAlpha = 0
 			ent.RenderOverride = FadeToDraw
 		else
@@ -168,6 +172,13 @@ function GM:OnEntityCreated(ent)
 				ent.RenderOverride = FadeToDraw
 			end)
 		end
+	end
+end
+
+function GM:EntityRemoved(ent)
+	local zombietab = self.iZombieList[ent]
+	if zombietab then
+		zombietab = nil
 	end
 end
 
@@ -517,12 +528,9 @@ end
 function GM:PostDrawOpaqueRenderables()
 	if LocalPlayer():IsZM() then
 		cam.Start3D()
-			local zombies = ents.FindByClass("npc_*")
-		
-			for _, entity in pairs(zombies) do
-				if string.sub(entity:GetClass(), 1, 12) == "npc_headcrab" then continue end
-				
-				if IsValid(entity) and entity:Health() > 0 and not entity.Dead then
+			local zombies = self.iZombieList
+			for entity, class in pairs(zombies) do
+				if IsValid(entity) and entity:Health() > 0 then
 					local Health, MaxHealth = entity:Health(), entity:GetMaxHealth()
 					local pos = entity:GetPos() + Vector(0, 0, 2)
 					local colour = Color(0, 0, 0, 125)
@@ -645,10 +653,6 @@ function GM:RestartRound()
 	
 	gui.EnableScreenClicker(false)
 end
-
-net.Receive("zm_gamemodecall", function(length)
-	gamemode.Call(net.ReadString())
-end)
 
 net.Receive("zm_infostrings", function(length)
 	GAMEMODE.MapInfo = net.ReadString()

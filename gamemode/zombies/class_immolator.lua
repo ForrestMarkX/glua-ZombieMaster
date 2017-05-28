@@ -6,7 +6,6 @@ NPC.Flag = FL_SPAWN_IMMOLATOR_ALLOWED
 NPC.Cost = GetConVar("zm_cost_immolator"):GetInt()
 NPC.PopCost = GetConVar("zm_popcost_immolator"):GetInt()
 NPC.Health = GetConVar("zm_burnzombie_health"):GetInt()
-NPC.DieSound = "NPC_BurnZombie.Die"
 
 NPC.Model = "models/zombie/burnzie.mdl"
 NPC.IsEngineNPC = false

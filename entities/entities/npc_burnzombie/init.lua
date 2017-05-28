@@ -42,7 +42,7 @@ function ENT:CustomThink()
 		end
 		
 		timer.Simple(5, function()
-			if not IsValid(self) or self.Dead then return end
+			if not IsValid(self) then return end
 			
 			self:EmitSound("PropaneTank.Burst")
 			
@@ -67,7 +67,7 @@ function ENT:CustomThink()
 	end
 end
 
-function ENT:OnDeath(killer)
+function ENT:OnRemove()
 	if self:WaterLevel() >= 2 then return end
 	
 	for i = 1, 5 do

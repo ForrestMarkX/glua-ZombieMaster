@@ -241,6 +241,8 @@ function PLAYER:OnDeath(attacker, dmginfo)
 end
 
 function PLAYER:PostOnDeath(inflictor, attacker)
+	if player.GetCount() == 1 then return end
+	
 	timer.Simple(0.15, function()
 		if team.NumPlayers(TEAM_SURVIVOR) == 0 then
 			hook.Call("TeamVictorious", GAMEMODE, false, "undead_has_won")
@@ -256,20 +258,12 @@ end
 
 function PLAYER:OnTakeDamage(attacker, dmginfo)
 	local inflictor = dmginfo:GetInflictor()
-	if IsValid(attacker) then
-		if attacker:GetClass() == "projectile_molotov" then
-			return true
-		elseif attacker:IsNPC() and attacker.Dead then
-			return true
-		end
+	if IsValid(attacker) and attacker:GetClass() == "projectile_molotov" then
+		return true
 	end
 	
-	if IsValid(inflictor) then
-		if inflictor:GetClass() == "projectile_molotov" then
-			return true
-		elseif inflictor:IsNPC() and inflictor.Dead then
-			return true
-		end
+	if IsValid(inflictor) and inflictor:GetClass() == "projectile_molotov" then
+		return true
 	end
 	
 	if bit.band(dmginfo:GetDamageType(), DMG_DROWN) ~= 0 and dmginfo:GetDamage() > 0 then

@@ -54,7 +54,6 @@ function PLAYER:PostThink()
 			self.Player:Spectate(OBS_MODE_ROAMING)
 			self.Player:SpectateEntity(NULL)
 			self.Player.SpectatedPlayerKey = nil
-			self.Player:CrosshairDisable()
 		end
 	elseif self.Player:KeyPressed(IN_ATTACK) then
 		self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) + 1
@@ -64,7 +63,6 @@ function PLAYER:PostThink()
 			self.Player:Spectate(OBS_MODE_ROAMING)
 			self.Player:SpectateEntity(NULL)
 			self.Player.SpectatedPlayerKey = 1
-			self.Player:CrosshairDisable()
 		end
 
 		self.Player:StripWeapons()
@@ -77,7 +75,6 @@ function PLAYER:PostThink()
 			self.Player:Spectate(OBS_MODE_ROAMING)
 			self.Player:SpectateEntity(NULL)
 			self.Player.SpectatedPlayerKey = nil
-			self.Player:CrosshairDisable()
 		end
 	elseif self.Player:KeyPressed(IN_ATTACK2) then
 		self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 2) - 1
@@ -87,7 +84,6 @@ function PLAYER:PostThink()
 			self.Player:Spectate(OBS_MODE_ROAMING)
 			self.Player:SpectateEntity(NULL)
 			self.Player.SpectatedPlayerKey = #players
-			self.Player:CrosshairDisable()
 		end
 
 		self.Player:StripWeapons()
@@ -100,8 +96,15 @@ function PLAYER:PostThink()
 			self.Player:Spectate(OBS_MODE_ROAMING)
 			self.Player:SpectateEntity(NULL)
 			self.Player.SpectatedPlayerKey = nil
-			self.Player:CrosshairDisable()
 		end
+	end
+end
+
+local NextThink = 0
+function PLAYER:Think()
+	if NextThink < CurTime() and SERVER then
+		NextThink = CurTime() + 0.35
+		self.Player:CrosshairDisable()
 	end
 end
 

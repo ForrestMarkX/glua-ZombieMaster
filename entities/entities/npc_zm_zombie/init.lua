@@ -20,7 +20,7 @@ function ENT:PlayOnFireSound()
 	
 	self.FireSoundLoop = CurTime()
 	timer.Create("OnFireMoanLoop."..self:EntIndex(), 0, 0, function()
-		if self.Dead or not self:IsOnFire() then  
+		if not self:IsOnFire() then  
 			timer.Remove("OnFireMoanLoop."..self:EntIndex())
 			self.bPlayingFireSound = false
 			return

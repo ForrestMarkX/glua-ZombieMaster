@@ -23,9 +23,14 @@ function meta:TakeZMPoints(amount)
 	self:SetZMPoints(resources - amount)
 end
 
-function meta:ChangeTeam(teamid)
+function meta:ChangeTeamDelayed(delay, teamid)
+	timer.Simple(delay, function() self:SetTeam(teamid) end)
+end
+
+meta.OldSetTeam = meta.OldSetTeam or meta.SetTeam
+function meta:SetTeam(teamid)
 	local oldteam = self:Team()
-	self:SetTeam(teamid)
+	self:OldSetTeam(teamid)
 	if oldteam ~= teamid then
 		gamemode.Call("OnPlayerChangedTeam", self, oldteam, teamid)
 	end

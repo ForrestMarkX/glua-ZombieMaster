@@ -7,7 +7,6 @@ local h, w = ScrH(), ScrW()
 function GM:HUDPaint()
 	local myteam = LocalPlayer():Team()
 	local screenscale = BetterScreenScale()
-	local wid, hei = 225 * screenscale, 72 * screenscale
 
 	if LocalPlayer():IsSurvivor() then
 		self:HumanHUD(screenscale)
@@ -235,6 +234,14 @@ function MakepCredits()
 	frame:MakePopup()
 end
 
+local BinderTextUpdate(self)
+	local str = input.GetKeyName(self.m_iSelectedNumber)
+	if not str then str = "NONE" end
+
+	str = language.GetPhrase(str)
+
+	self:SetText(string.upper(str))
+end
 function MakepOptions()
 	if pOptions then
 		pOptions:SetAlpha(0)
@@ -322,18 +329,7 @@ function MakepOptions()
 	binder:SizeToContents()
 	binder:Dock(TOP)
 	binder:DockMargin(0, 4, 0, 4)
-	function binder:SetSelectedNumber(num)
-		self.m_iSelectedNumber = num
-		RunConsoleCommand("zm_dropweaponkey", num)
-	end
-	function binder:UpdateText()
-		local str = input.GetKeyName(self.m_iSelectedNumber)
-		if not str then str = "NONE" end
-
-		str = language.GetPhrase(str)
-
-		self:SetText(string.upper(str))
-	end
+	binder.UpdateText = BinderTextUpdate
 	
 	local label = Label("Drop Ammo Key", list)
 	label:SetFont("ZMHUDFontSmallest")
@@ -348,18 +344,7 @@ function MakepOptions()
 	binder:SizeToContents()
 	binder:Dock(TOP)
 	binder:DockMargin(0, 4, 0, 4)
-	function binder:SetSelectedNumber(num)
-		self.m_iSelectedNumber = num
-		RunConsoleCommand("zm_dropammokey", num)
-	end
-	function binder:UpdateText()
-		local str = input.GetKeyName(self.m_iSelectedNumber)
-		if not str then str = "NONE" end
-
-		str = language.GetPhrase(str)
-
-		self:SetText(string.upper(str))
-	end
+	binder.UpdateText = BinderTextUpdate
 	
 	local label = Label("Ragdoll Settings", list)
 	label:SetFont("ZMHUDFontSmall")
@@ -523,7 +508,8 @@ function GM:ShowHelp()
 	lab:AlignTop(8)
 	lab:AlignLeft(8)
 	lab:SetText(self.MapInfo)
-	lab:SizeToContents()
+	lab:SetWrap(true)
+	lab:SetAutoStretchVertical(true)
 	
 	local hoverColor = Color(0, 0, 0)
 	local but = vgui.Create("DButton", frame)

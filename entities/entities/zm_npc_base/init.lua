@@ -104,9 +104,15 @@ function ENT:GetRelationship(ent)
 	return D_NU
 end
 
-function ENT:OnTakeDamage(dmginfo)
-	if self.Dead then return true end
+function ENT:OnDeath(killer, inflictor)
+	gamemode.Call("OnNPCKilled", self, killer, inflictor)
+	self:PlayVoiceSound(self.DeathSounds)
 	
+	self:SetSchedule(SCHED_FALL_TO_GROUND)
+	self:Remove()
+end
+
+function ENT:OnTakeDamage(dmginfo)
 	local attacker, inflictor = dmginfo:GetAttacker() or self, dmginfo:GetInflictor() or self
 	if GAMEMODE:CallZombieFunction(self:GetClass(), "OnTakeDamage", self, attacker, inflictor, dmginfo) then return true end
 	
@@ -122,10 +128,7 @@ function ENT:OnTakeDamage(dmginfo)
 	end
 	
 	if self:Health() <= 0 then
-		local killer = dmginfo:GetAttacker()	
-		if killer:IsPlayer() and killer:IsSurvivor() then
-			self:SetDamageForce((self:NearestPoint(killer:EyePos()) - killer:EyePos():GetNormalized()) * math.Clamp(damage * 3, 40, 300))
-		end
+		timer.Simple(0, function() self:OnDeath(attacker, inflictor) end)
 	end
 end
 
@@ -160,8 +163,6 @@ function ENT:PlayAttackSequence()
 end
 
 function ENT:SelectSchedule()
-	if self.Dead then return end
-	
 	if self:HasCondition(COND_LIGHT_DAMAGE) then
 		self:SetSchedule(SCHED_SMALL_FLINCH)
 	elseif self:HasCondition(COND_HEAVY_DAMAGE) then
@@ -236,7 +237,7 @@ function ENT:CheckTraceHullAttack(vStart, vEnd, mins, maxs, iDamage, iDmgType, f
 			self:CalculateMeleeDamageForce(dmgInfo, (vEnd - vStart), vStart, flForceScale)
 			pEntity:TakeDamageInfo(dmgInfo)
 			
-			if bit.band(iDmgType, DMG_BURN) then
+			if bit.band(iDmgType, DMG_BURN) ~= 0 then
 				pEntity:Ignite(2)
 			end
 		end
@@ -431,8 +432,6 @@ function ENT:PerformAttackEnd()
 end
 
 function ENT:Think()
-	if self.Dead then return end
-	
 	if self.NextIdleMoan < CurTime() then
 		self:PlayVoiceSound(self.MoanSounds)
 		self.NextIdleMoan = CurTime() + math.random(15, 25)

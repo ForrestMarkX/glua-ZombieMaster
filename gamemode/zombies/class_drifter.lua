@@ -6,7 +6,6 @@ NPC.Flag = FL_SPAWN_DRIFTER_ALLOWED
 NPC.Cost = GetConVar("zm_cost_drifter"):GetInt()
 NPC.PopCost = GetConVar("zm_popcost_immolator"):GetInt()
 NPC.Health = GetConVar("zm_dragzombie_health"):GetInt()
-NPC.DieSound = "NPC_DragZombie.Die"
 
 NPC.Model = "models/humans/zm_draggy.mdl"
 NPC.IsEngineNPC = false

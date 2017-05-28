@@ -40,6 +40,7 @@ include("player_class/player_zombiemaster.lua")
 include("player_class/player_spectator.lua")
 
 GM.NetworkVarCallbacks = {}
+GM.iZombieList = {}
 
 function GM:Initialize()
 	for _, mdl in pairs(file.Find("models/zombie/*.mdl", "GAME")) do
@@ -63,7 +64,6 @@ end
 function GM:SetupNetworkingCallbacks()
 	self:AddNetworkingCallbacks("holding", function(ent, value) ent.bIsHolding = value end)
 	self:AddNetworkingCallbacks("selected", function(ent, value) ent.bIsSelected = value end)
-	self:AddNetworkingCallbacks("bDead", function(ent, value) ent.Dead = value end)
 	self:AddNetworkingCallbacks("bClingingCeiling", function(ent, value) ent.m_bClinging = value end)
 end
 

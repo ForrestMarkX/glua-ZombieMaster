@@ -18,11 +18,10 @@ NPC.SolidType = SOLID_BBOX
 NPC.MoveType = MOVETYPE_STEP
 NPC.SkinNum = 3
 NPC.BloodColor = BLOOD_COLOR_RED
-NPC.DieSound = ""
 
 if SERVER then
 	NPC.SpawnFlags = bit.bor(SF_NPC_LONG_RANGE, SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK, SF_NPC_NO_PLAYER_PUSHAWAY)
-	NPC.Capabilities = bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1, CAP_SQUAD, CAP_SKIP_NAV_GROUND_CHECK)
+	NPC.Capabilities = bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1, CAP_SQUAD, CAP_SKIP_NAV_GROUND_CHECK, CAP_OPEN_DOORS)
 end
 
 function NPC:OnSpawned(npc)
@@ -38,7 +37,9 @@ function NPC:OnSpawned(npc)
 	end
 	
 	if self.HullSizeMins and self.HullSizeMaxs then
-		npc:SetCollisionBounds(self.HullSizeMins, self.HullSizeMaxs)
+		timer.Simple(0.1, function()
+			npc:SetCollisionBounds(self.HullSizeMins, self.HullSizeMaxs)
+		end)
 	end
 	
 	if (self.SkinNum or 0) > 0 then
@@ -60,8 +61,6 @@ function NPC:OnSpawned(npc)
 	if self.MaxYawSpeed then
 		npc:SetMaxYawSpeed(self.MaxYawSpeed)
 	end
-	
-	npc:SetHullSizeNormal()
 
 	npc:UpdateEnemy(npc:FindEnemy())
 end
@@ -86,8 +85,8 @@ end
 function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 	local damagetype = dmginfo:GetDamageType()
 	if damagetype ~= DMG_CLUB then
-		if hitgroup == HITGROUP_HEAD and bit.band(damagetype, DMG_BUCKSHOT) == 0 then
-			dmginfo:ScaleDamage(1.25)
+		if hitgroup == HITGROUP_HEAD then
+			dmginfo:ScaleDamage(2)
 		elseif hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG then
 			dmginfo:ScaleDamage(0.25)
 		end
@@ -95,12 +94,8 @@ function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 end
 
 function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
-	if npc.Dead then
-		npc:Extinguish()
-		dmginfo:SetDamageType(DMG_GENERIC)
-		dmginfo:SetDamage(0)
-		dmginfo:ScaleDamage(0)
-		return true
+	if self.IsEngineNPC and bit.band(dmginfo:GetDamageType(), DMG_REMOVENORAGDOLL) == 0 then
+		dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_REMOVENORAGDOLL))
 	end
 	
 	local damage = dmginfo:GetDamage()
@@ -111,31 +106,11 @@ function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
 			effect:SetScale(math.max(128, math.Rand(damage, damage * 4)))
 		util.Effect("bloodstream", effect)
 	end
-		
-	if npc:Health() <= damage then
-		npc:SetEnemy(NULL)
-		npc:SetNotSolid(true)
-		npc:SetKeyValue("spawnflags", bit.bor(SF_NPC_GAG, SF_NPC_START_EFFICIENT))
-		npc:SetSchedule(SCHED_NPC_FREEZE)
-		npc:CapabilitiesClear()
-		npc:Extinguish()
-		npc:SetNW2Bool("bDead", true)
-		
-		npc:EmitSound(self.DieSound)
-		
-		SafeRemoveEntityDelayed(npc, 5)
-		self:OnKilled(npc, attacker, inflictor)
-		
-		dmginfo:SetDamageType(DMG_GENERIC)
-		dmginfo:SetDamage(0)
-		dmginfo:ScaleDamage(0)
-		return true
-	end
 	
 	if IsValid(attacker) then
 		local atkowner = attacker:GetOwner()
 		if IsValid(attacker) and attacker:GetClass() == "env_fire" and IsValid(atkowner) and atkowner:GetClass() == "npc_burnzombie" then
-			dmginfo:SetDamageType(DMG_GENERIC)
+			dmginfo:SetDamageType(DMG_BULLET)
 			dmginfo:SetDamage(0)
 			dmginfo:ScaleDamage(0)
 			return true
@@ -166,10 +141,6 @@ function NPC:OnKilled(npc, attacker, inflictor)
 	net.Start("zm_spawnclientragdoll")
 		net.WriteEntity(npc)
 	net.Broadcast()
-	
-	if npc.OnDeath then
-		npc:OnDeath(attacker)
-	end
 	
 	if IsValid(attacker) and attacker:IsPlayer() then
 		attacker:AddFrags(1)
@@ -236,3 +207,5 @@ function NPC:Think(npc)
 		npc.NextDefenceCheck = CurTime() + 1.0
 	end
 end
+
+baseclass.Set("class_default", NPC)

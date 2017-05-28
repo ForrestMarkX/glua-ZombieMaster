@@ -1,3 +1,5 @@
+DEFINE_BASECLASS("class_default")
+
 NPC.Class = "npc_fastzombie"
 NPC.Name = translate.Get("npc_class_banshee")
 NPC.Description = translate.Get("npc_description_banshee")
@@ -9,7 +11,6 @@ NPC.Health = GetConVar("zm_fastzombie_health"):GetInt()
 
 NPC.Model = "models/zombie/zm_fast.mdl"
 NPC.DelaySetModel = true
-NPC.DieSound = "NPC_FastZombie.Die"
 NPC.CanClingToCeiling = true
 NPC.HullSizeMins = Vector(13, 13, 50)
 NPC.HullSizeMaxs = Vector(-13, -13, 0)
@@ -19,14 +20,14 @@ if SERVER then
 end
 
 function NPC:OnSpawned(npc)
-	self.Base.OnSpawned(self, npc)
+	BaseClass.OnSpawned(self, npc)
 	
 	npc.NextLeap = CurTime()
 	npc:SetNW2Bool("bClingingCeiling", false)
 end
 
 function NPC:OnKilled(npc, attacker, inflictor)
-	self.Base.OnKilled(self, npc, attacker, inflictor)
+	BaseClass.OnKilled(self, npc, attacker, inflictor)
 	npc:SetNW2Bool("bClingingCeiling", false)
 end
 
@@ -34,7 +35,7 @@ function NPC:Think(npc)
 	local enemy = npc:GetEnemy()
 	if IsValid(enemy) then
 		local distance = npc:GetPos():Distance(enemy:GetPos())
-		if distance < 360 and distance > 72 then
+		if distance < 360 and distance > 32 then
 			if npc:HasCondition(COND_SEE_ENEMY) and not npc:HasCondition(COND_FLOATING_OFF_GROUND) and npc.NextLeap < CurTime() then	
 				npc.NextLeap = CurTime() + 4
 				npc:SetSchedule(SCHED_RANGE_ATTACK1)
@@ -124,7 +125,7 @@ function NPC:DetachFromCeiling(npc)
 end
 
 function NPC:Think(npc)
-	self.BaseClass.Think(self, npc)
+	BaseClass.Think(self, npc)
 	
 	if npc.m_bClinging and npc.m_flLastClingCheck and npc.m_flLastClingCheck < CurTime() then
 		local nearest = self:GetClingAmbushTarget(npc)

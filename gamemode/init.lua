@@ -44,8 +44,8 @@ GM.UnReadyPlayers = {}
 GM.DeadPlayers = {}
 GM.ReadyTimer = 0
 GM.DontConvertProps = true
-GM.PostMapSetup = false
 GM.PlayerHeldObjects = {}
+GM.ZombieMasterPriorities = {}
 
 GM.Income_Time = 0
 
@@ -93,27 +93,19 @@ function GM:InitPostEntityMap()
 		end
 	end
 	
-	for _, wep in pairs(ents.FindByClass("weapon_zm_*")) do
-		hook.Call("ReplaceItemWithCrate", self, wep)
-		
-		if IsValid(wep) then
-			hook.Call("CreateCustomWeapons", self, wep)
+	for _, ent in pairs(ents.GetAll()) do
+		if string.sub(ent:GetClass(), 1, 9) == "weapon_zm" then
+			hook.Call("ReplaceItemWithCrate", self, ent)
+			
+			if IsValid(ent) then
+				hook.Call("CreateCustomWeapons", self, ent)
+			end
+		elseif string.sub(ent:GetClass(), 1, 7) == "weapon_" then
+			self:ConvertWeapon(ent)
+		elseif string.sub(ent:GetClass(), 1, 10) == "item_ammo_" or string.sub(ent:GetClass(), 1, 9) == "item_box_" then
+			self:ConvertAmmo(ent)
 		end
 	end
-	
-	for _, ewep in pairs(ents.FindByClass("weapon_*")) do
-		self:ConvertWeapon(ewep)
-	end
-	
-	for _, ammo in pairs(ents.FindByClass("item_zm_ammo")) do
-		hook.Call("ReplaceItemWithCrate", self, ammo, ammo.ClassName)
-		
-		if IsValid(ammo) then
-			hook.Call("CreateCustomAmmo", self, ammo)
-		end
-	end
-	
-	self.PostMapSetup = true
 end
 
 function GM:SetupAmmo()
@@ -154,6 +146,11 @@ function GM:ConvertAmmo(ammo)
 	if ammotype then
 		local ent = ents.Create("item_zm_ammo")
 		if IsValid(ent) then
+			hook.Call("ReplaceItemWithCrate", self, ent, ammo:GetClass())
+			if IsValid(ent) then
+				ent = hook.Call("CreateCustomAmmo", self, ent)
+			else return end
+			
 			ent:SetPos(ammo:GetPos())
 			ent:SetAngles(ammo:GetAngles())
 			
@@ -198,14 +195,16 @@ end
 
 function GM:CreateCustomWeapons(ent, bNoSpawn)
 	local weptbl = hook.Call("GetCustomWeapons", self)
-	if #weptbl > 0 then
+	if table.Count(weptbl) > 0 then
 		local weptab = weptbl[ent:GetClass()]
-		if weptab and math.random() > weptab.Chance then
+		if weptab and math.random() < weptab.Chance then
 			local wep = ents.Create(weptab.Class)
 			if IsValid(wep) then
 				wep:SetPos(ent:GetPos())
 				wep:SetAngles(ent:GetAngles())
 				if not bNoSpawn then wep:Spawn() end
+				
+				ent:Remove()
 				
 				return wep
 			end
@@ -217,7 +216,7 @@ end
 
 function GM:CreateCustomAmmo(ent, bNoSpawn)
 	local ammotbl = hook.Call("GetCustomAmmo", self)
-	if #ammotbl > 0 then
+	if table.Count(ammotbl) > 0 then
 		local ammotab = ammotbl[ent.AmmoType]
 		if ammotab and math.random() > ammotab.Chance then
 			local ammoent = ents.Create(ammotab.Class)
@@ -225,6 +224,8 @@ function GM:CreateCustomAmmo(ent, bNoSpawn)
 				ammoent:SetPos(ent:GetPos())
 				ammoent:SetAngles(ent:GetAngles())
 				if not bNoSpawn then ammoent:Spawn() end
+				
+				ent:Remove()
 				
 				return ammoent
 			end
@@ -235,12 +236,28 @@ function GM:CreateCustomAmmo(ent, bNoSpawn)
 end
 
 function GM:OnEntityCreated(ent)
-	if self.PostMapSetup and (string.sub(ent:GetClass(), 1, 10) == "item_ammo_" or string.sub(ent:GetClass(), 1, 9) == "item_box_") then
-		timer.Simple(0.335, function() self:ConvertAmmo(ent) end)
+	if string.sub(ent:GetClass(), 1, 12) == "prop_physics" or string.sub(ent:GetClass(), 1, 12) == "func_physics" then
+		local pos = ent:GetPos()
+		local blockers = 0
+		for k, v in pairs(ents.FindInBox(pos + ent:OBBMins(), pos + ent:OBBMaxs())) do
+			if IsValid(v) and v:IsSolid() then
+				blockers = blockers + 1
+			end
+		end
+		
+		if blockers > 0 then 
+			ent:Remove()
+			return
+		end
 	end
 	
 	if ent:IsNPC() then
-		if string.sub(ent:GetClass(), 1, 12) == "npc_headcrab" then
+		local entclass = ent:GetClass()
+		if self:GetZombieData(entclass) ~= nil then
+			self.iZombieList[ent] = entclass
+		end
+		
+		if string.sub(entclass, 1, 12) == "npc_headcrab" then
 			ent:Remove() 
 			return
 		end
@@ -249,8 +266,8 @@ function GM:OnEntityCreated(ent)
 			if not IsValid(ent) then return end
 			
 			if not ent.SpawnedFromNode then
-				self:CallZombieFunction(ent:GetClass(), "OnSpawned", ent)
-				self:CallZombieFunction(ent:GetClass(), "SetupModel", ent)
+				self:CallZombieFunction(entclass, "OnSpawned", ent)
+				self:CallZombieFunction(entclass, "SetupModel", ent)
 			end
 			
 			if ent.GetNumBodyGroups and ent.SetBodyGroup then
@@ -262,9 +279,16 @@ function GM:OnEntityCreated(ent)
 			ent:SetShouldServerRagdoll(false)
 		end)
 		
-		for _, npc in pairs(ents.FindByClass("npc_*")) do
+		for _, npc in pairs(self.iZombieList) do
 			hook.Call("AddNPCFriends", self, npc, ent)
 		end
+	end
+end
+
+function GM:EntityRemoved(ent)
+	local zombietab = self.iZombieList[ent]
+	if zombietab then
+		zombietab = nil
 	end
 end
 
@@ -316,7 +340,6 @@ function GM:PostGamemodeLoaded()
 
 	util.AddNetworkString("PlayerKilledByNPC")
 	
-	util.AddNetworkString("zm_gamemodecall")
 	util.AddNetworkString("zm_trigger")
 	util.AddNetworkString("zm_infostrings")	
 	util.AddNetworkString("zm_queue")
@@ -422,8 +445,7 @@ function GM:PlayerInitialSpawn(pl)
 	
 	if (self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and team.NumPlayers(TEAM_ZOMBIEMASTER) >= 1) and not NotifiedRestart then
 		PrintTranslatedMessage(HUD_PRINTTALK, "round_restarting")
-		timer.Simple(2, function() hook.Call("PreRestartRound", self) end)
-		timer.Simple(3, function() hook.Call("RestartRound", self) end)
+		timer.Simple(4, function() hook.Call("EndRound", self) end)
 		NotifiedRestart = true
 	end
 	
@@ -444,7 +466,7 @@ end
 function GM:IncreaseResources(pZM)
 	if not IsValid(pZM) then return end
 	
-	local players = #team.GetPlayers(TEAM_SURVIVOR)
+	local players = player.GetCount() - 1
 	local resources = pZM:GetZMPoints()
 	local increase = GetConVar("zm_maxresource_increase"):GetInt()
 	
@@ -485,63 +507,6 @@ end
 
 function GM:PostCleanupMap()
 	hook.Call("InitPostEntityMap", self)
-end
-
-function GM:RestartRound()
-	self:RestartLua()
-	self:RestartGame()
-
-	net.Start("zm_gamemodecall")
-		net.WriteString("RestartRound")
-	net.Broadcast()
-end
-
-function GM:RestartLua()
-	zm_selection_started = false
-	zm_zm_left = false
-	NotifiedRestart = false
-	zm_timer_started = false
-	zm_start_round = false
-	self.ReadyTimer = 0
-	self.Income_Time = 0
-	
-	table.Empty(self.groups)
-	self.currentmaxgroup = 0
-	self.selectedgroup = 0
-	
-	self:SetCurZombiePop(0)
-end
-
-function GM:DoRestartGame()
-	game.CleanUpMap()
-	
-	self:SetRoundStart(true)
-	self:SetRoundActive(false)
-	self:SetRoundEnd(false)
-	self:SetRoundStartTime(5)
-	self.RoundStarted = 0
-	
-	zm_start_round = true
-	
-	table.Empty(self.UnReadyPlayers)
-	table.Empty(self.DeadPlayers)
-end
-
-function GM:RestartGame()
-	for _, pl in pairs(player.GetAll()) do
-		if IsValid(pl) then
-			pl:StripAmmo()
-			pl:SetFrags(0)
-			pl:SetDeaths(0)
-			pl:SetZMPoints(0)
-			
-			hook.Call("PlayerSpawnAsSpectator", self, pl)
-		end
-	end
-	
-	self.PostMapSetup = false
-
-	timer.Simple(0.25, function() self:DoRestartGame() end)
 end
 
 function GM:PlayerSay(sender, text, teamChat)
@@ -585,11 +550,11 @@ function GM:LoadNextMap()
 		game.LoadNextMap()
 	else
 		local maps = file.Find("maps/zm_*.bsp", "GAME")
-		table_sort(maps)
+		table.sort(maps)
 		if #maps > 0 then
 			local currentmap = game.GetMap()
 			for i, map in ipairs(maps) do
-				local lowermap = string_lower(map)
+				local lowermap = string.lower(map)
 				local realmap = RealMap(lowermap)
 				if realmap == currentmap then
 					if maps[i + 1] then
@@ -608,13 +573,6 @@ function GM:LoadNextMap()
 				end
 			end
 		end
-	end
-end
-
-function GM:PreRestartRound()
-	for _, pl in pairs(player.GetAll()) do
-		pl:StripWeapons()
-		pl:Spectate(OBS_MODE_ROAMING)
 	end
 end
 
@@ -652,7 +610,7 @@ function GM:CreateGibs(pos, headoffset)
 end
 
 function GM:TeamVictorious(won, message)
-	if player.GetCount() == 1 or self:GetRoundEnd() then return end
+	if self:GetRoundEnd() then return end
 	
 	local winscore = Either(won, HUMAN_WIN_SCORE, HUMAN_LOSS_SCORE)
 	local winningteam = Either(won, TEAM_SURVIVOR, TEAM_ZOMBIEMASTER)
@@ -663,17 +621,11 @@ function GM:TeamVictorious(won, message)
 	self:SetRoundEnd(true)
 	hook.Call("IncrementRoundCount", self)
 	
-	if not GetConVar("zm_notimeslowonwin"):GetBool() and won then
-		game.SetTimeScale(0.25)
-		timer.Simple(2, function() game.SetTimeScale(1) end)
-	end
-	
 	local rounds = GetConVar("zm_roundlimit"):GetInt()
 	if self.RoundsPlayed > rounds then
 		timer.Simple(3, function() hook.Call("LoadNextMap", self) end)
 	else
-		timer.Simple(2, function() hook.Call("PreRestartRound", self) end)
-		timer.Simple(3, function() hook.Call("RestartRound", self) end)
+		timer.Simple(4, function() hook.Call("EndRound", self) end)
 	end
 	
 	for _, ply in pairs(player.GetAll()) do
@@ -687,15 +639,50 @@ function GM:TeamVictorious(won, message)
 	hook.Call("FinishingRound", self, won, rounds)
 end
 
+function GM:EndRound()
+	if self.RoundsPlayed > GetConVar("zm_roundlimit"):GetInt() then return end
+	
+	for _, pl in pairs(player.GetAll()) do
+		pl:StripWeapons()
+		pl:StripAmmo()
+		pl:Spectate(OBS_MODE_ROAMING)
+		pl:SetZMPoints(0)
+		
+		hook.Call("PlayerSpawnAsSpectator", self, pl)
+		
+		pl:SendLua([[
+			hook.Call("RestartRound", GAMEMODE)
+		]])
+	end
+	
+	table.Empty(self.groups)
+	self.currentmaxgroup = 0
+	self.selectedgroup = 0
+	self.Income_Time = 0
+	self:SetCurZombiePop(0)
+	NotifiedRestart = false
+	
+	self:SetRoundEnd(false)
+	
+	table.Empty(self.DeadPlayers)
+	
+	timer.Simple(1, function()
+		hook.Call("SetupZombieMasterVolunteers", self)
+		for _, ent in pairs(ents.FindByClass("info_loadout")) do
+			ent:Distribute()
+		end
+	end)
+end
+
 function GM:IncrementRoundCount()
 	self.RoundsPlayed = self.RoundsPlayed + 1
 	file.Write("zm_rounds.txt", tostring(self.RoundsPlayed))
 end
 
 function GM:SetupPlayer(ply)
-	if ply:GetInfoNum("zm_preference", 0) >= 2 then return end
+	if ply:GetInfoNum("zm_preference", 0) == 2 then return end
 	
-	ply:ChangeTeam(TEAM_SURVIVOR)
+	ply:SetTeam(TEAM_SURVIVOR)
 	ply:SetClass("player_survivor")
 	
 	ply:UnSpectate()
@@ -728,8 +715,31 @@ function GM:InitClient(pl)
 		if self.RoundStarted + GetConVar("zm_postroundstarttimer"):GetInt() >= CurTime() and not self.DeadPlayers[pl:SteamID()] then
 			hook.Call("SetupPlayer", self, pl)
 			
-			local randply = table.Random(team.GetPlayers(TEAM_SURVIVOR))
-			pl:SetPos(randply:GetPos() + VectorRand() + randply:OBBMaxs())
+			local allhumans = team.GetPlayers(TEAM_SURVIVOR)
+			local randply = table.Random(allhumans)
+			local maxs = randply:OBBMaxs()
+			local mins = randply:OBBMins()
+			local randvect = Vector(math.Rand(mins.x, maxs.x), math.Rand(mins.y, maxs.y), 0)
+			local pos = randply:GetPos() + randvect + maxs
+			local maxcount = #allhumans
+			local count = 0
+			repeat
+				if count >= maxcount then break end
+				count = count + 1
+				
+				randply = table.Random(team.GetPlayers(TEAM_SURVIVOR))
+				maxs = randply:OBBMaxs()
+				mins = randply:OBBMins()
+				randvect = Vector(math.Rand(mins.x, maxs.x), math.Rand(mins.y, maxs.y), 0)
+				randvect.z = 0
+				maxs.z = 0
+				pos = randply:GetPos() + randvect + maxs
+			until util.IsInWorld(pos)
+			
+			pl:SetPos(pos)
+			
+			local pZM = GAMEMODE:FindZM()
+			pZM:SetZMPointIncome(pZM:GetZMPointIncome() + 5)
 		end
 	end
 	
@@ -825,7 +835,7 @@ function GM:EntityTakeDamage(ent, dmginfo)
 		self:CallZombieFunction(inflictor:GetClass(), "OnDamagedEnt", inflictor, ent, dmginfo)
 	end
 
-	if ent:IsPlayerHolding() then
+	if ent:IsPlayerHolding() and (attacker:IsPlayer() or inflictor:IsPlayer()) then
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
 		dmginfo:SetDamageType(DMG_BULLET)
@@ -850,14 +860,6 @@ function GM:EntityTakeDamage(ent, dmginfo)
 		end
 	end
 	
-	local mdlname = ent:GetModel() or ""
-	if string.find(mdlname, "explosive") and ent:IsPlayerHolding() then
-		dmginfo:SetDamage(0)
-		dmginfo:ScaleDamage(0)
-		dmginfo:SetDamageType(DMG_BULLET)
-		return true
-	end
-	
     -- We need to stop explosive chains team killing.
     if inflictor:IsValid() then
         local dmgtype = dmginfo:GetDamageType()
@@ -874,15 +876,6 @@ function GM:EntityTakeDamage(ent, dmginfo)
                 ent.LastExplosionTime = CurTime()
             end
         elseif inflictor:IsPlayer() and string.sub(ent:GetClass(), 1, 12) == "prop_physics" then -- Physics object damaged by player.
-            if inflictor:Team() == TEAM_HUMAN then
-                local phys = ent:GetPhysicsObject()
-                if phys:IsValid() and phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) and inflictor:GetCarry() ~= ent or ent._LastDropped and CurTime() < ent._LastDropped + 3 and ent._LastDroppedBy ~= inflictor then -- Human player damaged a physics object while it was being carried or recently carried. They weren't the carrier.
-                    dmginfo:SetDamage(0)
-                    dmginfo:ScaleDamage(0)
-                    return
-                end
-            end
-
             ent.LastExplosionAttacker = inflictor
             ent.LastExplosionTeam = inflictor:Team()
             ent.LastExplosionTime = CurTime()
@@ -908,8 +901,8 @@ function GM:PlayerPostThink(pl)
 end
 
 function GM:Tick()
-	for _, npc in pairs(ents.FindByClass("npc_*")) do
-		self:CallZombieFunction(npc:GetClass(), "Think", npc)
+	for npc, class in pairs(self.iZombieList) do
+		self:CallZombieFunction(class, "Think", npc)
 	end
 end
 
@@ -923,13 +916,14 @@ function GM:Think()
 		player_manager.RunClass(ply, "Think")
 	end
 	
-	for ent, b in pairs(self.PlayerHeldObjects) do
+	for ent, pl in pairs(self.PlayerHeldObjects) do
 		if not IsValid(ent) then continue end
 		
 		if not ent:IsPlayerHolding() then 
 			local colgroup = Either(ent._OldCG == COLLISION_GROUP_WEAPON, COLLISION_GROUP_NONE, ent._OldCG) or COLLISION_GROUP_NONE
 			ent:SetCollisionGroup(colgroup)
 			
+			pl.HeldObject = nil
 			self.PlayerHeldObjects[ent] = nil
 		end
 	end
@@ -960,7 +954,7 @@ function GM:Think()
 			end
 		end
 		
-		if self:GetRoundActive() and not self:GetRoundEnd() and (team.NumPlayers(TEAM_ZOMBIEMASTER) <= 0 and team.NumPlayers(TEAM_SURVIVOR) >= 1) then
+		if self:GetRoundActive() and not self:GetRoundEnd() and #team.GetPlayers(TEAM_ZOMBIEMASTER) == 0 then
 			hook.Call("SetupZombieMasterVolunteers", self, true)
 		end
 		
@@ -1031,26 +1025,6 @@ function GM:IsSpawnpointSuitable(pl, spawnpointent, bMakeSuitable)
 end
 
 function GM:SetupZombieMasterVolunteers(bSkipToSelection)
-	if not bSkipToSelection then
-		self:SetZMSelection(false)
-		self:SetRoundStart(false)
-		self:SetRoundActive(true)
-		self.RoundStarted = CurTime()
-		
-		for _, ply in pairs(player.GetAll()) do
-			if IsValid(ply) then
-				if ply:IsSpectator() then continue end
-				ply.m_iZMPriority = (ply.m_iZMPriority or 0) + 10
-			end
-		end
-		
-		game.CleanUpMap(false)
-		
-		for _, ply in pairs(team.GetPlayers(TEAM_SPECTATOR)) do
-			hook.Call("SetupPlayer", self, ply)
-		end
-	end
-	
 	if team.NumPlayers(TEAM_ZOMBIEMASTER) == 0 then
 		local pl = hook.Call("GetZombieMasterVolunteer", self)
 		if IsValid(pl) then
@@ -1061,6 +1035,18 @@ function GM:SetupZombieMasterVolunteers(bSkipToSelection)
 					hook.Call("SetPlayerToZombieMaster", self, pl)
 				end
 			end)
+		end
+	end
+	
+	if not bSkipToSelection then
+		self:SetZMSelection(false)
+		self:SetRoundStart(false)
+		self.RoundStarted = CurTime()
+		
+		game.CleanUpMap()
+		
+		for _, ply in pairs(team.GetPlayers(TEAM_SPECTATOR)) do
+			hook.Call("SetupPlayer", self, ply)
 		end
 	end
 end
@@ -1077,10 +1063,16 @@ function GM:SetPlayerToZombieMaster(pl)
 	pl:SetFrags(0)
 	pl:SetDeaths(0)
 	pl:Spectate(OBS_MODE_ROAMING)
-	pl:ChangeTeam(TEAM_ZOMBIEMASTER)
+	pl:SetTeam(TEAM_ZOMBIEMASTER)
 	pl:SetClass("player_zombiemaster")
+	
+	for _, pPlayer in pairs(player.GetAll()) do
+		if pPlayer ~= pl then 
+			self.ZombieMasterPriorities[pPlayer] = (self.ZombieMasterPriorities[pPlayer] or 0) + 10
+		end
+	end
 
-	pl.m_iZMPriority = 0
+	self.ZombieMasterPriorities[pl] = 0
 
 	PrintTranslatedMessage(HUD_PRINTTALK, "x_has_become_the_zombiemaster", pl:Name())
 	util.PrintMessageC(pl, translate.ClientGet(pl, "zm_move_instructions"), Color(255, 0, 0))
@@ -1095,6 +1087,8 @@ function GM:SetPlayerToZombieMaster(pl)
 		pl:SetPos(spawn:GetPos())
 		pl:SetAngles(spawn:GetAngles())
 	end
+	
+	self:SetRoundActive(true)
 end
 
 function GM:GetZombieMasterVolunteer()
@@ -1103,15 +1097,21 @@ function GM:GetZombieMasterVolunteer()
 	
 	local iHighest = -1
 	for _, pl in pairs(player.GetAll()) do
-		if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority > iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
-			iHighest = pl.m_iZMPriority
+		if pl:GetInfoNum("zm_preference", 0) == 2 then continue end
+		
+		local iPriority = self.ZombieMasterPriorities[pl]
+		if iPriority and iPriority > iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
+			iHighest = iPriority
 		end
 	end
 	
 	local ZMList = {}
 	for _, pl in pairs(player.GetAll()) do
-		if IsValid(pl) and pl.m_iZMPriority and pl.m_iZMPriority == iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
-			table.insert(ZMList, pl)
+		if pl:GetInfoNum("zm_preference", 0) == 2 then continue end
+		
+		local iPriority = self.ZombieMasterPriorities[pl]
+		if iPriority and iPriority == iHighest and pl:GetInfoNum("zm_preference", 0) == 1 then
+			ZMList[#ZMList + 1] = pl
 		end
 	end
 	
@@ -1133,7 +1133,7 @@ function GM:AllowPlayerPickup(pl, ent)
 		ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 		pl:PickupObject(ent)
 		
-		self.PlayerHeldObjects[ent] = true
+		self.PlayerHeldObjects[ent] = pl
 		
 		return false
 	end

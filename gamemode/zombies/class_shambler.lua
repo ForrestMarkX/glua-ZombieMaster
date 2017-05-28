@@ -1,3 +1,5 @@
+DEFINE_BASECLASS("class_default")
+
 NPC.Class = "npc_zombie"
 NPC.Name = translate.Get("npc_class_shambler")
 NPC.Description = translate.Get("npc_description_shambler")
@@ -6,7 +8,6 @@ NPC.Flag = FL_SPAWN_SHAMBLER_ALLOWED
 NPC.Cost = GetConVar("zm_cost_shambler"):GetInt()
 NPC.PopCost = GetConVar("zm_popcost_shambler"):GetInt()
 NPC.Health = GetConVar("zm_zombie_health"):GetInt()
-NPC.DieSound = "Zombie.Die"
 
 NPC.Model = {
 	"models/zombie/zm_classic.mdl",
@@ -23,8 +24,9 @@ NPC.Model = {
 
 function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
 	if bit.band(dmginfo:GetDamageType(), DMG_BLAST) ~= 0 then
-		dmginfo:SetDamageType(DMG_DIRECT)
+		dmginfo:SetDamageType(DMG_BULLET)
+		dmginfo:SetDamage(dmginfo:GetDamage() * 2)
 	end
-	
-	self.BaseClass.OnTakeDamage(self, npc, attacker, inflictor, dmginfo)
+		
+	return BaseClass.OnTakeDamage(self, npc, attacker, inflictor, dmginfo)
 end

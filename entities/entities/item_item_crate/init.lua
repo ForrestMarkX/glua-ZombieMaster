@@ -48,38 +48,13 @@ function ENT:AcceptInput(name, activator, caller, args)
 	end
 end
 
+ENT.IsAmmo = false
+ENT.ItemSpawns = {}
 function ENT:SetObjectHealth(health)
 	self:SetDTFloat(0, health)
 	if health <= 0 and not self.Destroyed then
 		self.Destroyed = true
-
-		local ent = ents.Create("prop_physics")
-		if ent:IsValid() then
-			ent:SetModel(self:GetModel())
-			ent:SetMaterial(self:GetMaterial())
-			ent:SetAngles(self:GetAngles())
-			ent:SetPos(self:GetPos())
-			ent:SetSkin(self:GetSkin() or 0)
-			ent:SetColor(self:GetColor())
-			ent:Spawn()
-			ent:Fire("break", "", 0)
-			ent:Fire("kill", "", 0.1)
-		end
-	end
-end
-
-function ENT:OnTakeDamage(dmginfo)
-	self:TakePhysicsDamage(dmginfo)
-
-	local attacker = dmginfo:GetAttacker()
-	if not (attacker:IsValid() and attacker:IsPlayer() and attacker:Team() == TEAM_HUMAN) then
-		self:SetObjectHealth(self:GetObjectHealth() - dmginfo:GetDamage())
-	end
-end
-
-ENT.IsAmmo = false
-function ENT:Think()
-	if self.Destroyed then
+		
 		local playercount = player.GetCount()
 		if playercount > 64 then
 			self.itemcount = math.Round(self.itemcount * 4)
@@ -94,6 +69,8 @@ function ENT:Think()
 		if bWasLarge then
 			self.itemcount = self.itemcount * 2
 		end
+		
+		self.itemcount = math.min(self.itemcount, 32)
 		
 		for i=1, self.itemcount do
 			local pSpawn
@@ -125,7 +102,57 @@ function ENT:Think()
 				pSpawn:SetPos( pos )
 				
 				pSpawn:SetAngles( self:GetAngles() + AngleRand() )
-				pSpawn:SetAbsVelocity( VectorRand() * 3 )
+				pSpawn:SetAbsVelocity( VectorRand() * 5 )
+				
+				self.ItemSpawns[#self.ItemSpawns + 1] = pSpawn
+			end
+		end
+		
+		local ent = ents.Create("prop_physics")
+		if IsValid(ent) then
+			ent:SetModel(self:GetModel())
+			ent:SetMaterial(self:GetMaterial())
+			ent:SetAngles(self:GetAngles())
+			ent:SetPos(self:GetPos())
+			ent:SetSkin(self:GetSkin() or 0)
+			ent:SetColor(self:GetColor())
+			ent:Spawn()
+			ent:Fire("break", "", 0)
+			ent:Fire("kill", "", 0.1)
+		end
+		
+		self:SetNoDraw(true)
+		self:SetNotSolid(true)
+		
+		local phys = self:GetPhysicsObject()
+		if IsValid(phys) then
+			phys:EnableCollisions(false)
+			phys:EnableMotion(false)
+			phys:Sleep()
+		end
+		
+		self.SleepItems = CurTime() + 5
+	end
+end
+
+function ENT:OnTakeDamage(dmginfo)
+	if self.Destroyed then return true end
+	
+	self:TakePhysicsDamage(dmginfo)
+
+	local attacker = dmginfo:GetAttacker()
+	if not (attacker:IsValid() and attacker:IsPlayer() and attacker:Team() == TEAM_HUMAN) then
+		self:SetObjectHealth(self:GetObjectHealth() - dmginfo:GetDamage())
+	end
+end
+
+function ENT:Think()
+	if self.SleepItems and self.SleepItems < CurTime() then
+		for _, ent in ipairs(self.ItemSpawns) do
+			local phys = self:GetPhysicsObject()
+			if IsValid(phys) then
+				phys:EnableCollisions(false)
+				phys:Sleep()
 			end
 		end
 		
