@@ -175,13 +175,6 @@ function GM:OnEntityCreated(ent)
 	end
 end
 
-function GM:EntityRemoved(ent)
-	local zombietab = self.iZombieList[ent]
-	if zombietab then
-		zombietab = nil
-	end
-end
-
 function GM:SpawnMenuEnabled()
 	return false
 end
@@ -631,6 +624,8 @@ function GM:RestartRound()
 			self.ToolPan_Center_Tip:Remove()
 		end
 	end
+	
+	table.Empty(self.iZombieList)
 	
 	GAMEMODE.ZombieGroups = nil
 	GAMEMODE.SelectedZombieGroups = nil

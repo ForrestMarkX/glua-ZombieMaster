@@ -53,6 +53,11 @@ if file.Exists(GM.FolderName.."/gamemode/maps/"..game.GetMap()..".lua", "LUA") t
 	include("maps/"..game.GetMap()..".lua")
 end
 
+function GM:CreateEntityRagdoll(owner, ragdoll)
+	print(owner)
+	print(ragdoll)
+end
+
 function GM:InitPostEntity()
 	RunConsoleCommand("mapcyclefile", "mapcycle_zombiemaster.txt")
 	hook.Call("InitPostEntityMap", self)
@@ -279,16 +284,9 @@ function GM:OnEntityCreated(ent)
 			ent:SetShouldServerRagdoll(false)
 		end)
 		
-		for _, npc in pairs(self.iZombieList) do
+		for npc, class in pairs(self.iZombieList) do
 			hook.Call("AddNPCFriends", self, npc, ent)
 		end
-	end
-end
-
-function GM:EntityRemoved(ent)
-	local zombietab = self.iZombieList[ent]
-	if zombietab then
-		zombietab = nil
 	end
 end
 
@@ -656,6 +654,9 @@ function GM:EndRound()
 	end
 	
 	table.Empty(self.groups)
+	table.Empty(self.DeadPlayers)
+	table.Empty(self.iZombieList)
+	
 	self.currentmaxgroup = 0
 	self.selectedgroup = 0
 	self.Income_Time = 0
@@ -663,8 +664,6 @@ function GM:EndRound()
 	NotifiedRestart = false
 	
 	self:SetRoundEnd(false)
-	
-	table.Empty(self.DeadPlayers)
 	
 	timer.Simple(1, function()
 		hook.Call("SetupZombieMasterVolunteers", self)

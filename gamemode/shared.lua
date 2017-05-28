@@ -154,3 +154,7 @@ end
 function GM:ShouldCollide(ent1, ent2)
 	return not (ent1:IsPlayer() and ent2:IsPlayer())
 end
+
+function GM:EntityRemoved(ent)
+	if ent:IsNPC() and self.iZombieList[ent] ~= nil then self.iZombieList[ent] = nil end
+end
