@@ -1092,7 +1092,11 @@ function GM:SetPlayerToZombieMaster(pl)
 end
 
 function GM:GetZombieMasterVolunteer()
-	if GetConVar("zm_debug_nozombiemaster"):GetBool() then return nil end
+	if GetConVar("zm_debug_nozombiemaster"):GetBool() then
+		self:SetRoundActive(true)
+		return nil 
+	end
+	
 	if team.NumPlayers(TEAM_ZOMBIEMASTER) >= 1 then return end
 	
 	local iHighest = -1
@@ -1146,23 +1150,31 @@ function GM:PlayerCanHearPlayersVoice(listener, talker)
 end
 
 function GM:FindUseEntity(ply, defaultEnt)
-	local tr = util.TraceHull({
-		start = ply:EyePos(),
-		endpos = ply:EyePos() + ply:EyeAngles():Forward() * 64,
-		mins = Vector(-8, -8, -8),
-		maxs = Vector(8, 8, 8),	
-		mask = bit.bor(MASK_SHOT, CONTENTS_GRATE),
-		filter = function(ent)
-			if ent:IsPlayer() or ent:IsWeapon() or ent:GetClass() == "item_zm_ammo" then return false end
-			return true
+	if IsValid(defaultEnt) then
+		if (defaultEnt:IsPlayer() or defaultEnt:IsWeapon() or defaultEnt:GetClass() == "item_zm_ammo") then
+			local tr = util.TraceHull({
+				start = ply:EyePos(),
+				endpos = ply:EyePos() + ply:EyeAngles():Forward() * 64,
+				mins = Vector(-8, -8, -8),
+				maxs = Vector(8, 8, 8),	
+				mask = bit.bor(MASK_SHOT, CONTENTS_GRATE),
+				filter = function(ent)
+					if not (ent:IsPlayer() or ent:IsWeapon() or ent:GetClass() == "item_zm_ammo") then return true end
+				end
+			})
+			local ent = tr.Entity
+			if IsValid(ent) then
+				return ent
+			else
+				return defaultEnt
+			end
+		elseif defaultEnt:GetClass() == "item_item_crate" then
+			hook.Call("AllowPlayerPickup", self, ply, defaultEnt)
+			return defaultEnt
 		end
-	})
-	local ent = tr.Entity
-	if IsValid(ent) then
-		return ent
-	else
-		return defaultEnt
 	end
+	
+	return defaultEnt
 end
 
 function GM:PlayerUse(pl, ent)

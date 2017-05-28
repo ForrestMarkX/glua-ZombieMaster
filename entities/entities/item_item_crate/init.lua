@@ -148,9 +148,12 @@ end
 
 function ENT:Think()
 	if self.SleepItems and self.SleepItems < CurTime() then
-		for _, ent in ipairs(self.ItemSpawns) do
-			local phys = self:GetPhysicsObject()
+		for i, ent in pairs(self.ItemSpawns) do
+			if not IsValid(ent) then continue end
+			
+			local phys = ent:GetPhysicsObject()
 			if IsValid(phys) then
+				phys:EnableMotion(false)
 				phys:EnableCollisions(false)
 				phys:Sleep()
 			end

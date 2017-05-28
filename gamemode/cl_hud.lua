@@ -234,7 +234,7 @@ function MakepCredits()
 	frame:MakePopup()
 end
 
-local BinderTextUpdate(self)
+local function BinderTextUpdate(self)
 	local str = input.GetKeyName(self.m_iSelectedNumber)
 	if not str then str = "NONE" end
 
