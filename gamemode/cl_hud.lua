@@ -504,6 +504,7 @@ function GM:ShowHelp()
 	scroll:SetSize(pan:GetWide() - 5, pan:GetTall() - 5)
 	
 	local lab = vgui.Create("DLabel", scroll)
+	lab:SetSize(scroll:GetSize())
 	lab:SetFont("ZMHUDFontSmaller")
 	lab:AlignTop(8)
 	lab:AlignLeft(8)

@@ -89,9 +89,6 @@ function SWEP:Initialize()
 
 	self:SetNextIdle(0)
     self:SetDeploySpeed(self.DeploySpeed)
-	
-	self:SetSolid(SOLID_BBOX)
-	self:SetCollisionBounds(self:OBBMins(), self:OBBMaxs())
 end
 
 function SWEP:PlayPrimaryFireSound()

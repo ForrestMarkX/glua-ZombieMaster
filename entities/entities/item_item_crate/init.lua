@@ -49,7 +49,6 @@ function ENT:AcceptInput(name, activator, caller, args)
 end
 
 ENT.IsAmmo = false
-ENT.ItemSpawns = {}
 function ENT:SetObjectHealth(health)
 	self:SetDTFloat(0, health)
 	if health <= 0 and not self.Destroyed then
@@ -103,8 +102,6 @@ function ENT:SetObjectHealth(health)
 				
 				pSpawn:SetAngles( self:GetAngles() + AngleRand() )
 				pSpawn:SetAbsVelocity( VectorRand() * 5 )
-				
-				self.ItemSpawns[#self.ItemSpawns + 1] = pSpawn
 			end
 		end
 		
@@ -121,17 +118,7 @@ function ENT:SetObjectHealth(health)
 			ent:Fire("kill", "", 0.1)
 		end
 		
-		self:SetNoDraw(true)
-		self:SetNotSolid(true)
-		
-		local phys = self:GetPhysicsObject()
-		if IsValid(phys) then
-			phys:EnableCollisions(false)
-			phys:EnableMotion(false)
-			phys:Sleep()
-		end
-		
-		self.SleepItems = CurTime() + 5
+		self:Remove()
 	end
 end
 
@@ -143,22 +130,5 @@ function ENT:OnTakeDamage(dmginfo)
 	local attacker = dmginfo:GetAttacker()
 	if not (attacker:IsValid() and attacker:IsPlayer() and attacker:Team() == TEAM_HUMAN) then
 		self:SetObjectHealth(self:GetObjectHealth() - dmginfo:GetDamage())
-	end
-end
-
-function ENT:Think()
-	if self.SleepItems and self.SleepItems < CurTime() then
-		for i, ent in pairs(self.ItemSpawns) do
-			if not IsValid(ent) then continue end
-			
-			local phys = ent:GetPhysicsObject()
-			if IsValid(phys) then
-				phys:EnableMotion(false)
-				phys:EnableCollisions(false)
-				phys:Sleep()
-			end
-		end
-		
-		self:Remove()
 	end
 end

@@ -53,11 +53,6 @@ if file.Exists(GM.FolderName.."/gamemode/maps/"..game.GetMap()..".lua", "LUA") t
 	include("maps/"..game.GetMap()..".lua")
 end
 
-function GM:CreateEntityRagdoll(owner, ragdoll)
-	print(owner)
-	print(ragdoll)
-end
-
 function GM:InitPostEntity()
 	RunConsoleCommand("mapcyclefile", "mapcycle_zombiemaster.txt")
 	hook.Call("InitPostEntityMap", self)

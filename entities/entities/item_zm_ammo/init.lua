@@ -3,8 +3,9 @@ include("shared.lua")
 
 function ENT:Initialize()
 	self:SetModel(self.Model)
+	
 	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetSolid(SOLID_BBOX)
+	self:SetSolid(SOLID_VPHYSICS)
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	
 	self:SetTrigger(true)
@@ -16,7 +17,7 @@ function ENT:Initialize()
 	maxs.y = maxs.y * 4
 	
 	self:SetCollisionBounds(mins, maxs)
-
+	
 	local phys = self:GetPhysicsObject()
 	if phys:IsValid() then
 		phys:SetMaterial("material")
