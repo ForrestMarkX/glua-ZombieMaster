@@ -38,6 +38,7 @@ function NPC:OnSpawned(npc)
 	
 	if self.HullSizeMins and self.HullSizeMaxs then
 		timer.Simple(0.1, function()
+			if not IsValid(npc) then return end
 			npc:SetCollisionBounds(self.HullSizeMins, self.HullSizeMaxs)
 		end)
 	end
@@ -86,7 +87,18 @@ function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 	local damagetype = dmginfo:GetDamageType()
 	if damagetype ~= DMG_CLUB then
 		if hitgroup == HITGROUP_HEAD then
-			dmginfo:ScaleDamage(2)
+			if bit.band(damagetype, DMG_BUCKSHOT) ~= 0 then
+				local flDist = 1024
+				if IsValid(dmginfo:GetAttacker()) then
+					flDist = (npc:GetPos() - dmginfo:GetAttacker():GetPos()):Length()
+				end
+
+				if flDist <= ZOMBIE_BUCKSHOT_TRIPLE_DAMAGE_DIST then
+					dmginfo:ScaleDamage(3)
+				end
+			else
+				dmginfo:ScaleDamage(2)
+			end
 		elseif hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG then
 			dmginfo:ScaleDamage(0.25)
 		end

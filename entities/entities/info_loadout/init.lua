@@ -34,18 +34,15 @@ function ENT:DistributeToPlayer(ply)
 
 	if self.m_iMethod == 1 then
 		for i=1, 4 do
-			local tab = self.weaponsCategorised[math.random(#self.weaponsCategorised)]
-			
+			local tab = self.weaponsCategorised[i]
 			if tab then
 				local pick = tab[math.random(#tab)]
 				self:CreateAndGiveWeapon(ply, pick)
-				table.RemoveByValue(self.weaponsCategorised, tab)
 			end
 		end
 	else
 		local pick = self.m_iWeaponsAll[math.random(#self.m_iWeaponsAll)]
 		self:CreateAndGiveWeapon(ply, pick)
-		table.RemoveByValue(self.m_iWeaponsAll, pick)
 	end
 end
 

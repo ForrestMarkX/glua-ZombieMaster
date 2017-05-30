@@ -31,7 +31,6 @@ SWEP.Primary.MinDamage			= 20
 SWEP.Primary.MaxDamage			= 30
 SWEP.Primary.NumShots 			= 1
 SWEP.Primary.Delay 				= 1.2
-SWEP.Primary.Cone 				= 0.0075
 
 SWEP.Primary.Automatic   		= false
 SWEP.Primary.Ammo         		= "revolver"
@@ -48,6 +47,8 @@ function SWEP:Think()
 		
 		local damage = Either(self.Primary.Damage ~= nil, self.Primary.Damage, math.random(self.Primary.MinDamage or 0, self.Primary.MaxDamage or 0))
 		self:ShootBullet(damage, self.Primary.NumShots, self.Primary.Cone)
+		
+		self.Owner:ViewPunch(Angle(-8, math.Rand(-2, 2), 0))
 		
 		if not self.InfiniteAmmo then
 			self:TakePrimaryAmmo(1)
@@ -73,6 +74,8 @@ function SWEP:SecondaryAttack()
 	
 	local damage = Either(self.Primary.Damage ~= nil, self.Primary.Damage, math.random(self.Primary.MinDamage or 0, self.Primary.MaxDamage or 0))
 	self:ShootBullet(damage, self.Primary.NumShots, self.Primary.Cone)
+	
+	self.Owner:ViewPunch(Angle(math.Rand(-8, 2), math.Rand(-2, 2), 0))
 	
 	if not self.InfiniteAmmo then
 		self:TakePrimaryAmmo(1)
@@ -105,7 +108,6 @@ function SWEP:Reload()
 	end
 end
 
-function SWEP:ShootBullet(dmg, numbul, cone)
-	BaseClass.ShootBullet(self, dmg, numbul, cone)
-	self.Owner:ViewPunch(Angle(-8, math.Rand(-2, 2), 0))
+function SWEP:GetBulletSpread(cone)
+	return VECTOR_CONE_1DEGREES
 end

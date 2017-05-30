@@ -32,6 +32,7 @@ SWEP.TracerType                 = "Tracer"
 
 SWEP.InfiniteAmmo               = false
 SWEP.DeploySpeed                = 1
+SWEP.DoViewPunch				= false
 
 SWEP.Primary.Sound				= ""
 SWEP.Primary.NumShots			= 1
@@ -134,6 +135,10 @@ function SWEP:DefaultCallBack(tr, dmginfo)
 	end
 end
 
+function SWEP:GetBulletSpread(cone)
+	return Vector(cone, cone, 0)
+end
+
 function SWEP:ShootBullet(dmg, numbul, cone)
 	local owner = self:GetOwner()
 	
@@ -144,12 +149,16 @@ function SWEP:ShootBullet(dmg, numbul, cone)
 	bullet.Num 		= numbul
 	bullet.Src 		= owner:GetShootPos()
 	bullet.Dir 		= owner:GetAimVector()
-	bullet.Spread 	= Vector(cone, cone, 0)
+	bullet.Spread 	= self:GetBulletSpread(cone)
 	bullet.Tracer	= self.TracerFreq
 	bullet.TracerName = self.TracerType
 	bullet.Force	= dmg * 0.1
 	bullet.Damage	= dmg
 	bullet.Callback = self.DefaultCallBack
+	
+	if self.DoViewPunch then
+		owner:ViewPunch(self:GetViewPunch())
+	end
 
 	local PlayerPos = owner:GetShootPos()
 	local PlayerAim = owner:GetAimVector()
@@ -302,11 +311,11 @@ function SWEP:DrawHUD()
 end
 
 function SWEP:DrawWeaponSelection( x, y, wide, tall, alpha )
-	draw.SimpleText(self.WeaponSelectIconLetter, "ZMDeathFonts", x + wide / 2, y + tall * 0.2, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
+	draw.SimpleTextBlurry(self.WeaponSelectIconLetter, "ZMDeathFonts", x + wide / 2, y + tall * 0.2, Color(255, 255, 255, 255), TEXT_ALIGN_CENTER)
 
 	if self.ShakeWeaponSelectIcon then
-		draw.SimpleText(self.WeaponSelectIconLetter, "ZMDeathFonts", x + wide / 2 + math.Rand(-4, 4), y + tall * 0.2 + math.Rand(-14, 14), Color(255, 255, 255, math.Rand(10, 120)), TEXT_ALIGN_CENTER)
-		draw.SimpleText(self.WeaponSelectIconLetter, "ZMDeathFonts", x + wide / 2 + math.Rand(-4, 4), y + tall * 0.2 + math.Rand(-9, 9), Color(255, 255, 255, math.Rand(10, 120)), TEXT_ALIGN_CENTER)
+		draw.SimpleTextBlurry(self.WeaponSelectIconLetter, "ZMDeathFonts", x + wide / 2 + math.Rand(-4, 4), y + tall * 0.2 + math.Rand(-14, 14), Color(255, 255, 255, math.Rand(10, 120)), TEXT_ALIGN_CENTER)
+		draw.SimpleTextBlurry(self.WeaponSelectIconLetter, "ZMDeathFonts", x + wide / 2 + math.Rand(-4, 4), y + tall * 0.2 + math.Rand(-9, 9), Color(255, 255, 255, math.Rand(10, 120)), TEXT_ALIGN_CENTER)
 	end
 end
 

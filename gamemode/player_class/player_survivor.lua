@@ -43,6 +43,7 @@ end
 
 function PLAYER:Loadout()
 	self.Player:Give("weapon_zm_fists")
+	self.Player:Give("weapon_zm_carry")
 end
 
 function PLAYER:Think()
@@ -97,7 +98,7 @@ function PLAYER:AllowPickup(ent)
 	local objectMass = 0
 	if IsValid(phys) then
 		objectMass = phys:GetMass()
-		if phys:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP) then
+		if phys:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP) or not phys:IsMotionEnabled() then
 			return false
 		end
 	else
@@ -143,7 +144,10 @@ function PLAYER:CanPickupWeapon(ent)
 		
 		local weps = self.Player:GetWeapons()
 		for index, wep in pairs(weps) do
-			if wep:GetSlot() == ent:GetSlot() then
+			local slot = wep:GetSlot()
+			if slot == 0 then continue end
+			
+			if slot == ent:GetSlot() then
 				return false
 			end
 		end
@@ -177,7 +181,7 @@ function PLAYER:CanPickupItem(item)
 		return false 
 	end
 	
-	if self.Player:Alive() and string.sub(item:GetClass(), 1, 10) == "item_ammo_" or item:GetClass() == "item_zm_ammo" or item:GetClass() == "weapon_zm_molotov" then
+	if self.Player:Alive() and item.ClassName ~= nil then
 		if item.ThrowTime and item.ThrowTime > CurTime() then return false end
 		
 		for _, wep in pairs(self.Player:GetWeapons()) do
@@ -186,12 +190,18 @@ function PLAYER:CanPickupItem(item)
 			local ammotype = GAMEMODE.AmmoClass[item.ClassName] or ""
 			
 			if string.lower(primaryammo) == string.lower(ammotype) or string.lower(secondaryammo) == string.lower(ammotype) then
-				local ammoid = game.GetAmmoID(ammotype)
 				local ammovar = GetConVar("zm_maxammo_"..primaryammo or secondaryammo)
 				
 				if ammovar == nil then return end
 				
 				if self.Player:GetAmmoCount(ammotype) < ammovar:GetInt() then
+					if item:IsWeapon() then
+						self.Player:GiveAmmo(GAMEMODE.AmmoCache[ammotype], ammotype, false)
+						item:Remove()
+						
+						return false
+					end
+					
 					return true
 				end
 			end
@@ -218,9 +228,6 @@ end
 function PLAYER:PreDeath(inflictor, attacker)
 	BaseClass.PreDeath(self, inflictor, attacker)
 	
-	self.Player:Flashlight(false)
-	self.Player:CrosshairDisable()
-	
 	for _, wep in pairs(self.Player:GetWeapons()) do
 		if IsValid(wep) and not wep.Undroppable then
 			self.Player:DropWeapon(wep)
@@ -238,6 +245,10 @@ function PLAYER:OnDeath(attacker, dmginfo)
 		pZM:AddZMPoints(income)
 		pZM:SetZMPointIncome(pZM:GetZMPointIncome() - 5)
 	end
+	
+	self.Player:Flashlight(false)
+	self.Player:CrosshairDisable()
+	self.Player:RemoveEffects(EF_DIMLIGHT)
 end
 
 function PLAYER:PostOnDeath(inflictor, attacker)

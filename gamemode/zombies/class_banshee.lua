@@ -139,3 +139,12 @@ function NPC:Think(npc)
 		npc.m_flLastClingCheck = CurTime() + 0.25
 	end
 end
+
+function NPC:OnDamagedEnt(npc, ent, dmginfo)
+	local damage = dmginfo:GetDamage()
+	if damage == cvars.Number("sk_fastzombie_clawdamage", 0) then
+		dmginfo:SetDamage(GetConVar("zm_fastzombie_clawdamage"):GetInt())
+	elseif damage == cvars.Number("sk_fastzombie_leapdamage", 0) then
+		dmginfo:SetDamage(GetConVar("zm_fastzombie_leapdamage"):GetInt())
+	end
+end

@@ -27,11 +27,10 @@ SWEP.HoldType 				= "pistol"
 
 SWEP.Primary.ClipSize		= 30
 SWEP.Primary.DefaultClip	= 30
-SWEP.Primary.MinDamage		= 4
-SWEP.Primary.MaxDamage		= 8
+SWEP.Primary.MinDamage		= 8
+SWEP.Primary.MaxDamage		= 12
 SWEP.Primary.NumShots 		= 1
 SWEP.Primary.Delay 			= 0.09
-SWEP.Primary.Cone 			= 0.028
 
 SWEP.Primary.Automatic   	= true
 SWEP.Primary.Ammo         	= "smg1"
@@ -41,3 +40,7 @@ SWEP.Secondary.ClipSize 	= 1
 SWEP.Secondary.DefaultClip 	= 1
 SWEP.Secondary.Automatic 	= false
 SWEP.Secondary.Ammo 		= "dummy"
+
+function SWEP:GetBulletSpread(cone)
+	return VECTOR_CONE_6DEGREES
+end

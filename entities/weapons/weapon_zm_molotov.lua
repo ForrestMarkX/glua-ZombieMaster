@@ -48,7 +48,7 @@ function SWEP:SetupDataTables()
 end
 
 function SWEP:Initialize()
-	self.BaseClass.Initialize(self)
+	BaseClass.Initialize(self)
 	
 	self.m_bLighterFlame = false
 	self.m_bClothFlame = false
@@ -56,6 +56,8 @@ function SWEP:Initialize()
 	self:SetNextIdle(0)
 	self:SetFireTimer(0)
 	self:SetFiring(false)
+	
+	self:SetCollisionBounds(self:OBBMins() * 4, self:OBBMaxs() * 4)
 end
 
 function SWEP:PreDrawViewModel()

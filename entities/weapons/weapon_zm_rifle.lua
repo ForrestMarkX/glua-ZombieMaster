@@ -40,6 +40,7 @@ SWEP.Primary.Automatic   		= true
 SWEP.Primary.Ammo         		= "357"
 
 SWEP.Secondary.Delay 			= 0.25
+SWEP.DoViewPunch				= true
 
 function SWEP:SetupDataTables()
 	BaseClass.SetupDataTables(self)
@@ -96,6 +97,10 @@ function SWEP:AdjustMouseSensitivity()
 	end
 	
 	return 1.0
+end
+
+function SWEP:GetViewPunch()
+	return Angle(math.Rand(-10, -4), math.Rand(-2, 2), 0)
 end
 
 if not CLIENT then return end

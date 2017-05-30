@@ -11,6 +11,7 @@ SWEP.WorldModel 			= ""
 SWEP.UseHands 				= true
 
 SWEP.Slot 					= 0
+SWEP.SlotPos 				= 1
 SWEP.HoldType 				= "fist"
 
 SWEP.Primary.Damage			= 10

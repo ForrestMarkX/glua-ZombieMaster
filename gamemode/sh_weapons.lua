@@ -1,4 +1,3 @@
---Originally from ZS
 local meta = FindMetaTable("Weapon")
 if not meta then return end
 

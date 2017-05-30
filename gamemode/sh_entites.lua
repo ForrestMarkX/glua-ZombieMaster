@@ -33,3 +33,8 @@ function meta:IsPointInBounds(vecWorldPt)
 			(vecLocalSpace.y >= m_vecMins.y and vecLocalSpace.y <= m_vecMaxs.y) and
 			(vecLocalSpace.z >= m_vecMins.z and vecLocalSpace.z <= m_vecMaxs.z)
 end
+
+function meta:RandomPointInBounds(vecNormalizedMins, vecNormalizedMaxs)
+	local vecNormalizedSpace = Vector(math.Rand(vecNormalizedMins.x, vecNormalizedMaxs.x), math.Rand(vecNormalizedMins.y, vecNormalizedMaxs.y), math.Rand(vecNormalizedMins.z, vecNormalizedMaxs.z))
+	return self:LocalToWorld(vecNormalizedSpace)
+end

@@ -158,3 +158,7 @@ end
 function GM:EntityRemoved(ent)
 	if ent:IsNPC() and self.iZombieList[ent] ~= nil then self.iZombieList[ent] = nil end
 end
+
+function GM:GravGunPickupAllowed(ply, ent)
+	return player_manager.RunClass(ply, "AllowPickup", ent)
+end

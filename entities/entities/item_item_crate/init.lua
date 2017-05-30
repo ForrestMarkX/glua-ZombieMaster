@@ -15,8 +15,10 @@ function ENT:Initialize()
 		phys:EnableMotion(true)
 		phys:Wake()
 	end
+	
+	self:AddEFlags(EFL_NO_ROTORWASH_PUSH)
 
-	self:SetMaxObjectHealth(30)
+	self:SetMaxObjectHealth(20)
 	self:SetObjectHealth(self:GetMaxObjectHealth())
 	
 	self.cratetype = self.cratetype or nil
@@ -93,15 +95,16 @@ function ENT:SetObjectHealth(health)
 				else
 					pSpawn = hook.Call("CreateCustomWeapons", GAMEMODE, pSpawn, true)
 				end
+				
+				local vecOrigin = self:RandomPointInBounds(Vector(0.25, 0.25, 0.25), Vector(0.75, 0.75, 0.75))
+				pSpawn:SetPos(vecOrigin)
 
-				pSpawn:Spawn()
+				local vecAngles = Angle(math.Rand(-20.0, 20.0), math.Rand(0.0, 360.0), math.Rand(-20.0, 20.0))
+				pSpawn:SetAngles(vecAngles)
 				
-				local mins, maxs = self:OBBMins() * 0.85, self:OBBMaxs() * 0.85
-				local pos = self:LocalToWorld(Vector(math.Rand(mins.x, maxs.x), math.Rand(mins.y, maxs.y), math.Rand(mins.z, maxs.z)))
-				pSpawn:SetPos( pos )
-				
-				pSpawn:SetAngles( self:GetAngles() + AngleRand() )
 				pSpawn:SetAbsVelocity( VectorRand() * 5 )
+				
+				pSpawn:Spawn()
 			end
 		end
 		

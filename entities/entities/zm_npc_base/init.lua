@@ -128,7 +128,10 @@ function ENT:OnTakeDamage(dmginfo)
 	end
 	
 	if self:Health() <= 0 then
-		timer.Simple(0, function() self:OnDeath(attacker, inflictor) end)
+		timer.Simple(0, function() 
+			if not IsValid(self) then return end 
+			self:OnDeath(attacker, inflictor) 
+		end)
 	end
 end
 

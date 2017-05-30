@@ -72,3 +72,10 @@ CreateConVar("zm_fastzombie_health", "40", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCV
 CreateConVar("zm_zombie_poison_health", "175", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Hulk.")
 CreateConVar("zm_burnzombie_health", "110", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Immolator.")
 CreateConVar("zm_dragzombie_health", "60", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Drifter.")
+
+CreateConVar("zm_zombie_dmg_one_slash", "25", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets how much damage a Shambler does.")
+CreateConVar("zm_zombie_poison_dmg_slash_min", "40", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the min damage a Hulk will do.")
+CreateConVar("zm_zombie_poison_dmg_slash_max", "50", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the max damage a Hulk will do.")
+CreateConVar("zm_fastzombie_clawdamage", "9", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets how much damage a Banshee does.")
+CreateConVar("zm_fastzombie_leapdamage", "5", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets how much damage a Banshees leap does.")
+CreateConVar("zm_dragzombie_damage", "3", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets how much damage a Drifter does.")

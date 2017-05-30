@@ -199,6 +199,8 @@ VoiceSets["monk"] = {
 }
 
 function meta:PlayDeathSound()
+	if not self.VoiceSet then return end
+	
 	local snds = VoiceSets[self.VoiceSet].DeathSounds
 	if snds then
 		self:EmitSound(snds[math.random(1, #snds)])
@@ -207,7 +209,8 @@ end
 
 function meta:PlayPainSound()
 	if CurTime() < self.NextPainSound then return end
-
+	if not self.VoiceSet then return end
+	
 	local snds
 
 	local set = VoiceSets[self.VoiceSet]

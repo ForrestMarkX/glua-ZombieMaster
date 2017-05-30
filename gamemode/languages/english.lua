@@ -43,6 +43,8 @@ LANGUAGE.placed_ambush_point                = "Created a new ambush point.\n"
 LANGUAGE.no_valid_zombies_selected_for_cling = "No valid zombies selected! Only zombies that can cling to the ceiling can perform this action.\n" 
 LANGUAGE.no_flat_or_range_ceiling 			= "Zombie was unable to find a solid ceiling within range above it!\n" 
 LANGUAGE.enter_ambush_mode 					= "Creating ambush..." 
+LANGUAGE.zm_afk_warn 						= "Warning: You will be marked AFK soon and the round ended." 
+LANGUAGE.zm_was_afk 						= "The Zombie Master is AFK." 
 
 LANGUAGE.tooltip_select_all                 = "Select all: Select all your zombies."
 LANGUAGE.tooltip_defend                     = "Defend: Order selected units to defend their current location."

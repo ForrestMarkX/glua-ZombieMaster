@@ -19,5 +19,5 @@ function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 end
 
 function NPC:OnDamagedEnt(npc, ent, dmginfo)
-	dmginfo:ScaleDamage(3)
+	dmginfo:SetDamage(math.random(GetConVar("zm_zombie_poison_dmg_slash_min"):GetInt(), GetConVar("zm_zombie_poison_dmg_slash_max"):GetInt()))
 end

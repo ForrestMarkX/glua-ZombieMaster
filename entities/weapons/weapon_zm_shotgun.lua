@@ -27,9 +27,9 @@ SWEP.Primary.MinDamage			= 6
 SWEP.Primary.MaxDamage			= 8
 SWEP.Primary.NumShots 			= 8
 SWEP.Primary.Delay 				= 1.1
-SWEP.Primary.Cone				= 0.048
 
 SWEP.ReloadDelay 				= 0.3
+SWEP.DoViewPunch				= true
 
 function SWEP:Initialize()
 	BaseClass.Initialize(self)
@@ -41,4 +41,12 @@ function SWEP:Initialize()
 	maxs.y = maxs.y * 2
 	
 	self:SetCollisionBounds(mins, maxs)
+end
+
+function SWEP:GetBulletSpread(cone)
+	return VECTOR_CONE_10DEGREES
+end
+
+function SWEP:GetViewPunch()
+	return Angle(math.Rand(-5, -2), math.Rand(-3.5, 3.5), 0)
 end

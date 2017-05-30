@@ -95,16 +95,28 @@ function GM:InitPostEntityMap()
 	
 	for _, ent in pairs(ents.GetAll()) do
 		if string.sub(ent:GetClass(), 1, 9) == "weapon_zm" then
+			local owner = ent:GetOwner()
+			if IsValid(owner) and owner:IsPlayer() then continue end
+			
 			hook.Call("ReplaceItemWithCrate", self, ent)
 			
 			if IsValid(ent) then
 				hook.Call("CreateCustomWeapons", self, ent)
 			end
 		elseif string.sub(ent:GetClass(), 1, 7) == "weapon_" then
+			local owner = ent:GetOwner()
+			if IsValid(owner) and owner:IsPlayer() then continue end
+			
 			self:ConvertWeapon(ent)
 		elseif string.sub(ent:GetClass(), 1, 10) == "item_ammo_" or string.sub(ent:GetClass(), 1, 9) == "item_box_" then
 			self:ConvertAmmo(ent)
 		end
+	end
+end
+
+function GM:EntityKeyValue(ent, key, value)
+	if key == "targetname" then
+		ent:SetName(value)
 	end
 end
 
@@ -829,7 +841,7 @@ function GM:EntityTakeDamage(ent, dmginfo)
 		self:CallZombieFunction(inflictor:GetClass(), "OnDamagedEnt", inflictor, ent, dmginfo)
 	end
 
-	if ent:IsPlayerHolding() and (attacker:IsPlayer() or inflictor:IsPlayer()) then
+	if ent:IsPlayerHolding() and not (attacker:IsWorld() or inflictor:IsWorld()) then
 		dmginfo:SetDamage(0)
 		dmginfo:ScaleDamage(0)
 		dmginfo:SetDamageType(DMG_BULLET)

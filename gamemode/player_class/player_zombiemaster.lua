@@ -3,24 +3,20 @@ DEFINE_BASECLASS("player_zm")
 
 local PLAYER = {}
 
---[[
-local MoveUp = false
-local MoceDown = false
---]]
-function PLAYER:SetupMove(mv, cmd)
-	--[[
-	if vgui.CursorVisible() then
-		if MoveUp then cmd:SetMouseWheel(1) end
-		if MoveDown then cmd:SetMouseWheel(-1) end
-	end
-	--]]
+function PLAYER:Spawn()
+	BaseClass.Spawn(self)
 	
+	self.Player:Flashlight(false)
+	self.Player:CrosshairDisable()
+	self.Player:RemoveEffects(EF_DIMLIGHT)
+end
+
+function PLAYER:SetupMove(mv, cmd)
 	if cmd:GetMouseWheel() ~= 0 then
 		mv:SetOrigin(mv:GetOrigin() + Vector(0, 0, (cmd:GetMouseWheel() * 20)))
 	end
 	
 	if CLIENT then
-		-- I hate this so much but this appears to be the only way to get cmd:GetMouseWheel() to return something other than 0 when the cursor is visible.
 		if not hook.Call("IsMenuOpen", GAMEMODE) and (input.WasMousePressed(MOUSE_WHEEL_UP) or input.WasMousePressed(MOUSE_WHEEL_DOWN)) then
 			if vgui.CursorVisible() then
 				local c_x, c_y = input.GetCursorPos()

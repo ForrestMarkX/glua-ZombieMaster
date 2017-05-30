@@ -7,9 +7,11 @@ function PLAYER:Spawn()
 	BaseClass.Spawn(self)
 	
 	self.Player:Spectate(OBS_MODE_ROAMING)
+	self.Player:Flashlight(false)
 	self.Player:CrosshairDisable()
 	self.Player:SetMoveType(MOVETYPE_NOCLIP)
 	self.Player:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+	self.Player:RemoveEffects(EF_DIMLIGHT)
 end
 
 function PLAYER:CanSuicide()

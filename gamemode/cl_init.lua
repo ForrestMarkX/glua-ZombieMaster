@@ -72,6 +72,8 @@ function GM:PostGamemodeLoaded()
 	local screenscale = BetterScreenScale()
 	
 	surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = screenscale * 120, weight = 500, blursize = 0, scanlines = 0, antialias = true, additive = false})
+	surface.CreateFont("ZMDeathFontsBlur", {font = "zmweapons", size = screenscale * 150, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
+	
 	surface.CreateFont("zm_hud_font", {font = "Consolas", size = 20, weight = 700, antialias = true, additive = false})
 	surface.CreateFont("zm_hud_font2", {font = "Consolas", size = 16, weight = 700, antialias = true, additive = false})
 	
