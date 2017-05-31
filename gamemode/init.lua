@@ -744,6 +744,13 @@ function GM:InitClient(pl)
 				pos = randply:GetPos() + randvect + maxs
 			until util.IsInWorld(pos)
 			
+			if pos == nil then 
+				local spawnpoint = hook.Call("PlayerSelectSpawn", GAMEMODE, pl)
+				if IsValid(spawnpoint) then
+					pos = spawnpoint:GetPos()
+				end
+			end
+			
 			pl:SetPos(pos)
 			
 			local pZM = GAMEMODE:FindZM()
