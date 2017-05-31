@@ -75,6 +75,13 @@ function SWEP:SecondaryAttack()
 	local owner = self:GetOwner()
 	if not IsValid(owner) then return end
 	
+	if self.TP then
+		self:SendWeaponAnim( ACT_VM_SECONDARYATTACK )
+		owner:SetAnimation( PLAYER_ATTACK1 )
+		self:Drop()
+		return
+	end
+	
 	local trace = util.TraceHull({
 		start = owner:EyePos(),
 		endpos = owner:EyePos() + owner:EyeAngles():Forward() * 64,

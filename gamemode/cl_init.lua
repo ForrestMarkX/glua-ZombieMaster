@@ -151,10 +151,7 @@ function GM:OnEntityCreated(ent)
 		local entname = string.lower(ent:GetClass())
 		if string.sub(entname, 1, 12) == "npc_headcrab" then
 			ent:DrawShadow(false)
-			ent.RenderOverride = function(self)
-				return true
-			end
-			
+			ent:SetNoDraw(true)
 			return
 		end
 		
@@ -301,6 +298,9 @@ local function SelectionTrace(ent)
 	if ent:GetClass() == "info_zombiespawn" or ent:GetClass() == "info_manipulate" then return true end
 	return false
 end
+local function LocationTrace(ent)
+	if not (ent:IsPlayer() or ent:IsNPC()) then return true end
+end
 function GM:GUIMousePressed(mouseCode, aimVector)
 	if LocalPlayer():IsZM() then
 		if mouseCode == MOUSE_LEFT then
@@ -333,7 +333,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				zm_placedpoweritem = true
 			elseif placingTrap then
 				net.Start("zm_placetrigger")
-					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
+					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
 					net.WriteEntity(TriggerEnt)
 				net.SendToServer()
 
@@ -342,7 +342,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				if zm_placedrally then zm_placedrally = false end
 				
 				net.Start("zm_placerally")
-					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
+					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
 					net.WriteEntity(TriggerEnt)
 				net.SendToServer()
 				
@@ -357,7 +357,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 				if zm_placedambush then zm_placedambush = false end
 				
 				net.Start("zm_create_ambush_point")
-					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll()).HitPos)
+					net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
 				net.SendToServer()
 				
 				placingAmbush = false			
@@ -377,7 +377,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			if zm_placedpoweritem or zm_placedrally or zm_placedambush then
 				click_delta = CurTime()
 
-				local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll())
+				local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace)
 				zm_ring_pos = tr.HitPos + tr.HitNormal
 				zm_ring_ang = tr.HitNormal:Angle()
 				zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
@@ -416,7 +416,7 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 			
 			click_delta = CurTime()
 
-			local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, player.GetAll())
+			local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace)
 			zm_ring_pos = tr.HitPos + tr.HitNormal
 			zm_ring_ang = tr.HitNormal:Angle()
 			zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
@@ -501,7 +501,7 @@ end
 function GM:CreateClientsideRagdoll(ent, ragdoll)
 	if string.find(ragdoll:GetModel(), "headcrab") then
 		ragdoll:SetNoDraw(true)
-		ragdoll:SetSaveValue("m_bFadingOut", true)
+		ragdoll:Remove()
 	end
 	
 	if IsValid(ent) and ent:IsNPC() then

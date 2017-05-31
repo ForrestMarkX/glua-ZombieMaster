@@ -721,19 +721,21 @@ function GM:InitClient(pl)
 		if self.RoundStarted + GetConVar("zm_postroundstarttimer"):GetInt() >= CurTime() and not self.DeadPlayers[pl:SteamID()] then
 			hook.Call("SetupPlayer", self, pl)
 			
+			local randply
+			local maxs, mins
+			local randvect
+			local pos
 			local allhumans = team.GetPlayers(TEAM_SURVIVOR)
-			local randply = table.Random(allhumans)
-			local maxs = randply:OBBMaxs()
-			local mins = randply:OBBMins()
-			local randvect = Vector(math.Rand(mins.x, maxs.x), math.Rand(mins.y, maxs.y), 0)
-			local pos = randply:GetPos() + randvect + maxs
 			local maxcount = #allhumans
 			local count = 0
 			repeat
 				if count >= maxcount then break end
 				count = count + 1
 				
-				randply = table.Random(team.GetPlayers(TEAM_SURVIVOR))
+				repeat
+					randply = allhumans[math.random(#allhumans)]
+				until IsValid(randply)
+				
 				maxs = randply:OBBMaxs()
 				mins = randply:OBBMins()
 				randvect = Vector(math.Rand(mins.x, maxs.x), math.Rand(mins.y, maxs.y), 0)
@@ -745,7 +747,9 @@ function GM:InitClient(pl)
 			pl:SetPos(pos)
 			
 			local pZM = GAMEMODE:FindZM()
-			pZM:SetZMPointIncome(pZM:GetZMPointIncome() + 5)
+			if IsValid(pZM) then
+				pZM:SetZMPointIncome(pZM:GetZMPointIncome() + 5)
+			end
 		end
 	end
 	

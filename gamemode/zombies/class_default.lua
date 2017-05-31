@@ -81,6 +81,8 @@ function NPC:SetupModel(npc)
 	else
 		npc:SetModel(mdl)
 	end
+	
+	npc.CurrentModel = mdl
 end
 
 function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
@@ -106,10 +108,6 @@ function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 end
 
 function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
-	if self.IsEngineNPC and bit.band(dmginfo:GetDamageType(), DMG_REMOVENORAGDOLL) == 0 then
-		dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_REMOVENORAGDOLL))
-	end
-	
 	local damage = dmginfo:GetDamage()
 	if damage > 0 and bit.band(dmginfo:GetDamageType(), DMG_BULLET) ~= 0 then
 		local effect = EffectData()
@@ -150,9 +148,13 @@ function NPC:OnKilled(npc, attacker, inflictor)
 		GAMEMODE:TakeCurZombiePop(popCost)
 	end
 	
-	net.Start("zm_spawnclientragdoll")
-		net.WriteEntity(npc)
-	net.Broadcast()
+	if self.IsEngineNPC then
+		npc:SetModel(npc.CurrentModel)
+	else
+		net.Start("zm_spawnclientragdoll")
+			net.WriteEntity(npc)
+		net.Broadcast()
+	end
 	
 	if IsValid(attacker) and attacker:IsPlayer() then
 		attacker:AddFrags(1)
