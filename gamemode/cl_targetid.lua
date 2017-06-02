@@ -42,7 +42,7 @@ function GM:DrawZMTargetID()
 	local ts = ent:GetPos():ToScreen()
 	local x, y = ts.x, math.Clamp(ts.y, 0, ScrH() * 0.95)
 	if ent:IsPlayer() then
-		draw.SimpleTextBlurry(ent:Name(), "ZMHUDFontBig", x, y, Color(255, 64, 64, 255), TEXT_ALIGN_CENTER)
+		draw.SimpleTextBlurry(ent:Name(), "zm_hud_font_big", x, y, Color(255, 64, 64, 255), TEXT_ALIGN_CENTER)
 	elseif ent:IsNPC() then
 		local name = "ERROR"
 		local datatable = self:GetZombieTable()
@@ -53,7 +53,7 @@ function GM:DrawZMTargetID()
 			end
 		end
 		
-		draw.SimpleTextBlurry(name, "ZMHUDFontBig", x, y, Color(153, 255, 153, 255), TEXT_ALIGN_CENTER)
+		draw.SimpleTextBlurry(name, "zm_hud_font_big", x, y, Color(153, 255, 153, 255), TEXT_ALIGN_CENTER)
 	end
 end
 

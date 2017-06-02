@@ -11,7 +11,6 @@ include("cl_hud.lua")
 include("cl_zombie.lua")
 
 include("vgui/dpingmeter.lua")
-include("vgui/dteamcounter.lua")
 include("vgui/dteamheading.lua")
 include("vgui/dzombiepanel.lua")
 include("vgui/dpowerpanel.lua")
@@ -69,40 +68,12 @@ function GM:PostGamemodeLoaded()
 	language.Add("revolver_ammo", "Revolver Ammo")
 	language.Add("molotov_ammo", "Molotov Ammo")
 	
-	local screenscale = BetterScreenScale()
-	
-	surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = screenscale * 120, weight = 500, blursize = 0, scanlines = 0, antialias = true, additive = false})
-	surface.CreateFont("ZMDeathFontsBlur", {font = "zmweapons", size = screenscale * 150, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-	
-	surface.CreateFont("zm_hud_font", {font = "Consolas", size = 20, weight = 700, antialias = true, additive = false})
-	surface.CreateFont("zm_hud_font2", {font = "Consolas", size = 16, weight = 700, antialias = true, additive = false})
-	
-	surface.CreateFont("ZMHUDFontTiny", {font = "Consolas", size = screenscale * 16, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMHUDFontSmallest", {font = "Consolas", size = screenscale * 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMHUDFontSmaller", {font = "Consolas", size = screenscale * 22, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMHUDFontSmall", {font = "Consolas", size = screenscale * 28, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMHUDFont", {font = "Consolas", size = screenscale * 42, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMHUDFontBig", {font = "Consolas", size = screenscale * 72, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMHUDFontTinyBlur", {font = "Consolas", size = screenscale * 16, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-	surface.CreateFont("ZMHUDFontSmallerBlur", {font = "Consolas", size = screenscale * 22, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-	surface.CreateFont("ZMHUDFontSmallBlur", {font = "Consolas", size = screenscale * 28, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-	surface.CreateFont("ZMHUDFontBlur", {font = "Consolas", size = screenscale * 42, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-	surface.CreateFont("ZMHUDFontBigBlur", {font = "Consolas", size = screenscale * 72, weight = 0, antialias = true, additive = false, shadow = false, outline = false, blursize = 8})
-	
-	surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = 32, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMScoreBoardSubTitle", {font = "Verdana", size = 22, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana", size = 16, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana", size = 24, weight = 0, antialias = true, additive = false, shadow = false, outline = false})
-	surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	
-	surface.CreateFont("ZSHUDFontSmallestNS", {font = "Verdana", size = screenscale * 20, weight = 0, antialias = true, additive = false, shadow = false, outline = true})
-	
-	surface.CreateFont("DefaultFontVerySmall", {font = "Consolas", size = 10, weight = 0, antialias = false})
-	surface.CreateFont("DefaultFontSmall", {font = "Consolas", size = 11, weight = 0, antialias = false})
-	surface.CreateFont("DefaultFontSmallDropShadow", {font = "Consolas", size = 11, weight = 0, shadow = true, antialias = false})
-	surface.CreateFont("DefaultFont", {font = "Consolas", size = 13, weight = 500, antialias = false})
-	surface.CreateFont("DefaultFontBold", {font = "Consolas", size = 13, weight = 1000, antialias = false})
-	surface.CreateFont("DefaultFontLarge", {font = "Consolas", size = 16, weight = 0, antialias = false})
+	local scale = BetterScreenScale()
+	surface.CreateFont("zm_hud_font_tiny", {font = "Consolas", size = 20 * scale, weight = 700})
+	surface.CreateFont("zm_hud_font_smaller", {font = "Consolas", size = 16 * scale, weight = 700})
+	surface.CreateFont("zm_hud_font_small", {font = "Consolas", size = 28 * scale, weight = 0})
+	surface.CreateFont("zm_hud_font_normal", {font = "Consolas", size = 42 * scale, weight = 0})
+	surface.CreateFont("zm_hud_font_big", {font = "Consolas", size = 72 * scale, weight = 0})
 end
 
 function GM:PrePlayerDraw(ply)
@@ -260,17 +231,6 @@ function GM:OnPlayerChat( player, strText, bTeamOnly, bPlayerIsDead )
 	chat.AddText(unpack(tab))
 
 	return true
-end
-
-local colBlur = Color(0, 0, 0)
-function draw.SimpleTextBlurry(text, font, x, y, col, xalign, yalign)
-	colBlur.r = col.r
-	colBlur.g = col.g
-	colBlur.b = col.b
-	colBlur.a = col.a * math.Rand(0.35, 0.6)
-
-	draw.SimpleText(text, font.."Blur", x, y, colBlur, xalign, yalign)
-	draw.SimpleText(text, font, x, y, col, xalign, yalign)
 end
 
 local selectringMaterial = CreateMaterial("CommandRingMat", "UnlitGeneric", {

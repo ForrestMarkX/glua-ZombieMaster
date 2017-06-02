@@ -1,105 +1,25 @@
-local skullMaterial  = surface.GetTextureID("VGUI/miniskull")
-local popMaterial	 = surface.GetTextureID("VGUI/minifigures")
-local selection_color_outline = Color(255, 0, 0, 255)
-local selection_color_box 	  = Color(120, 0, 0, 80)
-local h, w = ScrH(), ScrW()
+surface.CreateFont("OptionsHelp", {font = "Consolas", size = 20, weight = 450})
+surface.CreateFont("OptionsHelpBig", {font = "Consolas", size = 22, weight = 450})
 
 function GM:HUDPaint()
-	local myteam = LocalPlayer():Team()
-	local screenscale = BetterScreenScale()
-
-	if LocalPlayer():IsSurvivor() then
-		self:HumanHUD(screenscale)
-	elseif LocalPlayer():IsZM() then
-		self:ZombieMasterHUD(screenscale)
-	end
+	if player_manager.RunClass(LocalPlayer(), "DrawHUD") then return end
 	
 	if not self:GetRoundActive() then
+		local h, w = ScrH(), ScrW()
 		if not self:GetZMSelection() then
-			draw.SimpleText(translate.Get("waiting_on_players"), "ZMHUDFontSmall", w * 0.5, h * 0.25, Color(150, 0, 0), TEXT_ALIGN_CENTER)
+			draw.SimpleText(translate.Get("waiting_on_players"), "zm_hud_font_small", w * 0.5, h * 0.25, Color(150, 0, 0), TEXT_ALIGN_CENTER)
 		else
-			draw.SimpleText(translate.Get("players_ready"), "ZMHUDFontSmall", w * 0.5, h * 0.25, Color(0, 150, 0), TEXT_ALIGN_CENTER)
+			draw.SimpleText(translate.Get("players_ready"), "zm_hud_font_small", w * 0.5, h * 0.25, Color(0, 150, 0), TEXT_ALIGN_CENTER)
 		end
 	end
 	
-	hook.Run( "HUDDrawTargetID" )
-	hook.Run( "HUDDrawPickupHistory" )
-	hook.Run( "DrawDeathNotice", 0.85, 0.04 )
+	hook.Call( "HUDDrawTargetID", self )
+	hook.Call( "HUDDrawPickupHistory", self )
+	hook.Call( "DrawDeathNotice", self, 0.85, 0.04 )
 end
 
 function GM:HUDShouldDraw(name)
 	return name ~= "CHudHealth" and name ~= "CHudBattery" and name ~= "CHudAmmo" and name ~= "CHudSecondaryAmmo"
-end
-
-function GM:HumanHUD(screenscale)	
-	local wid, hei = 225 * screenscale, 72 * screenscale
-	local x, y = ScrW() * 0.035, ScrH() * 0.9
-	
-	draw.RoundedBox(16, x + 2, y + 2, wid, hei, Color(60, 0, 0, 200))
-	
-	local health = LocalPlayer():Health()
-	local healthCol = health <= 10 and Color(185, 0, 0, 255) or health <= 30 and Color(150, 50, 0) or health <= 60 and Color(255, 200, 0) or color_white
-	draw.SimpleTextBlurry(LocalPlayer():Health(), "ZMHUDFontBig", x + wid * 0.75, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	draw.SimpleTextBlurry("#Valve_Hud_HEALTH", "ZMHUDFontSmall", x + wid * 0.27, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-end
-
-function GM:ZombieMasterHUD(scale)
-	-- Resources + Income.
-	draw.DrawSimpleRect(5, h - 43, 150, 38, Color(60, 0, 0, 200))
-	draw.DrawSimpleOutlined(5, h - 43, 150, 38, color_black)
-	
-	surface.SetDrawColor(color_white)
-	surface.SetTexture(skullMaterial)
-	surface.DrawTexturedRect(7, h - 41, 32, 32)
-	
-	draw.DrawText(tostring(LocalPlayer():GetZMPoints()), "zm_hud_font", 60, h - 42, color_white, 1)
-	
-	if LocalPlayer():GetZMPointIncome() then
-		draw.DrawText("+ " .. LocalPlayer():GetZMPointIncome(), "zm_hud_font2", 90, h - 24, color_white, 1)
-	end
-	
-	-- Population.
-	draw.DrawSimpleRect(5, h - 62, 100, 18, Color(60, 0, 0, 200))
-	draw.DrawSimpleOutlined(5, h - 62, 100, 18, color_black)
-	
-	surface.SetDrawColor(color_white)
-	surface.SetTexture(popMaterial)
-	surface.DrawTexturedRect(6, h - 61, 16, 16)
-	
-	draw.DrawText(self:GetCurZombiePop() .. "/" .. self:GetMaxZombiePop(), "zm_hud_font2", 60, h - 62, color_white, 1)
-
-	if isDragging then
-		local x, y = gui.MousePos()
-		if mouseX < x then
-			if mouseY < y then
-				surface.SetDrawColor(selection_color_outline)
-				surface.DrawOutlinedRect(mouseX, mouseY, x -mouseX, y -mouseY)
-			
-				surface.SetDrawColor(selection_color_box)
-				surface.DrawRect(mouseX, mouseY, x -mouseX, y -mouseY)
-			else
-				surface.SetDrawColor(selection_color_outline)
-				surface.DrawOutlinedRect(mouseX, y, x -mouseX, mouseY -y)
-			
-				surface.SetDrawColor(selection_color_box)
-				surface.DrawRect(mouseX, y, x -mouseX, mouseY -y)
-			end
-		else
-			if mouseY > y then
-				surface.SetDrawColor(selection_color_outline)
-				surface.DrawOutlinedRect(x, y, mouseX -x, mouseY -y)
-			
-				surface.SetDrawColor(selection_color_box)
-				surface.DrawRect(x, y, mouseX -x, mouseY -y)
-			else
-				surface.SetDrawColor(selection_color_outline)
-				surface.DrawOutlinedRect(x, mouseY, mouseX -x, y -mouseY)
-			
-				surface.SetDrawColor(selection_color_box)
-				surface.DrawRect(x, mouseY, mouseX -x, y -mouseY)
-			end
-		end
-	end
 end
 
 local defaultHelpStr = [[
@@ -172,9 +92,8 @@ function MakepCredits()
 
 	local frame = vgui.Create("DFrame")
 	frame:SetWide(wid)
-	frame:SetTitle(" ")
+	frame:SetTitle("")
 	frame:SetKeyboardInputEnabled(false)
-	frame.lblTitle:SetFont("dexfont_med")
 	frame.btnMinim:SetVisible(false)
 	frame.btnMaxim:SetVisible(false)
 	
@@ -185,7 +104,7 @@ function MakepCredits()
 	end
 
 	local label = Label(GAMEMODE.Name.." Credits", frame)
-	label:SetFont("ZMHUDFont")
+	label:SetFont("zm_hud_font_normal")
 	label:SizeToContents()
 	label:AlignTop(y)
 	label:CenterHorizontal()
@@ -204,11 +123,11 @@ function MakepCredits()
 			linesub:SizeToContents()
 		end
 		
-		lineleft:SetFont("ZMHUDFontSmallest")
+		lineleft:SetFont("OptionsHelp")
 		lineleft:SizeToContents()
-		lineright:SetFont("ZMHUDFontSmallest")
+		lineright:SetFont("OptionsHelp")
 		lineright:SizeToContents()
-		linemid:SetFont("ZMHUDFontSmallest")
+		linemid:SetFont("OptionsHelp")
 		linemid:SizeToContents()
 
 		lineleft:AlignLeft(8)
@@ -271,7 +190,7 @@ function MakepOptions()
 
 	local y = 8
 	local label = Label("Options", Window)
-	label:SetFont("ZMHUDFont")
+	label:SetFont("zm_hud_font_normal")
 	label:SizeToContents()
 	label:SetPos(wide * 0.5 - label:GetWide() * 0.5, y)
 	y = y + label:GetTall() + 8
@@ -284,7 +203,7 @@ function MakepOptions()
 	hook.Call("AddExtraOptions", GAMEMODE, list, Window)
 	
 	local label = Label("Volunteer Settings", list)
-	label:SetFont("ZMHUDFontSmall")
+	label:SetFont("zm_hud_font_small")
 	label:SetTextColor(Color(255, 239, 0))
 	label:CenterVertical()
 	label:SizeToContents()
@@ -300,7 +219,7 @@ function MakepOptions()
 	
 	local but = vgui.Create("DButton", list)
 	but:SetTall(24)
-	but:SetFont("ZMHUDFontSmaller")
+	but:SetFont("OptionsHelpBig")
 	but:SetText("Open Volunteer Menu")
 	but:Dock(TOP)
 	but:DockMargin(0, 8, 0, 8)
@@ -309,7 +228,7 @@ function MakepOptions()
 	end
 	
 	local label = Label("Key Binds", list)
-	label:SetFont("ZMHUDFontSmall")
+	label:SetFont("zm_hud_font_small")
 	label:SetTextColor(Color(255, 239, 0))
 	label:CenterVertical()
 	label:SizeToContents()
@@ -317,14 +236,14 @@ function MakepOptions()
 	label:DockMargin(list:GetWide() * 0.5 - label:GetWide() * 0.5, 8, 0, 8)
 	
 	local label = Label("Drop Weapon Key", list)
-	label:SetFont("ZMHUDFontSmallest")
+	label:SetFont("OptionsHelp")
 	label:SizeToContents()
 	label:Dock(TOP)
 	label:DockMargin(0, 4, 0, 4)
 	
 	local binder = vgui.Create("DBinder", list)
 	binder:SetTall(24)
-	binder:SetFont("ZMHUDFontSmaller")
+	binder:SetFont("OptionsHelpBig")
 	binder:SetConVar("zm_dropweaponkey")
 	binder:SizeToContents()
 	binder:Dock(TOP)
@@ -332,14 +251,14 @@ function MakepOptions()
 	binder.UpdateText = BinderTextUpdate
 	
 	local label = Label("Drop Ammo Key", list)
-	label:SetFont("ZMHUDFontSmallest")
+	label:SetFont("OptionsHelp")
 	label:SizeToContents()
 	label:Dock(TOP)
 	label:DockMargin(0, 4, 0, 4)
 	
 	local binder = vgui.Create("DBinder", list)
 	binder:SetTall(24)
-	binder:SetFont("ZMHUDFontSmaller")
+	binder:SetFont("OptionsHelpBig")
 	binder:SetConVar("zm_dropammokey")
 	binder:SizeToContents()
 	binder:Dock(TOP)
@@ -347,7 +266,7 @@ function MakepOptions()
 	binder.UpdateText = BinderTextUpdate
 	
 	local label = Label("Ragdoll Settings", list)
-	label:SetFont("ZMHUDFontSmall")
+	label:SetFont("zm_hud_font_small")
 	label:SetTextColor(Color(255, 239, 0))
 	label:CenterVertical()
 	label:SizeToContents()
@@ -390,20 +309,20 @@ function GM:ShowOptions()
 	end
 	
 	local menu = vgui.Create("DPanel")
-	menu:SetSize(BetterScreenScale() * 420, ScrH() * 0.35)
+	menu:SetSize(420, ScrH() * 0.35)
 	menu:Center()
 	
 	LocalPlayer().HadMenuOpen = true
 
 	local header = Label(self.Name, menu)
-	header:SetFont("ZMHUDFont")
+	header:SetFont("zm_hud_font_normal")
 	header:SizeToContents()
 	header:SetContentAlignment(8)
 	header:DockMargin(0, 12, 0, 24)
 	header:Dock(TOP)
 	
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZMHUDFontSmaller")
+	but:SetFont("OptionsHelpBig")
 	but:SetText(translate.Get("button_help"))
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
@@ -412,7 +331,7 @@ function GM:ShowOptions()
 	but.DoClick = function() MakepHelp() menu:Remove() end
 	
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZMHUDFontSmaller")
+	but:SetFont("OptionsHelpBig")
 	but:SetText(translate.Get("button_playermodel"))
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
@@ -421,7 +340,7 @@ function GM:ShowOptions()
 	but.DoClick = function() RunConsoleCommand("playermodel_selector") end
 	
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZMHUDFontSmaller")
+	but:SetFont("OptionsHelpBig")
 	but:SetText(translate.Get("button_options"))
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
@@ -430,7 +349,7 @@ function GM:ShowOptions()
 	but.DoClick = function() MakepOptions() menu:Remove() end
 
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZMHUDFontSmaller")
+	but:SetFont("OptionsHelpBig")
 	but:SetText(translate.Get("button_credits"))
 	but:SetTall(32)
 	but:DockMargin(12, 0, 12, 12)
@@ -439,7 +358,7 @@ function GM:ShowOptions()
 	but.DoClick = function() MakepCredits() menu:Remove() end
 
 	local but = vgui.Create("DButton", menu)
-	but:SetFont("ZMHUDFontSmaller")
+	but:SetFont("OptionsHelpBig")
 	but:SetText(translate.Get("button_close"))
 	but:SetTall(32)
 	but:DockMargin(12, 24, 12, 0)
@@ -495,7 +414,7 @@ function GM:ShowHelp()
 	end
 	
 	local label = Label(translate.Get("title_objectives"), frame)
-	label:SetFont("ZMHUDFont")
+	label:SetFont("zm_hud_font_normal")
 	label:SizeToContents()
 	label:AlignLeft(frame:GetWide() * 0.1)
 	label:AlignTop(frame:GetTall() * 0.01)
@@ -505,7 +424,7 @@ function GM:ShowHelp()
 	
 	local lab = vgui.Create("DLabel", scroll)
 	lab:SetSize(scroll:GetSize())
-	lab:SetFont("ZMHUDFontSmaller")
+	lab:SetFont("OptionsHelpBig")
 	lab:AlignTop(8)
 	lab:AlignLeft(8)
 	lab:SetText(self.MapInfo)
@@ -514,7 +433,7 @@ function GM:ShowHelp()
 	
 	local hoverColor = Color(0, 0, 0)
 	local but = vgui.Create("DButton", frame)
-	but:SetFont("ZMHUDFontSmaller")
+	but:SetFont("OptionsHelpBig")
 	but:SetText(translate.Get("button_okay"))
 	but:SetTall(frame:GetTall() * 0.05)
 	but:SetWide(frame:GetWide() * 0.13)
@@ -563,7 +482,7 @@ function GM:MakePreferredMenu()
 	
 	local label = vgui.Create("DLabel", frame)
 	label:AlignTop(45)
-	label:SetFont("ZMHUDFontSmaller")
+	label:SetFont("OptionsHelpBig")
 	label:SetText(translate.Get("preferred_playstyle"))
 	label:SetTextColor(color_white)
 	label:SizeToContents()
@@ -671,7 +590,7 @@ function GM:SpawnTrapMenu(class, ent)
 			self.lblTitle:SetPos(12, 8)
 		end
 		
-		trapPanel.lblTitle:SetFont("ZMHUDFontSmallest")
+		trapPanel.lblTitle:SetFont("OptionsHelp")
 			
 		trapPanel.Close = function(self)
 			self:SetVisible(false)

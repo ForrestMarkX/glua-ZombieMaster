@@ -23,8 +23,8 @@ function ENT:KeyValue( key, value )
 		self.m_bRemoveOnTrigger = tobool(value) or self.m_bRemoveOnTrigger
 	elseif key == "description" then
 		self:SetDescription(value)
-	elseif string.sub(key, 1, 2) == "on" then
-		self:AddOnOutput(key, value)
+	elseif string.Left(key, 2) == "on" then
+		self:StoreOutput(key, value)
 	end
 end
 
@@ -39,8 +39,8 @@ function ENT:AcceptInput(name, caller, activator, arg)
 	elseif name == "unhide" then
 		self:InputUnhide()
 		return true
-	elseif string.sub(name, 1, 2) == "on" then
-		self:FireOutput(name, activator, caller, args)
+	elseif string.Left(name, 2) == "on" then
+		self:TriggerOutput(name, activator, args)
 	end
 end
 

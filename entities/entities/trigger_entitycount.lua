@@ -31,8 +31,8 @@ function ENT:KeyValue(key, value)
 		self.m_iCountToFire = tonumber(value) or self.m_iCountToFire
 	elseif key == "triggerflags" then
 		self.m_iTriggerFlags = tonumber(value) or self.m_iTriggerFlags
-	elseif string.sub(key, 1, 2) == "on" then
-		self:AddOnOutput(key, value)
+	elseif string.Left(key, 2) == "on" then
+		self:StoreOutput(key, value)
 	end
 end
 
@@ -59,8 +59,8 @@ function ENT:AcceptInput(name, caller, activator, arg)
 		else
 			self:Input("OnNotCount", self)
 		end
-	elseif string.sub(name, 1, 2) == "on" then
-		self:FireOutput(name, activator, caller, args)
+	elseif string.Left(name, 2) == "on" then
+		self:TriggerOutput(name, activator, args)
 	end
 end
 

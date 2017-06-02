@@ -1,7 +1,3 @@
-function BetterScreenScale()
-	return math.Clamp(ScrH() / 1080, 0.6, 1)
-end
-
 function draw.OutlinedBox( x, y, w, h, thickness, clr )
 	surface.SetDrawColor( clr )
 	for i=0, thickness - 1 do
@@ -46,4 +42,33 @@ function draw.RoundedBoxHollow(bordersize, x, y, w, h, color)
 	surface.DrawTexturedRectUV( x + w - bordersize, y, bordersize, bordersize, 1, 0, 0, 1 ) -- Top right corner
 	surface.DrawTexturedRectUV( x, y + h -bordersize, bordersize, bordersize, 0, 1, 1, 0 ) -- Bottom left corner
 	surface.DrawTexturedRectUV( x + w - bordersize, y + h - bordersize, bordersize, bordersize, 1, 1, 0, 0 ) -- Bottom right corner
+end
+
+local colBlur = Color(0, 0, 0)
+function draw.SimpleTextBlurry(text, font, x, y, col, xalign, yalign)
+	colBlur.r = col.r
+	colBlur.g = col.g
+	colBlur.b = col.b
+	colBlur.a = col.a * math.Rand(0.35, 0.6)
+
+	draw.SimpleText(text, font.."_blur", x, y, colBlur, xalign, yalign)
+	draw.SimpleTextOutlined(text, font, x, y, col, xalign, yalign, 1, color_black)
+end
+
+surface.OldCreateFont = surface.OldCreateFont or surface.CreateFont
+function surface.CreateFont(fontName, fontData)
+	surface.OldCreateFont(fontName, fontData)
+	
+	local blurfont = fontData
+	local blurname = fontName.."_blur"
+	blurfont.blursize = 6
+	surface.OldCreateFont(blurname, blurfont)
+end
+
+function ScaleNumberByResolution(res, num)
+	return res * (num / res)
+end
+
+function BetterScreenScale()
+	return math.Clamp(ScrH() / 1080, 0.6, 1)
 end

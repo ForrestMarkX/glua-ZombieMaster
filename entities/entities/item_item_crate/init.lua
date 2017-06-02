@@ -102,8 +102,6 @@ function ENT:SetObjectHealth(health)
 				local vecAngles = Angle(math.Rand(-20.0, 20.0), math.Rand(0.0, 360.0), math.Rand(-20.0, 20.0))
 				pSpawn:SetAngles(vecAngles)
 				
-				pSpawn:SetAbsVelocity( VectorRand() * 5 )
-				
 				pSpawn:Spawn()
 			end
 		end

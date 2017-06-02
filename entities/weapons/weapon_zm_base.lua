@@ -303,11 +303,11 @@ function SWEP:DrawHUD()
 
 	local displayspare = maxclip > 0 and self.Primary.DefaultClip ~= 99999
 	if displayspare or not self.DontDrawSpare then
-		draw.SimpleTextBlurry(spare, spare >= 1000 and "ZMHUDFontSmall" or "ZMHUDFont", x + wid * 0.75, y + hei * 0.5, spare == 0 and colRed or spare <= maxclip and colYellow or colWhite, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleTextBlurry(spare, spare >= 1000 and "zm_hud_font_small" or "zm_hud_font_normal", x + wid * 0.75, y + hei * 0.5, spare == 0 and colRed or spare <= maxclip and colYellow or colWhite, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
 	GetAmmoColor(clip, maxclip)
-	draw.SimpleTextBlurry(clip, clip >= 100 and "ZMHUDFont" or "ZMHUDFontBig", x + wid * (displayspare and 0.25 or 0.5), y + hei * 0.5, colAmmo, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	draw.SimpleTextBlurry(clip, clip >= 100 and "zm_hud_font_normal" or "zm_hud_font_big", x + wid * (displayspare and 0.25 or 0.5), y + hei * 0.5, colAmmo, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 function SWEP:DrawWeaponSelection( x, y, wide, tall, alpha )

@@ -251,4 +251,7 @@ function PLAYER:ShouldTakeDamage(attacker)
 	return false
 end
 
+function PLAYER:DrawHUD()
+end
+
 player_manager.RegisterClass("player_zm", PLAYER, "player_default")

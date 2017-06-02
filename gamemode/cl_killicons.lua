@@ -1,3 +1,5 @@
+surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = 120, weight = 500})
+
 killicon.AddFont("weapon_zm_fists", "ZMDeathFonts", "c", color_white)
 killicon.AddFont("weapon_zm_mac10", "ZMDeathFonts", "a", color_white)
 killicon.AddFont("weapon_zm_molotov", "ZMDeathFonts", "k", color_white)
