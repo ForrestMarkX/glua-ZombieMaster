@@ -16,13 +16,6 @@ include("vgui/dzombiepanel.lua")
 include("vgui/dpowerpanel.lua")
 include("vgui/dmodelselector.lua")
 
-local circleMaterial 	   = Material("SGM/playercircle")
-local healthcircleMaterial = Material("effects/zm_healthring")
-local healtheffect		   = Material("effects/yellowflare")
-local gradient 		 = surface.GetTextureID("gui/gradient")
-local gradient_up	 = surface.GetTextureID("gui/gradient_up")
-local gradient_down	 = surface.GetTextureID("gui/gradient_down")
-
 local zombieMenu	  = nil
 
 mouseX, mouseY  = 0, 0
@@ -126,17 +119,18 @@ function GM:OnEntityCreated(ent)
 			return
 		end
 		
-		if self:GetZombieData(entname) ~= nil then
-			self.iZombieList[ent] = entname
-		end
+		local zombietab = self:GetZombieData(entname)
+		if zombietab == nil then return end
 		
-		if entname == "npc_zombie" or entname == "npc_poisonzombie" or entname == "npc_fastzombie" then
+		self.iZombieList[ent] = entname
+
+		if zombietab.IsEngineNPC then
 			ent.fadeAlpha = 0
 			ent.RenderOverride = FadeToDraw
 		else
 			ent:SetNoDraw(true)
 			
-			timer.Simple(0, function()
+			timer.Simple(0.05, function()
 				ent:SetNoDraw(false)
 				ent.fadeAlpha = 0
 				ent.RenderOverride = FadeToDraw
@@ -481,72 +475,27 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 end
 
 function GM:PostDrawOpaqueRenderables()
-	if LocalPlayer():IsZM() then
-		cam.Start3D()
-			local zombies = self.iZombieList
-			for entity, class in pairs(zombies) do
-				if IsValid(entity) and entity:Health() > 0 then
-					local Health, MaxHealth = entity:Health(), entity:GetMaxHealth()
-					local pos = entity:GetPos() + Vector(0, 0, 2)
-					local colour = Color(0, 0, 0, 125)
-					local healthfrac = math.max(Health, 0) / MaxHealth
-					
-					colour.r = math.Approach(255, 20, math.abs(255 - 20) * healthfrac)
-					colour.g = math.Approach(0, 255, math.abs(0 - 255) * healthfrac)
-					colour.b = math.Approach(0, 20, math.abs(0 - 20) * healthfrac)
-					
-					render.SetMaterial(healthcircleMaterial)
-					render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
-					render.DrawQuadEasy(pos, -Vector(0, 0, 1), 40, 40, colour)
-					
-					if entity.bIsSelected then
-						render.SetMaterial(circleMaterial)
-						render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour, (CurTime() * 50) % 360)
-						render.DrawQuadEasy(pos, -Vector(0, 0, 1), 40, 40, colour, (CurTime() * 50) % 360)
-					end
-				end
-			end
-		cam.End3D()
-		
+	if LocalPlayer():IsZM() and (zm_rightclicked or zm_placedrally or zm_placedpoweritem) then
+		local size = 64 * (1 - (CurTime() - click_delta) * 4)
 		render.SuppressEngineLighting(true)
 		render.OverrideDepthEnable(true, true)
 		if zm_rightclicked then
-			cam.Start3D2D(zm_ring_pos, zm_ring_ang, 1)
-				local size = 64 * (1 - (CurTime() - click_delta) * 4)
-					
-				render.SetMaterial(selectringMaterial)
-				render.DrawQuadEasy(Vector( 0, 0, 0 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
-				
-				if size <= 0 then
-					zm_rightclicked = false
-					didtrace = false
-				end
-			cam.End3D2D()			
+			render.SetMaterial(selectringMaterial)
 		elseif zm_placedrally then
-			cam.Start3D2D(zm_ring_pos, zm_ring_ang, 1)
-				local size = 64 * (1 - (CurTime() - click_delta) * 4)
-					
-				render.SetMaterial(rallyringMaterial)
-				render.DrawQuadEasy(Vector( 0, 0, 0 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
-				
-				if size <= 0 then
-					zm_placedrally = false
-					didtrace = false
-				end
-			cam.End3D2D()
+			render.SetMaterial(rallyringMaterial)
 		elseif zm_placedpoweritem then
-			cam.Start3D2D(zm_ring_pos, zm_ring_ang, 1)
-				local size = 1 * ((CurTime() - click_delta) * 350)
-					
-				render.SetMaterial(selectringMaterial)
-				render.DrawQuadEasy(Vector( 0, 0, 0 ), Vector(0, 0, 1), size, size, Color(255, 255, 255), (CurTime() * 250) % 360)
-				
-				if size >= 128 then
-					zm_placedpoweritem = false
-					didtrace = false
-				end
-			cam.End3D2D()
+			render.SetMaterial(selectringMaterial)
 		end
+		
+		render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
+			
+		if size <= 0 then
+			zm_rightclicked = false
+			zm_placedrally = false
+			zm_placedpoweritem = false
+			didtrace = false
+		end			
+		
 		render.OverrideDepthEnable(false, false)
 		render.SuppressEngineLighting(false)
 	end

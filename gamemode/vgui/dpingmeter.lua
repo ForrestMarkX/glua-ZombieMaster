@@ -40,7 +40,7 @@ function PANEL:Paint()
 		surface.DrawOutlinedRect(x, y, barwidth, barheight)
 	end
 
-	draw.SimpleText(ping, "DefaultFontSmall", 0, 0, colPing)
+	draw.SimpleText(ping, "Default", 0, 0, colPing)
 
 	return true
 end
