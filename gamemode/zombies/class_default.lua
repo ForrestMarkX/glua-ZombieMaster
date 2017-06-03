@@ -227,7 +227,7 @@ local healthcircleMaterial = Material("effects/zm_healthring")
 local healthcolmax 		   = Color(20, 255, 20)
 local healthcolmin 		   = Color(255, 0, 0)
 function NPC:PostDraw(npc)
-	if npc:Health() > 0 then
+	if LocalPlayer():IsZM() and npc:Health() > 0 then
 		local Health, MaxHealth = npc:Health(), npc:GetMaxHealth()
 		local pos = npc:GetPos() + Vector(0, 0, 2)
 		local colour = Color(0, 0, 0, 125)

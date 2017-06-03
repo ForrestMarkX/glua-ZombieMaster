@@ -115,7 +115,10 @@ function GM:OnEntityCreated(ent)
 		local entname = string.lower(ent:GetClass())
 		if string.sub(entname, 1, 12) == "npc_headcrab" then
 			ent:DrawShadow(false)
-			ent:SetNoDraw(true)
+			ent.RenderOverride = function()
+				return true
+			end
+			
 			return
 		end
 		
