@@ -476,7 +476,7 @@ end
 
 function GM:PostDrawOpaqueRenderables()
 	if LocalPlayer():IsZM() and (zm_rightclicked or zm_placedrally or zm_placedpoweritem) then
-		local size = 64 * (1 - (CurTime() - click_delta) * 4)
+		local size = Either(zm_placedpoweritem, 1 * ((CurTime() - click_delta) * 350), 64 * (1 - (CurTime() - click_delta) * 4))
 		render.SuppressEngineLighting(true)
 		render.OverrideDepthEnable(true, true)
 		if zm_rightclicked then
@@ -489,7 +489,7 @@ function GM:PostDrawOpaqueRenderables()
 		
 		render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
 			
-		if size <= 0 then
+		if (zm_placedpoweritem and size >= 128) or size <= 0 then
 			zm_rightclicked = false
 			zm_placedrally = false
 			zm_placedpoweritem = false
