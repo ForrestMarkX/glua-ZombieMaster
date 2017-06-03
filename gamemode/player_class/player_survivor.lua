@@ -74,8 +74,21 @@ function PLAYER:Think()
 		else
 			if self.Player.DrownDamage then
 				local timername = "zm_playerdrown_regen."..self.Player:EntIndex()
+				if timer.Exists(timername) then return end
+				
 				timer.Create(timername, 2, 0, function()
-					if not IsValid(self.Player) or self.Player:Health() == self.Player:GetMaxHealth() then timer.Remove(timername) return end
+					if not IsValid(self.Player) or self.Player:Health() == self.Player:GetMaxHealth() then 
+						self.Player.DrownDamage = nil
+						timer.Remove(timername) 
+						return 
+					end
+					
+					local d = DamageInfo()
+					d:SetAttacker(self.Player)
+					d:SetInflictor(self.Player)
+					d:SetDamageType(DMG_DROWNRECOVER)
+					self.Player:TakeDamageInfo(d)
+					
 					self.Player:SetHealth(self.Player:Health() + 5)
 					self.Player.DrownDamage = self.Player.DrownDamage - 5
 					
@@ -274,12 +287,6 @@ function PLAYER:PostOnDeath(inflictor, attacker)
 	end)
 end
 
-function PLAYER:OnHurt(attacker, healthremaining, damage)
-	if 0 < healthremaining then
-		self.Player:PlayPainSound()
-	end
-end
-
 function PLAYER:OnTakeDamage(attacker, dmginfo)
 	local inflictor = dmginfo:GetInflictor()
 	if IsValid(attacker) and attacker:GetClass() == "projectile_molotov" then
@@ -292,6 +299,10 @@ function PLAYER:OnTakeDamage(attacker, dmginfo)
 	
 	if bit.band(dmginfo:GetDamageType(), DMG_DROWN) ~= 0 and dmginfo:GetDamage() > 0 then
 		self.Player.DrownDamage = (self.Player.DrownDamage or 0) + dmginfo:GetDamage()
+	end
+	
+	if dmginfo:GetDamage() > 0 and self.Player:Health() > 0 and bit.band(dmginfo:GetDamageType(), DMG_DROWN) == 0 then
+		self.Player:PlayPainSound()
 	end
 end
 

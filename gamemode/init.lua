@@ -24,7 +24,6 @@ AddCSLuaFile("cl_targetid.lua")
 AddCSLuaFile("cl_entites.lua")
 
 AddCSLuaFile("vgui/dpingmeter.lua")
-AddCSLuaFile("vgui/dteamcounter.lua")
 AddCSLuaFile("vgui/dteamheading.lua")
 AddCSLuaFile("vgui/dzombiepanel.lua")
 AddCSLuaFile("vgui/dpowerpanel.lua")
@@ -442,6 +441,10 @@ end
 
 function GM:CanPlayerSuicide(ply)
 	return player_manager.RunClass(ply, "CanSuicide")
+end
+
+function GM:PlayerDeathSound()
+	return true
 end
 
 function GM:PlayerInitialSpawn(pl)

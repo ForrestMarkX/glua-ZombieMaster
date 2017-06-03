@@ -1,6 +1,6 @@
 include("shared.lua")
-include("cl_killicons.lua")
 include("cl_utility.lua")
+include("cl_killicons.lua")
 include("cl_scoreboard.lua")
 include("cl_dermaskin.lua")
 include("cl_entites.lua")

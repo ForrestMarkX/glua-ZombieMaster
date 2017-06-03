@@ -23,7 +23,7 @@ NPC.Model = {
 }
 
 function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
-	if bit.band(dmginfo:GetDamageType(), DMG_BLAST) ~= 0 then
+	if dmginfo:IsExplosionDamage() then
 		dmginfo:SetDamageType(DMG_DIRECT)
 	end
 		

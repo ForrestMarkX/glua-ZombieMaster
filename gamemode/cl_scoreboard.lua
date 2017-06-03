@@ -1,6 +1,7 @@
 surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = 32})
 surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana", size = 16})
 surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = 20})
+surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana", size = 24})
 
 local PANEL = {}
 
