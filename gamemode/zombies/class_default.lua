@@ -248,5 +248,3 @@ function NPC:PostDraw(npc)
 		end
 	end
 end
-
-baseclass.Set("class_default", NPC)

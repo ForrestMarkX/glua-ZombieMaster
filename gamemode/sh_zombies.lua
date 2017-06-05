@@ -39,6 +39,8 @@ function GM:BuildZombieDataTable()
 				table.Inherit(v, basetable)
 			end
 		end
+		
+		baseclass.Set(k, v)
 	end
 end
 
