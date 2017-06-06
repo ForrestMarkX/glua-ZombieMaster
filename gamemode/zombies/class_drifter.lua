@@ -8,7 +8,6 @@ NPC.PopCost = GetConVar("zm_popcost_immolator"):GetInt()
 NPC.Health = GetConVar("zm_dragzombie_health"):GetInt()
 
 NPC.Model = "models/humans/zm_draggy.mdl"
-NPC.IsEngineNPC = false
 
 function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 	return false

@@ -195,17 +195,17 @@ function PANEL:Populate()
 			self.base.Paint = function() end
 			
 			self.costLabel = Label("Resources: " .. data.Cost, self.base)
-			self.costLabel:SetFont("DefaultFontBold")
+			self.costLabel:SetFont("DermaDefaultBold")
 			self.costLabel:SizeToContents()
 			self.costLabel:SetPos(13, 20)
 			
 			self.popLabel = Label("Population: " .. data.PopCost, self.base)
-			self.popLabel:SetFont("DefaultFontBold")
+			self.popLabel:SetFont("DermaDefaultBold")
 			self.popLabel:SizeToContents()
 			self.popLabel:SetPos(13, 40)
 			
 			self.desc = Label(data.Description, self.base)
-			self.desc:SetFont("DefaultFontBold")
+			self.desc:SetFont("DermaDefaultBold")
 			self.desc:SizeToContents()
 			self.desc:SetPos(13, 60)
 			self.desc:DockMargin(13, 60, 12, 0)

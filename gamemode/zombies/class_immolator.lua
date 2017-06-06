@@ -8,4 +8,3 @@ NPC.PopCost = GetConVar("zm_popcost_immolator"):GetInt()
 NPC.Health = GetConVar("zm_burnzombie_health"):GetInt()
 
 NPC.Model = "models/zombie/burnzie.mdl"
-NPC.IsEngineNPC = false

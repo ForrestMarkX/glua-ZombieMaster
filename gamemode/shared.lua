@@ -65,6 +65,7 @@ function GM:SetupNetworkingCallbacks()
 	self:AddNetworkingCallbacks("holding", function(ent, value) ent.bIsHolding = value end)
 	self:AddNetworkingCallbacks("selected", function(ent, value) ent.bIsSelected = value end)
 	self:AddNetworkingCallbacks("bClingingCeiling", function(ent, value) ent.m_bClinging = value end)
+	self:AddNetworkingCallbacks("bIsEngineNPC", function(ent, value) ent.IsEngineNPC = value end)
 end
 
 function GM:CreateTeams()

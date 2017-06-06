@@ -102,10 +102,18 @@ local function FadeToDraw(self)
 		self.fadeAlpha = math.Clamp(self.fadeAlpha, startVal, endVal)
 		
 		render.SetBlend(self.fadeAlpha)
-		self:DrawModel()
+		if self.OldDraw then	
+			self:OldDraw()
+		else 
+			self:DrawModel() 
+		end
 		render.SetBlend(1)
 	else
-		self:DrawModel()
+		if self.OldDraw then	
+			self:OldDraw()
+		else 
+			self:DrawModel() 
+		end
 	end
 	
 	GAMEMODE:CallZombieFunction(self:GetClass(), "PostDraw", self)
@@ -123,21 +131,21 @@ function GM:OnEntityCreated(ent)
 		end
 		
 		local zombietab = self:GetZombieData(entname)
-		if zombietab == nil then return end
-		
-		self.iZombieList[ent] = entname
+		if zombietab ~= nil then
+			self.iZombieList[ent] = entname
+		end
 
-		if zombietab.IsEngineNPC then
+		if scripted_ents.GetType(entname) == nil then
 			ent.fadeAlpha = 0
 			ent.RenderOverride = FadeToDraw
 		else
-			ent:SetNoDraw(true)
+			local ENT = scripted_ents.GetStored(entname).t
+			if ENT.bDrawOverridden then return end
 			
-			timer.Simple(0.05, function()
-				ent:SetNoDraw(false)
-				ent.fadeAlpha = 0
-				ent.RenderOverride = FadeToDraw
-			end)
+			ENT.fadeAlpha = 0
+			ENT.OldDraw = ENT.OldDraw or ENT.Draw
+			ENT.Draw = FadeToDraw
+			ENT.bDrawOverridden = true
 		end
 	end
 end

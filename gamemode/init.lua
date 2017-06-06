@@ -1289,11 +1289,15 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 		angles.x = 0.0
 		angles.z = 0.0
 		pZombie:SetAngles(angles)
-
+		
+		if scripted_ents.GetType(entname) == nil then
+			pZombie:SetNW2Bool("bIsEngineNPC", true)
+		end
+		
 		pZombie.SpawnedFromNode = true
 		pZombie:Spawn()
 		pZombie:Activate()
-		
+
 		self:CallZombieFunction(entname, "SetupModel", pZombie)
 		timer.Simple(0, function() if IsValid(pZombie) then self:CallZombieFunction(entname, "OnSpawned", pZombie) end end)
 		

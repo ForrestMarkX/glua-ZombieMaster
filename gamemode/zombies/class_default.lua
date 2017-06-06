@@ -9,7 +9,6 @@ NPC.SortIndex = 0
 
 NPC.Hidden = true
 NPC.DelaySetModel = false
-NPC.IsEngineNPC = true
 
 NPC.Health = 0
 NPC.Model = "models/zombie/zm_classic.mdl"
@@ -148,7 +147,7 @@ function NPC:OnKilled(npc, attacker, inflictor)
 		GAMEMODE:TakeCurZombiePop(popCost)
 	end
 	
-	if self.IsEngineNPC then
+	if npc.IsEngineNPC then
 		npc:SetModel(npc.CurrentModel)
 	else
 		net.Start("zm_spawnclientragdoll")
@@ -193,7 +192,7 @@ function NPC:Think(npc)
 					npc:SetSchedule(SCHED_TARGET_FACE)
 					npc:SetSchedule(SCHED_MELEE_ATTACK1)
 					
-					if not self.IsEngineNPC then
+					if not npc.IsEngineNPC then
 						npc.IsAttacking = true
 						
 						local seq = npc:SelectWeightedSequence(ACT_MELEE_ATTACK1)
