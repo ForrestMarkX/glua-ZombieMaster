@@ -644,11 +644,9 @@ function GM:EndRound()
 		pl:SetZMPoints(0)
 		
 		hook.Call("PlayerSpawnAsSpectator", self, pl)
-		
-		pl:SendLua([[
-			hook.Call("RestartRound", GAMEMODE)
-		]])
 	end
+	
+	BroadcastLua("hook.Call('RestartRound', GAMEMODE)")
 	
 	table.Empty(self.groups)
 	table.Empty(self.DeadPlayers)
