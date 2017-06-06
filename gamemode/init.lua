@@ -57,26 +57,12 @@ function GM:InitPostEntity()
 	hook.Call("InitPostEntityMap", self)
 	
 	local ammotbl = hook.Call("GetCustomAmmo", self)
-	if #ammotbl > 0 then
+	if table.Count(ammotbl) > 0 then
 		for _, ammo in pairs(ammotbl) do
 			CreateConVar("zm_maxammo_"..ammo.Type, ammo.MaxCarry, FCVAR_REPLICATED, "Max "..ammo.Type.." ammo that players can hold.")
 			game.AddAmmoType({name = ammo.Type, dmgtype = ammo.DmgType, tracer = ammo.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammo.MaxCarry})
 		end
 	end
-	
-	--[[
-	if not file.Exists("maps/"..game.GetMap()..".ain", "GAME") then
-		MsgC(Color(255, 0, 0), "A NavMesh was not found for this map, generating one now. Please allow for up to 1 second to 3 minutes for it to finish.")
-		navmesh.BeginGeneration()
-		
-		timer.Create("NavMeshGenCheck", 0, 0, function()
-			if not navmesh.IsGenerating() then
-				navmesh.Save()
-				timer.Remove("NavMeshGenCheck")
-			end
-		end)
-	end
-	--]]
 end
 
 function GM:InitPostEntityMap()
@@ -411,6 +397,7 @@ function GM:OnReloaded()
 	
 	hook.Call("BuildZombieDataTable", self)
 	hook.Call("SetupNetworkingCallbacks", self)
+	hook.Call("SetupCustomItems", self)
 end
 
 function GM:PlayerSpawnAsSpectator(pl)

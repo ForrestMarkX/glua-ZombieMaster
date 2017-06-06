@@ -34,9 +34,6 @@ NPC.CanClingToCeiling = false
 -- Delays setting the model for a frame
 NPC.DelaySetModel = false
 
--- Checks if the NPC is a engine NPC or not
-NPC.IsEngineNPC = false
-
 -- How much health the NPC will have
 NPC.Health = 0
 

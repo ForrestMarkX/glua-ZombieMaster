@@ -46,14 +46,17 @@ function GM:OnReloaded()
 	
 	hook.Call("BuildZombieDataTable", self)
 	hook.Call("SetupNetworkingCallbacks", self)
+	hook.Call("SetupCustomItems", self)
 end
 
 function GM:InitPostEntity()
 	hook.Call("PostClientInit", self)
 	
-	local ammotbl = hook.Call("GetCustomAmmo", GAMEMODE)
-	if #ammotbl > 0 then
-		game.AddAmmoType({name = ammotbl.Type, dmgtype = ammotbl.DmgType, tracer = ammotbl.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammotbl.MaxCarry})
+	local ammotbl = hook.Call("GetCustomAmmo", self)
+	if table.Count(ammotbl) > 0 then
+		for _, ammo in pairs(ammotbl) do
+			game.AddAmmoType({name = ammo.Type, dmgtype = ammo.DmgType, tracer = ammo.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammo.MaxCarry})
+		end
 	end
 end
 
