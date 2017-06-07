@@ -117,8 +117,8 @@ function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
 	end
 	
 	if IsValid(attacker) then
-		local atkowner = attacker:GetOwner()
-		if IsValid(attacker) and attacker:GetClass() == "env_fire" and IsValid(atkowner) and atkowner:GetClass() == "npc_burnzombie" then
+		local entteam = attacker.OwnerTeam
+		if IsValid(attacker) and attacker:GetClass() == "env_fire" and entteam == TEAM_ZOMBIEMASTER then
 			dmginfo:SetDamageType(DMG_BULLET)
 			dmginfo:SetDamage(0)
 			dmginfo:ScaleDamage(0)

@@ -53,10 +53,11 @@ function ENT:Think()
 end
 
 function ENT:OnRemove()
+	local owner = self:GetOwner()
     for _, v in pairs(ents.FindInSphere(self:GetPos(), 128)) do
 		if v:IsNPC() then
 			v:Ignite(100)
-		elseif v == self:GetOwner() then
+		elseif v == owner then
 			v:Ignite(3)
 		end
     end
@@ -73,8 +74,13 @@ function ENT:OnRemove()
 		fire:SetKeyValue("spawnflags", "132")
 		fire:Spawn()
 		fire:Fire("StartFire", "", 0)
+		fire:SetOwner(owner)
 		
-		fire:SetOwner(self:GetOwner())
+		if owner:IsPlayer() then
+			fire.OwnerTeam = owner:Team()
+		else
+			fire.OwnerTeam = TEAM_SURVIVOR
+		end
 	end
 	
 	for i=1, 8 do

@@ -1,4 +1,5 @@
 AddCSLuaFile()
+DEFINE_BASECLASS("info_node_base")
 
 ENT.Base = "info_node_base"
 ENT.Type = "anim"
@@ -13,7 +14,7 @@ end
 if CLIENT then return end
 
 function ENT:InputToggle()
-	self.BaseClass.InputToggle(self)
+	BaseClass.InputToggle(self)
 	for _, trigger in pairs(ents.FindByClass("info_manipulate_trigger")) do	
 		if trigger:GetParent() == self then
 			trigger:Remove()
@@ -22,7 +23,7 @@ function ENT:InputToggle()
 end
 
 function ENT:InputHide()
-	self.BaseClass.InputHide(self)
+	BaseClass.InputHide(self)
 	for _, trigger in pairs(ents.FindByClass("info_manipulate_trigger")) do	
 		if trigger:GetParent() == self then
 			trigger:Remove()
@@ -31,7 +32,7 @@ function ENT:InputHide()
 end
 
 function ENT:Trigger(activator)
-	self.BaseClass.Trigger(self, activator)
+	BaseClass.Trigger(self, activator)
 		
 	self:Input("OnPressed", activator, self)
 		

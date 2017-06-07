@@ -20,7 +20,7 @@ function meta:ForceGo(targetPos, traceDir)
 	self:SetSchedule(SCHED_FORCED_GO_RUN)
 	self:SetCondition(COND_RECEIVED_ORDERS)
 	
-	GAMEMODE:CallZombieFunction(self:GetClass(), "OnForceGo", self)
+	GAMEMODE:CallZombieFunction(self, "OnForceGo")
 end
 
 function meta:ForceSwat(pTarget, breakable)

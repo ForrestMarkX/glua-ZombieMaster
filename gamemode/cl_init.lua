@@ -98,7 +98,7 @@ local startVal = 0
 local endVal = 1
 local fadeSpeed = 1.6
 local function FadeToDraw(self)
-	if GAMEMODE:CallZombieFunction(self:GetClass(), "PreDraw", self) then return end
+	if GAMEMODE:CallZombieFunction(self, "PreDraw") then return end
 	
 	if self.fadeAlpha < 1 then
 		self.fadeAlpha = self.fadeAlpha + fadeSpeed * FrameTime()
@@ -119,7 +119,7 @@ local function FadeToDraw(self)
 		end
 	end
 	
-	GAMEMODE:CallZombieFunction(self:GetClass(), "PostDraw", self)
+	GAMEMODE:CallZombieFunction(self, "PostDraw")
 end
 function GM:OnEntityCreated(ent)
 	if ent:IsNPC() then

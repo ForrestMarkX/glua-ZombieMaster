@@ -20,13 +20,13 @@ function GM:GetZombieData(class)
 	end
 end
 
-function GM:CallZombieFunction(class, func, ...)
-	local zombie = self:GetZombieData(class)
+function GM:CallZombieFunction(npc, func, ...)
+	local zombie = self:GetZombieData(npc:GetClass())
 	if not zombie then return end
 	
 	local func_tocall = zombie[func]
 	if func_tocall then
-		return func_tocall(zombie, ...)
+		return func_tocall(zombie, npc, ...)
 	end
 end
 

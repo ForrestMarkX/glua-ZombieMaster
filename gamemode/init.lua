@@ -263,8 +263,8 @@ function GM:OnEntityCreated(ent)
 			if not IsValid(ent) then return end
 			
 			if not ent.SpawnedFromNode then
-				self:CallZombieFunction(entclass, "OnSpawned", ent)
-				self:CallZombieFunction(entclass, "SetupModel", ent)
+				self:CallZombieFunction(ent, "OnSpawned")
+				self:CallZombieFunction(ent, "SetupModel")
 			end
 			
 			if ent.GetNumBodyGroups and ent.SetBodyGroup then
@@ -477,11 +477,11 @@ function GM:PlayerNoClip(ply, desiredState)
 end
 
 function GM:OnNPCKilled(ent, attacker, inflictor)
-	self:CallZombieFunction(ent:GetClass(), "OnKilled", ent, attacker, inflictor)
+	self:CallZombieFunction(ent, "OnKilled", attacker, inflictor)
 end
 
 function GM:ScaleNPCDamage(npc, hitgroup, dmginfo)
-	self:CallZombieFunction(npc:GetClass(), "OnScaledDamage", npc, hitgroup, dmginfo)
+	self:CallZombieFunction(npc, "OnScaledDamage", hitgroup, dmginfo)
 end
 
 function GM:PlayerDeath(ply, inflictor, attacker)
@@ -835,9 +835,9 @@ function GM:EntityTakeDamage(ent, dmginfo)
 	local damage = dmginfo:GetDamage()
 	
 	if attacker:IsNPC() then
-		self:CallZombieFunction(attacker:GetClass(), "OnDamagedEnt", attacker, ent, dmginfo)
+		self:CallZombieFunction(attacker, "OnDamagedEnt", ent, dmginfo)
 	elseif inflictor:IsNPC() then
-		self:CallZombieFunction(inflictor:GetClass(), "OnDamagedEnt", inflictor, ent, dmginfo)
+		self:CallZombieFunction(inflictor, "OnDamagedEnt", ent, dmginfo)
 	end
 
 	if ent:IsPlayerHolding() and not (attacker:IsWorld() or inflictor:IsWorld()) then
@@ -849,7 +849,7 @@ function GM:EntityTakeDamage(ent, dmginfo)
 	end
 	
 	if ent:IsNPC() then
-		if self:CallZombieFunction(ent:GetClass(), "OnTakeDamage", ent, attacker, inflictor, dmginfo) then return true end
+		if self:CallZombieFunction(ent, "OnTakeDamage", attacker, inflictor, dmginfo) then return true end
 	end
 	
 	if ent:IsPlayer() then
@@ -907,7 +907,7 @@ end
 
 function GM:Tick()
 	for npc, class in pairs(self.iZombieList) do
-		self:CallZombieFunction(class, "Think", npc)
+		self:CallZombieFunction(npc, "Think")
 	end
 end
 
@@ -1283,8 +1283,8 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 		pZombie:Spawn()
 		pZombie:Activate()
 
-		self:CallZombieFunction(entname, "SetupModel", pZombie)
-		timer.Simple(0, function() if IsValid(pZombie) then self:CallZombieFunction(entname, "OnSpawned", pZombie) end end)
+		self:CallZombieFunction(pZombie, "SetupModel")
+		timer.Simple(0, function() if IsValid(pZombie) then self:CallZombieFunction(pZombie, "OnSpawned") end end)
 		
 		pZM:TakeZMPoints(cost)
 		self:AddCurZombiePop(popcost)

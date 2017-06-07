@@ -297,11 +297,15 @@ function PLAYER:OnTakeDamage(attacker, dmginfo)
 		return true
 	end
 	
+	if attacker:GetClass() == "env_fire" and attacker:GetOwner() == self.Player then
+		dmginfo:ScaleDamage(0.25)
+	end
+	
 	if bit.band(dmginfo:GetDamageType(), DMG_DROWN) ~= 0 and dmginfo:GetDamage() > 0 then
 		self.Player.DrownDamage = (self.Player.DrownDamage or 0) + dmginfo:GetDamage()
 	end
 	
-	if dmginfo:GetDamage() > 0 and self.Player:Health() > 0 and bit.band(dmginfo:GetDamageType(), DMG_DROWN) == 0 then
+	if dmginfo:GetDamage() > 0 and self.Player:Health() > 0 and bit.band(dmginfo:GetDamageType(), DMG_DROWN) == 0 and self:ShouldTakeDamage(attacker) then
 		self.Player:PlayPainSound()
 	end
 end
@@ -312,8 +316,8 @@ function PLAYER:ShouldTakeDamage(attacker)
 	end
 	
 	if IsValid(attacker) then
-		local attowner = attacker:GetOwner()
-		if attacker:GetClass() == "env_fire" and IsValid(attowner) and attowner:IsPlayer() and attowner:Team() == self.Player:Team() and attowner ~= self.Player then
+		local entteam = attacker.OwnerTeam
+		if attacker:GetClass() == "env_fire" and entteam == self.Player:Team() and attacker:GetOwner() ~= self.Player then
 			return false
 		end
 	end

@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+DEFINE_BASECLASS("zm_npc_base")
+
 ENT.NextLeap = CurTime()
 ENT.LeapSound = "NPC_FastZombie.Scream"
 ENT.AttackDamage = 6
@@ -49,7 +51,7 @@ local schdlandleft = ai_schedule.New("SCHED_FASTZOMBIE_LAND_LEFT")
 schdlandleft:AddTask("PlaySequence", {Name = "LandLeft"})
 
 function ENT:Initialize()
-	self.BaseClass.Initialize(self)
+	BaseClass.Initialize(self)
 	self:CapabilitiesAdd(bit.bor(CAP_MOVE_JUMP, CAP_MOVE_CLIMB))
 	
 	local maxs = self:OBBMaxs()
@@ -163,7 +165,7 @@ end
 
 --[[
 function ENT:PerformAttackEnd()
-	self.BaseClass.PerformAttackEnd(self)
+	BaseClass.PerformAttackEnd(self)
 	self:StartSchedule(schdfrenzy)
 	
 	local seq, len = self:LookupSequence("BR2_Roar")
@@ -215,7 +217,7 @@ function ENT:MeleeAttack1Conditions(flDot, flDist)
 		return false
 	end
 
-	return self.BaseClass.MeleeAttack1Conditions(self, flDot, flDist);
+	return BaseClass.MeleeAttack1Conditions(self, flDot, flDist);
 end
 
 function ENT:IsCeilingFlat(plane_normal)

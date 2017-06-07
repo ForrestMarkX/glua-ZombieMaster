@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+DEFINE_BASECLASS("zm_npc_base")
+
 ENT.AttackDamage = 8
 ENT.CanSwatPhysicsObjects = false
 ENT.FootStepTime = 0.3
@@ -38,7 +40,7 @@ function ENT:CustomThink()
 			fire:SetKeyValue("spawnflags", "132")
 			fire:Spawn()
 			fire:Fire("StartFire", "", 0)
-			fire:SetOwner(self)
+			fire.OwnerTeam = TEAM_ZOMBIEMASTER
 		end
 		
 		timer.Simple(5, function()
@@ -82,6 +84,7 @@ function ENT:OnRemove()
 		fire:SetKeyValue("spawnflags", "132")
 		fire:Spawn()
 		fire:Fire("StartFire", "", 0)
+		fire.OwnerTeam = TEAM_ZOMBIEMASTER
 	end
 end
 
@@ -102,5 +105,5 @@ function ENT:OnTakeDamage(dmginfo)
 		return
 	end
 	
-	self.BaseClass.OnTakeDamage(self, dmginfo)
+	BaseClass.OnTakeDamage(self, dmginfo)
 end

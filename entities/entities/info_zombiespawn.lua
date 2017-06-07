@@ -1,4 +1,5 @@
 AddCSLuaFile()
+DEFINE_BASECLASS("info_node_base")
 
 ENT.Base = "info_node_base"
 ENT.Type = "anim"
@@ -11,12 +12,12 @@ if CLIENT then
 end
 
 function ENT:SetupDataTables()
-	self.BaseClass.SetupDataTables(self)
+	BaseClass.SetupDataTables(self)
 	self:NetworkVar("Int", 0, "ZombieFlags")
 end
 
 function ENT:Initialize()
-	self.BaseClass.Initialize(self)
+	BaseClass.Initialize(self)
 
 	if SERVER then
 		self.m_bDidSpawnSetup = false
@@ -98,6 +99,12 @@ if SERVER then
 				local rally = self:GetRallyEntity()
 				if IsValid(rally) then
 					zombie:ForceGo(rally:GetPos())
+					
+					if scripted_ents.GetType(data.type) ~= nil then
+						timer.Simple(0.1, function()
+							zombie:ForceGo(rally:GetPos())
+						end)
+					end
 				end
 			end
 		end)
@@ -106,7 +113,7 @@ if SERVER then
 	end
 	
 	function ENT:KeyValue( key, value )
-		self.BaseClass.KeyValue(self, key, value)
+		BaseClass.KeyValue(self, key, value)
 		
 		key = string.lower(key)
 		if key == "zombieflags" then

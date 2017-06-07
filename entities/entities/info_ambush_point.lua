@@ -1,4 +1,5 @@
 AddCSLuaFile()
+DEFINE_BASECLASS("info_node_base")
 
 ENT.Base = "info_node_base"
 ENT.Type = "anim"
@@ -8,7 +9,7 @@ ENT.GlowSize = 48
 ENT.OrbSize = 12
 
 function ENT:Initialize()
-	self.BaseClass.Initialize(self)
+	BaseClass.Initialize(self)
 	
 	if SERVER then
 		self:NextThink( CurTime() + 0.5 )

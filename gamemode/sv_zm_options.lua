@@ -29,7 +29,7 @@ concommand.Add("zm_debug_spawn_zombie", function(ply, cmd, args)
 		ent:Spawn()
 		ent:Activate()
 		
-		GAMEMODE:CallZombieFunction(ent:GetClass(), "OnSpawned", ent)
+		GAMEMODE:CallZombieFunction(ent, "OnSpawned")
 	end
 end)
 
@@ -582,14 +582,14 @@ net.Receive("zm_cling_ceiling", function(len, ply)
 			local zombietab = GAMEMODE:GetZombieData(entity:GetClass())
 			if IsValid(entity) and entity.bIsSelected and entity:IsNPC() and zombietab.CanClingToCeiling then
 				if not entity.m_bClinging then
-					if GAMEMODE:CallZombieFunction(entity:GetClass(), "CheckCeiling", entity) then
+					if GAMEMODE:CallZombieFunction(entity, "CheckCeiling") then
 						entity:SetNW2Bool("bClingingCeiling", true)
 						entity:SetMoveType(MOVETYPE_NONE)
 						entity.m_flLastClingCheck = CurTime()
 						bFoundCeiling = true
 					end
 				else
-					GAMEMODE:CallZombieFunction(entity:GetClass(), "DetachFromCeiling", entity)
+					GAMEMODE:CallZombieFunction(entity, "DetachFromCeiling")
 				end
 				
 				bFoundClingZombie = true

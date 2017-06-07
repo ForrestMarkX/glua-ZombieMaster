@@ -1,11 +1,12 @@
 AddCSLuaFile()
+DEFINE_BASECLASS("info_node_base")
 
 ENT.Base = "info_node_base"
 ENT.Type = "anim"
 ENT.Model = Model("models/trap.mdl")
 
 function ENT:Initialize()
-	self.BaseClass.Initialize(self)
+	BaseClass.Initialize(self)
 	
 	if SERVER then
 		self:NextThink( CurTime() + 0.5 )

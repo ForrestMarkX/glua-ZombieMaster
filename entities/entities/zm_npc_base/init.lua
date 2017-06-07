@@ -114,7 +114,7 @@ end
 
 function ENT:OnTakeDamage(dmginfo)
 	local attacker, inflictor = dmginfo:GetAttacker() or self, dmginfo:GetInflictor() or self
-	if GAMEMODE:CallZombieFunction(self:GetClass(), "OnTakeDamage", self, attacker, inflictor, dmginfo) then return true end
+	if GAMEMODE:CallZombieFunction(self, "OnTakeDamage", attacker, inflictor, dmginfo) then return true end
 	
 	local damage = dmginfo:GetDamage()
 	self:SetHealth(self:Health() - damage)
