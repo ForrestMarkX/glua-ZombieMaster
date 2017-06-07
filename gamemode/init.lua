@@ -243,7 +243,7 @@ function GM:OnEntityCreated(ent)
 		end
 		
 		if blockers > 0 then 
-			ent:Remove()
+			SafeRemoveEntityDelayed(ent, 0)
 			return
 		end
 	end
@@ -255,7 +255,7 @@ function GM:OnEntityCreated(ent)
 		end
 		
 		if string.sub(entclass, 1, 12) == "npc_headcrab" then
-			ent:Remove() 
+			SafeRemoveEntityDelayed(ent, 0)
 			return
 		end
 		
