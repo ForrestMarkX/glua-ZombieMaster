@@ -49,6 +49,33 @@ function GM:OnReloaded()
 	hook.Call("SetupCustomItems", self)
 end
 
+local startVal = 0
+local endVal = 1
+local fadeSpeed = 1.6
+local function FadeToDraw(self)
+	if GAMEMODE:CallZombieFunction(self, "PreDraw") then return end
+	
+	if self.fadeAlpha < 1 then
+		self.fadeAlpha = self.fadeAlpha + fadeSpeed * FrameTime()
+		self.fadeAlpha = math.Clamp(self.fadeAlpha, startVal, endVal)
+		
+		render.SetBlend(self.fadeAlpha)
+		if self.OldDraw then	
+			self:OldDraw()
+		else 
+			self:DrawModel() 
+		end
+		render.SetBlend(1)
+	else
+		if self.OldDraw then	
+			self:OldDraw()
+		else 
+			self:DrawModel() 
+		end
+	end
+	
+	GAMEMODE:CallZombieFunction(self, "PostDraw")
+end
 function GM:InitPostEntity()
 	hook.Call("PostClientInit", self)
 	
@@ -57,6 +84,17 @@ function GM:InitPostEntity()
 		for _, ammo in pairs(ammotbl) do
 			game.AddAmmoType({name = ammo.Type, dmgtype = ammo.DmgType, tracer = ammo.TracerType, plydmg = 0, npcdmg = 0, force = 2000, maxcarry = ammo.MaxCarry})
 		end
+	end
+	
+	for class, tab in pairs(scripted_ents.GetList()) do
+		if scripted_ents.GetType(class) ~= "ai" then continue end
+		
+		local ENT = scripted_ents.GetStored(class).t
+		if not ENT then continue end
+		
+		ENT.fadeAlpha = 0
+		ENT.OldDraw = ENT.OldDraw or ENT.Draw
+		ENT.Draw = FadeToDraw
 	end
 end
 
@@ -94,33 +132,6 @@ function GM:Think()
 	end
 end
 
-local startVal = 0
-local endVal = 1
-local fadeSpeed = 1.6
-local function FadeToDraw(self)
-	if GAMEMODE:CallZombieFunction(self, "PreDraw") then return end
-	
-	if self.fadeAlpha < 1 then
-		self.fadeAlpha = self.fadeAlpha + fadeSpeed * FrameTime()
-		self.fadeAlpha = math.Clamp(self.fadeAlpha, startVal, endVal)
-		
-		render.SetBlend(self.fadeAlpha)
-		if self.OldDraw then	
-			self:OldDraw()
-		else 
-			self:DrawModel() 
-		end
-		render.SetBlend(1)
-	else
-		if self.OldDraw then	
-			self:OldDraw()
-		else 
-			self:DrawModel() 
-		end
-	end
-	
-	GAMEMODE:CallZombieFunction(self, "PostDraw")
-end
 function GM:OnEntityCreated(ent)
 	if ent:IsNPC() then
 		local entname = string.lower(ent:GetClass())
@@ -141,14 +152,6 @@ function GM:OnEntityCreated(ent)
 		if scripted_ents.GetType(entname) == nil then
 			ent.fadeAlpha = 0
 			ent.RenderOverride = FadeToDraw
-		else
-			local ENT = scripted_ents.GetStored(entname).t
-			if ENT.bDrawOverridden then return end
-			
-			ENT.fadeAlpha = 0
-			ENT.OldDraw = ENT.OldDraw or ENT.Draw
-			ENT.Draw = FadeToDraw
-			ENT.bDrawOverridden = true
 		end
 	end
 end
