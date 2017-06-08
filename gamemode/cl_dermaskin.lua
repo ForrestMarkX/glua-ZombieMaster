@@ -16,8 +16,8 @@ SKIN.Colors.Panel.Border = Color(150, 0, 0, 255)
 SKIN.Colours = {}
 
 SKIN.Colours.Window = {}
-SKIN.Colours.Window.TitleActive		= GWEN.TextureColor( 4 + 8 * 0, 508 )
-SKIN.Colours.Window.TitleInactive	= GWEN.TextureColor( 4 + 8 * 1, 508 )
+SKIN.Colours.Window.TitleActive		= color_white
+SKIN.Colours.Window.TitleInactive	= Color(40, 40, 40)
 
 SKIN.Colours.Button = {}
 SKIN.Colours.Button.Normal				= color_white
@@ -165,6 +165,16 @@ function SKIN:PaintNumSlider( panel, w, h )
 	surface.DrawRect(8, h / 2 - 1, w - 15, 1)
 
 	PaintNotches(8, h / 2 - 1, w - 16, 1, panel.m_iNotches)
+end
+
+function SKIN:PaintCollapsibleCategory( panel, w, h )
+	if h < 21 then
+		draw.RoundedBoxHollow(3, 0, 0, w, h, color_grip_border)
+		draw.RoundedBox(2, 2, 2, w - 4, h - 4, color_grip_active)
+	end
+
+	draw.RoundedBoxHollow(3, 0, 0, w, 20, color_grip_border)
+	draw.RoundedBox(2, 2, 2, w - 4, 16, color_grip_active)
 end
 
 derma.DefineSkin("zm_skin", "Zombie Master Derma Skin", SKIN, "Default")

@@ -87,9 +87,6 @@ end
 
 function MakepCredits()
 	local wid = math.min(ScrW(), 750)
-
-	local y = 8
-
 	local frame = vgui.Create("DFrame")
 	frame:SetWide(wid)
 	frame:SetTitle("")
@@ -106,47 +103,83 @@ function MakepCredits()
 	local label = Label(GAMEMODE.Name.." Credits", frame)
 	label:SetFont("zm_hud_font_normal")
 	label:SizeToContents()
-	label:AlignTop(y)
+	label:AlignTop(8)
 	label:CenterHorizontal()
-	y = y + label:GetTall() + 8
+	
+	local creditslist = vgui.Create("Panel", frame)
+	creditslist:SetWide(wid * 0.99)
+	creditslist:MoveBelow(label)
+	creditslist:CenterHorizontal()
 
+	local alphatime = 0.2
 	for authorindex, authortab in ipairs(GAMEMODE.Credits) do
-		local lineleft = Label(string.Replace(authortab[1], "@", "(at)"), frame)
-		local linemid = Label("-", frame)
-		local lineright = Label(authortab[3], frame)
+		local base = vgui.Create("Panel", creditslist)
+		base:SetWide(creditslist:GetWide())
+		base:Dock(TOP)
+		base:DockMargin(0, 4, 0, 4)
+		base:DockPadding(0, 4, 0, 4)
+		
+		local avatar = vgui.Create("AvatarImage", base)
+		if authortab.SteamID ~= "" then
+			avatar:SetMouseInputEnabled(true)
+			avatar:SetKeyboardInputEnabled(true)
+			avatar:SetCursor("hand")
+			avatar.OnMousePressed = function(self, code) if code == MOUSE_FIRST then gui.OpenURL("http://steamcommunity.com/profiles/"..util.SteamIDTo64(authortab.SteamID)) end end
+		end
+		
+		local lineleft = Label(string.Replace(authortab.Name, "@", "(at)"), base)
+		local linemid = Label("-", base)
+		local lineright = Label(authortab.Description, base)
 		
 		local linesub
-		if authortab[2] then
-			linesub = vgui.Create("DLabelURL", frame)
-			linesub:SetText(authortab[2])
-			linesub:SetURL(authortab[2])
+		if authortab.Website then
+			linesub = vgui.Create("DLabelURL", base)
+			linesub:SetText(authortab.Website)
+			linesub:SetURL(authortab.Website)
 			linesub:SizeToContents()
 		end
 		
+		avatar:SetSize(32, 32)
+		avatar:SetSteamID(util.SteamIDTo64(authortab.SteamID), 32)
 		lineleft:SetFont("OptionsHelp")
 		lineleft:SizeToContents()
 		lineright:SetFont("OptionsHelp")
 		lineright:SizeToContents()
 		linemid:SetFont("OptionsHelp")
 		linemid:SizeToContents()
+		
+		avatar:SetAlpha(0)
+		lineleft:SetAlpha(0)
+		lineright:SetAlpha(0)
+		linemid:SetAlpha(0)
+		avatar:AlphaTo(255, alphatime)
+		lineleft:AlphaTo(255, alphatime)
+		lineright:AlphaTo(255, alphatime)
+		linemid:AlphaTo(255, alphatime)
 
-		lineleft:AlignLeft(8)
-		lineleft:AlignTop(y)
+		avatar:AlignLeft(8)
+		lineleft:AlignLeft(48)
 		lineright:AlignRight(8)
-		lineright:AlignTop(y)
 		linemid:CenterHorizontal()
-		linemid:AlignTop(y)
 
-		y = y + lineleft:GetTall()
 		if linesub then
-			linesub:AlignTop(y)
-			linesub:AlignLeft(8)
-			y = y + linesub:GetTall()
+			linesub:AlignLeft(48)
+			linesub:MoveBelow(lineleft)
+			linesub:SetAlpha(0)
+			linesub:AlphaTo(255, alphatime)
 		end
-		y = y + 10
+		
+		base:InvalidateLayout(true)
+		base:SizeToChildren(false, true)
+		
+		alphatime = alphatime + 0.1
 	end
 
-	frame:SetTall(y + 8)
+	creditslist:InvalidateLayout(true)
+	creditslist:SizeToChildren(false, true)
+	
+	frame:InvalidateLayout(true)
+	frame:SizeToChildren(false, true)
 	frame:Center()
 	frame:SetAlpha(0)
 	frame:AlphaTo(255, 0.5, 0)
@@ -187,98 +220,111 @@ function MakepOptions()
 	end
 	
 	pOptions = Window
-
-	local y = 8
-	local label = Label("Options", Window)
-	label:SetFont("zm_hud_font_normal")
-	label:SizeToContents()
-	label:SetPos(wide * 0.5 - label:GetWide() * 0.5, y)
-	y = y + label:GetTall() + 8
-
+	
+	local header = Label("Options", Window)
+	header:SetFont("zm_hud_font_normal")
+	header:SizeToContents()
+	header:CenterHorizontal()
+	header:AlignTop(8)
+	
 	local list = vgui.Create("DScrollPanel", pOptions)
-	list:SetSize(wide - 24, tall - y - 12)
-	list:SetPos(12, y)
+	list:MoveBelow(header, 8)
+	list:SetSize(wide - 24, tall - 12)
 	list:SetPadding(8)
+	list:CenterHorizontal()
 
 	hook.Call("AddExtraOptions", GAMEMODE, list, Window)
 	
-	local label = Label("Volunteer Settings", list)
-	label:SetFont("zm_hud_font_small")
-	label:SetTextColor(Color(255, 239, 0))
-	label:CenterVertical()
-	label:SizeToContents()
-	label:Dock(TOP)
-	label:DockMargin(list:GetWide() * 0.5 - label:GetWide() * 0.5, 4, 0, 8)
+	local catagory = vgui.Create("DCollapsibleCategory", list)
+	catagory:SetSize(64, 64)
+	catagory:Dock(TOP)
+	catagory:DockMargin(0, 0, 0, 8)
+	catagory:SetExpanded(0)
+	catagory:SetLabel("Volunteer Settings")
 	
-	local check = vgui.Create("DCheckBoxLabel", list)
+	local catagorylist = vgui.Create("DScrollPanel", list)
+	catagory:SetContents(catagorylist)
+	
+	local check = vgui.Create("DCheckBoxLabel")
 	check:SetText("Don't show volunteer menu")
 	check:SetConVar("zm_nopreferredmenu")
 	check:SizeToContents()
 	check:Dock(TOP)
-	check:DockMargin(0, 8, 0, 8)
+	check:DockMargin(0, 8, 0, 4)
+	catagorylist:AddItem(check)	
 	
-	local but = vgui.Create("DButton", list)
+	local but = vgui.Create("DButton")
 	but:SetTall(24)
 	but:SetFont("OptionsHelpBig")
 	but:SetText("Open Volunteer Menu")
 	but:Dock(TOP)
-	but:DockMargin(0, 8, 0, 8)
+	but:DockMargin(0, 8, 0, 4)
 	but.DoClick = function()
 		RunConsoleCommand("zm_open_preferred_menu")
 	end
+	catagorylist:AddItem(but)
 	
-	local label = Label("Key Binds", list)
-	label:SetFont("zm_hud_font_small")
-	label:SetTextColor(Color(255, 239, 0))
-	label:CenterVertical()
-	label:SizeToContents()
-	label:Dock(TOP)
-	label:DockMargin(list:GetWide() * 0.5 - label:GetWide() * 0.5, 8, 0, 8)
+	local catagory = vgui.Create("DCollapsibleCategory", list)
+	catagory:SetSize(64, 64)
+	catagory:Dock(TOP)
+	catagory:DockMargin(0, 0, 0, 8)
+	catagory:SetExpanded(0)
+	catagory:SetLabel("Key Binds")
+	
+	local catagorylist = vgui.Create("DScrollPanel", list)
+	catagory:SetContents(catagorylist)
 	
 	local label = Label("Drop Weapon Key", list)
 	label:SetFont("OptionsHelp")
 	label:SizeToContents()
 	label:Dock(TOP)
-	label:DockMargin(0, 4, 0, 4)
+	label:DockMargin(0, 8, 0, 4)
+	catagorylist:AddItem(label)	
 	
 	local binder = vgui.Create("DBinder", list)
 	binder:SetTall(24)
 	binder:SetFont("OptionsHelpBig")
 	binder:SetConVar("zm_dropweaponkey")
 	binder:SizeToContents()
-	binder:Dock(TOP)
-	binder:DockMargin(0, 4, 0, 4)
 	binder.UpdateText = BinderTextUpdate
+	binder:Dock(TOP)
+	binder:DockMargin(0, 8, 0, 4)
+	catagorylist:AddItem(binder)	
 	
 	local label = Label("Drop Ammo Key", list)
 	label:SetFont("OptionsHelp")
 	label:SizeToContents()
 	label:Dock(TOP)
-	label:DockMargin(0, 4, 0, 4)
+	label:DockMargin(0, 8, 0, 4)
+	catagorylist:AddItem(label)	
 	
 	local binder = vgui.Create("DBinder", list)
 	binder:SetTall(24)
 	binder:SetFont("OptionsHelpBig")
 	binder:SetConVar("zm_dropammokey")
 	binder:SizeToContents()
-	binder:Dock(TOP)
-	binder:DockMargin(0, 4, 0, 4)
 	binder.UpdateText = BinderTextUpdate
+	binder:Dock(TOP)
+	binder:DockMargin(0, 8, 0, 4)
+	catagorylist:AddItem(binder)	
 	
-	local label = Label("Ragdoll Settings", list)
-	label:SetFont("zm_hud_font_small")
-	label:SetTextColor(Color(255, 239, 0))
-	label:CenterVertical()
-	label:SizeToContents()
-	label:Dock(TOP)
-	label:DockMargin(list:GetWide() * 0.5 - label:GetWide() * 0.5, 8, 0, 8)
+	local catagory = vgui.Create("DCollapsibleCategory", list)
+	catagory:SetSize(64, 64)
+	catagory:Dock(TOP)
+	catagory:DockMargin(0, 0, 0, 8)
+	catagory:SetExpanded(0)
+	catagory:SetLabel("Ragdoll Settings")
+	
+	local catagorylist = vgui.Create("DScrollPanel", list)
+	catagory:SetContents(catagorylist)
 	
 	local check = vgui.Create("DCheckBoxLabel", list)
 	check:SetText("Should ragdolls fadeout")
 	check:SetConVar("zm_shouldragdollsfade")
 	check:SizeToContents()
 	check:Dock(TOP)
-	check:DockMargin(0, 8, 0, 8)
+	check:DockMargin(0, 8, 0, 4)
+	catagorylist:AddItem(check)
 	
 	local slider = vgui.Create("DNumSlider", list)
 	slider:SetDecimals(0)
@@ -287,7 +333,8 @@ function MakepOptions()
 	slider:SetText("Fade Speed")
 	slider:SizeToContents()
 	slider:Dock(TOP)
-	slider:DockMargin(0, 4, 0, 4)
+	slider:DockMargin(0, 8, 0, 4)
+	catagorylist:AddItem(slider)
 	
 	local slider = vgui.Create("DNumSlider", list)
 	slider:SetDecimals(0)
@@ -296,7 +343,8 @@ function MakepOptions()
 	slider:SetText("Time before fadeout")
 	slider:SizeToContents()
 	slider:Dock(TOP)
-	slider:DockMargin(0, 4, 0, 4)
+	slider:DockMargin(0, 8, 0, 4)
+	catagorylist:AddItem(slider)
 
 	Window:SetAlpha(0)
 	Window:AlphaTo(255, 0.5, 0)

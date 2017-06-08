@@ -146,7 +146,7 @@ function GM:OnEntityCreated(ent)
 		
 		local zombietab = self:GetZombieData(entname)
 		if zombietab ~= nil then
-			self.iZombieList[ent] = entname
+			self.iZombieList[ent:EntIndex()] = ent
 		end
 
 		if scripted_ents.GetType(entname) == nil then

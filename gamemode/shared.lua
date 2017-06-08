@@ -4,23 +4,7 @@ GM.Email = "forrestmarkx@outlook.com"
 GM.Website = "http://steamcommunity.com/id/ForrestMarkX/"
 GM.TeamBased = true
 
-GM.Credits = {
-	{"Forrest Mark X", "http://steamcommunity.com/id/ForrestMarkX/", "Programmer"},
-	{"William \"JetBoom\" Moodhe", "http://www.noxiousnet.com", "Code snippets from Zombie Survival"},
-	{"Chewgum", "", "Vestige gamemode code"},
-	{"Mka0207", "http://steamcommunity.com/id/mka0207/myworkshopfiles", "Building the base and icon work"},
-	
-	{"AzoNa, Gabil", "", "French translation"},
-	{"FoxHound", "", "English (UK) translation"},
-	{"plianes766", "", "Chinese (Traditional) translation"},
-	{"Navi", "", "Korean translation"},
-	{"Kit Ballard, RS689", "", "German translation"},
-	{"Brendan Tan", "", "Chinese (Simplified) translation"},
-	{"Marco", "", "Swedish translation"},
-	{"Der eisenballs", "", "Hebrew translation"},
-	{"Comic King", "", "Croatian & Serbian translation"}
-}
-
+include("sh_credits.lua")
 include("sh_translate.lua")
 include("sh_sounds.lua")
 include("sh_zm_globals.lua")
@@ -162,7 +146,7 @@ function GM:ShouldCollide(ent1, ent2)
 end
 
 function GM:EntityRemoved(ent)
-	if ent:IsNPC() and self.iZombieList[ent] ~= nil then self.iZombieList[ent] = nil end
+	if ent:IsNPC() and self.iZombieList[ent:EntIndex()] ~= nil then self.iZombieList[ent:EntIndex()] = nil end
 end
 
 function GM:GravGunPickupAllowed(ply, ent)

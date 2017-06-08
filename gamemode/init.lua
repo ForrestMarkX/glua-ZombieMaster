@@ -9,6 +9,7 @@ AddCSLuaFile("cl_dermaskin.lua")
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_zombie.lua")
 
+AddCSLuaFile("sh_credits.lua")
 AddCSLuaFile("sh_weapons.lua")
 AddCSLuaFile("sh_players.lua")
 AddCSLuaFile("sh_entites.lua")
@@ -251,7 +252,7 @@ function GM:OnEntityCreated(ent)
 	if ent:IsNPC() then
 		local entclass = ent:GetClass()
 		if self:GetZombieData(entclass) ~= nil then
-			self.iZombieList[ent] = entclass
+			self.iZombieList[ent:EntIndex()] = ent
 		end
 		
 		if string.sub(entclass, 1, 12) == "npc_headcrab" then
@@ -276,7 +277,7 @@ function GM:OnEntityCreated(ent)
 			ent:SetShouldServerRagdoll(false)
 		end)
 		
-		for npc, class in pairs(self.iZombieList) do
+		for index, npc in pairs(self.iZombieList) do
 			hook.Call("AddNPCFriends", self, npc, ent)
 		end
 	end
@@ -906,7 +907,7 @@ function GM:PlayerPostThink(pl)
 end
 
 function GM:Tick()
-	for npc, class in pairs(self.iZombieList) do
+	for index, npc in pairs(self.iZombieList) do
 		self:CallZombieFunction(npc, "Think")
 	end
 end
