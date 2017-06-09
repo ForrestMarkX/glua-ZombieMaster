@@ -530,7 +530,7 @@ end
 
 -- You can override or hook and return false in case you have your own map change system.
 local function RealMap(map)
-	return string_match(map, "(.+)%.bsp")
+	return string.match(map, "(.+)%.bsp")
 end
 function GM:LoadNextMap()
 	-- Just in case.
