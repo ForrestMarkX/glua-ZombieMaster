@@ -292,8 +292,7 @@ local function GetAmmoColor(clip, maxclip)
 end
 
 function SWEP:DrawHUD()
-	local screenscale = BetterScreenScale()
-	local wid, hei = 180 * screenscale, 64 * screenscale
+	local wid, hei = ScreenScale(60), ScreenScale(21)
 	local x, y = ScrW() * 0.865, ScrH() * 0.91
 	local clip = self.DontDrawSpare and self.Owner:GetAmmoCount(self:GetPrimaryAmmoType()) or self:Clip1()
 	local spare = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())

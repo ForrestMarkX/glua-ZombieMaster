@@ -42,6 +42,7 @@ function GM:GetCustomAmmo()
 	return CustomAmmo
 end
 
+CreateConVar("zm_roundlimit", "2", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Sets the number of rounds before the server changes map\n" )
 CreateConVar("zm_physexp_cost", "400", FCVAR_REPLICATED, "How much spawning a explosion will cost.")
 CreateConVar("zm_spotcreate_cost", "100", FCVAR_REPLICATED, "How much spawning a hidden zombie will cost.")
 CreateConVar("zm_cost_shambler", "10", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "The cost to spawn a Shambler")

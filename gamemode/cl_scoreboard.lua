@@ -1,20 +1,19 @@
-surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = 32})
+surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = ScreenScale(11)})
+surface.CreateFont("ZMScoreBoardTitleSub", {font = "Verdana", size = 16, weight = 1000})
 surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana", size = 16})
 surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = 20})
 surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana", size = 24})
 
+surface.CreateFont("ZMScoreBoardPlayerBold", {font = "Verdana", size = 16, weight = 1000, outline = true, antialias = false})
+surface.CreateFont("ZMScoreBoardPlayerSmallBold", {font = "arial", size = 20, weight = 1000, outline = true, antialias = false})
+
 local PANEL = {}
 
-function PANEL:Init()
-	self.AvatarButton = self:Add("DButton")
-	self.AvatarButton:AlignLeft(18)
-	self.AvatarButton:SetSize(32, 32)
-	self.AvatarButton.DoClick = function() self.Player:ShowProfile() end
-	self.AvatarButton.Paint = function() return true end
-
-	self.Avatar = vgui.Create("AvatarImage", self.AvatarButton)
+function PANEL:Init() 
+	self.Avatar = self:Add("DClickableAvatar")
+	self.Avatar:AlignLeft(18)
 	self.Avatar:SetSize(32, 32)
-	self.Avatar:SetMouseInputEnabled(false)
+	self.Avatar.DoClick = function() self.Player:ShowProfile() end
 	
 	self.SpecialImage = self:Add("DImage")
 	self.SpecialImage:SetSize(16, 16)
@@ -23,33 +22,33 @@ function PANEL:Init()
 	
 	self.Name = self:Add("DLabel")
 	self.Name:Dock(FILL)
-	self.Name:SetFont("ZMScoreBoardPlayer")
+	self.Name:SetFont("ZMScoreBoardPlayerBold")
 	self.Name:DockMargin(55, 0, 0, 0)
 	self.Name:SetColor(color_white)
-
-	self.Ping = self:Add("DPingMeter")
-	self.Ping:Dock(RIGHT)
-	self.Ping:DockMargin(0, 0, 32, 0)
-	self.Ping:SetSize(self:GetTall(), self:GetTall())
-	self.Ping.PingBars = 5
 	
 	self.Mute = self:Add("DImageButton")
 	self.Mute:SetSize(32, 32)
-	self.Mute:DockMargin(0, 0, 32, 0)
 	self.Mute:Dock(RIGHT)
+
+	self.Ping = self:Add("DLabel")
+	self.Ping:Dock(RIGHT)
+	self.Ping:DockMargin(0, 0, 18, 0)
+	self.Ping:SetWidth(50)
+	self.Ping:SetFont("ZMScoreBoardPlayerSmallBold")
+	self.Ping:SetContentAlignment(5)
 
 	self.Deaths = self:Add("DLabel")
 	self.Deaths:Dock(RIGHT)
-	self.Deaths:DockMargin(0, 0, 16, 0)
+	self.Deaths:DockMargin(0, 0, 18, 0)
 	self.Deaths:SetWidth(50)
-	self.Deaths:SetFont("ZMScoreBoardPlayerSmall")
+	self.Deaths:SetFont("ZMScoreBoardPlayerSmallBold")
 	self.Deaths:SetContentAlignment(5)
 
 	self.Kills = self:Add("DLabel")
 	self.Kills:Dock(RIGHT)
-	self.Kills:DockMargin(0, 0, 16, 0)
+	self.Kills:DockMargin(0, 0, 26, 0)
 	self.Kills:SetWidth(50)
-	self.Kills:SetFont("ZMScoreBoardPlayerSmall")
+	self.Kills:SetFont("ZMScoreBoardPlayerSmallBold")
 	self.Kills:SetContentAlignment(5)
 	
 	self:Dock(TOP)
@@ -59,15 +58,11 @@ function PANEL:Init()
 end
 
 function PANEL:Setup(pl)
-	self.m_Flash = pl:SteamID() == "STEAM_0:1:3307510" or pl:IsAdmin() or pl:IsSuperAdmin() 
+	self.m_Flash = pl:SteamID() == "STEAM_0:1:3307510" or pl:IsAdmin() or pl:IsSuperAdmin()
 	self.Player = pl
 	self.Avatar:SetPlayer(pl, 32)
 	self.Ping:SetPlayer(pl)
 	self:Think(self)
-	
-	if pl == LocalPlayer() and IsValid(self.Mute) then
-		self.Mute:SetEnabled(false)
-	end
 	
 	if gamemode.Call("IsSpecialPerson", pl, self.SpecialImage) then
 		self.SpecialImage:SetVisible(true)
@@ -98,18 +93,43 @@ function PANEL:Think()
 		self.NumDeaths = self.Player:Deaths()
 		self.Deaths:SetText( self.NumDeaths )
 	end
-
-	if (self.Muted == nil or self.Muted ~= self.Player:IsMuted()) and self.Player ~= LocalPlayer() then
-		self.Mute:SetColor(color_black)
+	
+	if self.NumPing == nil or self.NumPing ~= self.Player:Ping() then
+		self.NumPing = self.Player:Ping()
+		self.Ping:SetText( self.NumPing )
 		
+		local ping = self.NumPing
+		local pingmul = 1 - math.Clamp((ping - 50) / 200, 0, 1)
+		
+		local colPing = Color((1 - pingmul) * 255, pingmul * 255, 60, 255)
+		self.Ping:SetTextColor(colPing)
+	end
+
+	if self.Muted == nil or self.Muted ~= self.Player:IsMuted() then
 		self.Muted = self.Player:IsMuted()
-		if self.Muted then
-			self.Mute:SetImage( "icon32/muted.png" )
+		if self.Player ~= LocalPlayer() then
+			self.Mute:SetImage(self.Muted and "icon32/muted.png" or "icon32/unmuted.png")
 		else
-			self.Mute:SetImage( "icon32/unmuted.png" )
+			if self.Mute:IsEnabled() then
+				self.Mute:SetCursor("arrow")
+				self.Mute:SetEnabled(false)
+			end
 		end
 
+		self.Mute:SetColor(self.Muted and Color(255, 0, 0) or color_black)
 		self.Mute.DoClick = function() self.Player:SetMuted(not self.Muted) end
+	end
+	
+	if g_Scoreboard.PlayerList:GetVBar():IsVisible() then
+		local left, top, right, bottom = self.Ping:GetDockMargin()
+		if right == 18 then
+			self.Ping:DockMargin(0, 0, 4, 0)
+		end
+	else
+		local left, top, right, bottom = self.Ping:GetDockMargin()
+		if right == 4 then
+			self.Ping:DockMargin(0, 0, 18, 0)
+		end
 	end
 	
 	if self.Player:Team() ~= self._LastTeam then
@@ -136,9 +156,9 @@ function PANEL:Paint(w, h)
 		col = team.GetColor(pl:Team())
 
 		if self.m_Flash then
-			mul = 0.6 + math.abs(math.sin(RealTime() * 6)) * 0.4
+			mul = 0.6 + math.abs(math.sin(RealTime() * 4)) * 0.4
 		elseif pl == LocalPlayer() then
-			mul = 0.8
+			mul = 0.6 + math.abs(math.sin(RealTime() * 2)) * 0.4
 		end
 		
 		colTemp = team.GetColor(pl:Team())
@@ -146,10 +166,6 @@ function PANEL:Paint(w, h)
 		colTemp.r = col.r * mul
 		colTemp.g = col.g * mul
 		colTemp.b = col.b * mul
-	end
-
-	if self.Hovered then
-		mul = math.min(1, mul * 1.5)
 	end
 	
 	local col = colTemp
@@ -163,13 +179,22 @@ vgui.Register("ZMPlayerLine", PANEL, "DPanel")
 
 local PANEL = {}
 
-local function NoPanelDraw(self, w, h)
-	return true
-end
 function PANEL:Init()
+	self.Sprite = vgui.Create("DImage", self)
+	self.Sprite:AlignTop(-5)
+	self.Sprite:AlignLeft(5)
+	self.Sprite:SetSize(ScrW() * 0.07, ScrH() * 0.07)
+	self.Sprite:SetImage("vgui/gfx/vgui/hl2mp_logo")
+	
 	self.Header = self:Add("Panel")
 	self.Header:Dock(TOP)
 	self.Header:SetHeight(100)
+	
+	self.HeaderBottom = self:Add("Panel")
+	self.HeaderBottom:Dock(BOTTOM)
+	self.HeaderBottom:DockMargin(8, 0, 0, 4)
+	self.HeaderBottom:SetHeight(32)
+	self.HeaderBottom:SetWide(self:GetWide())
 
 	self.Name = self.Header:Add( "DLabel" )
 	self.Name:SetFont("ZMScoreBoardTitle")
@@ -177,14 +202,35 @@ function PANEL:Init()
 	self.Name:Dock(TOP)
 	self.Name:SetHeight(40)
 	self.Name:SetContentAlignment(5)
-	self.Name:SetExpensiveShadow(2, Color(0, 0, 0, 200))
 	
-	self.HeadersPan = self:Add("DPanel")
+	self.RoundsLeft = self.Header:Add( "DLabel" )
+	self.RoundsLeft:SetFont("ZMScoreBoardTitleSub")
+	self.RoundsLeft:SetTextColor(COLOR_GRAY)
+	self.RoundsLeft:Dock(TOP)
+	self.RoundsLeft:DockMargin(0, -12, 0, 0)
+	self.RoundsLeft:SetHeight(40)
+	self.RoundsLeft:SetContentAlignment(5)
+	
+	self.CreditsButton = self.HeaderBottom:Add("DButton")
+	self.CreditsButton:Dock(LEFT)
+	self.CreditsButton:SetText(translate.Get("button_credits"))
+	self.CreditsButton.DoClick = function(self)
+		MakepCredits()
+	end
+	
+	self.CreatorLabel = self.HeaderBottom:Add("DLabel")
+	self.CreatorLabel:Dock(LEFT)
+	self.CreatorLabel:DockMargin(12, 0, 0, 0)
+	self.CreatorLabel:SetFont("ZMScoreBoardTitleSub")
+	self.CreatorLabel:SetText(translate.Get("credit_text"))
+	self.CreatorLabel:CenterVertical()
+	self.CreatorLabel:SizeToContents()
+	
+	self.HeadersPan = self:Add("Panel")
 	self.HeadersPan:SetPos(0, 64)
-	self.HeadersPan.Paint = NoPanelDraw
 	
 	self.NameCol = self.HeadersPan:Add("DLabel")
-	self.NameCol:Dock(FILL)
+	self.NameCol:Dock(LEFT)
 	self.NameCol:SetFont("ZMScoreBoardPlayer")
 	self.NameCol:DockMargin(85, 0, 0, 0)
 	self.NameCol:SetColor(color_white)
@@ -192,18 +238,14 @@ function PANEL:Init()
 
 	self.PingCol = self.HeadersPan:Add("DLabel")
 	self.PingCol:Dock(RIGHT)
+	self.PingCol:DockMargin(0, 0, 35, 0)
 	self.PingCol:SetFont("ZMScoreBoardPlayer")
 	self.PingCol:SetColor(color_white)
 	self.PingCol:SetText(translate.Get("scoreboard_ping"))
-	
-	self.MuteCol = self.HeadersPan:Add("DLabel")
-	self.MuteCol:Dock(RIGHT)
-	self.MuteCol:SetFont("ZMScoreBoardPlayer")
-	self.MuteCol:SetColor(color_white)
-	self.MuteCol:SetText(translate.Get("scoreboard_mute"))
 
 	self.DeathsCol = self.HeadersPan:Add("DLabel")
 	self.DeathsCol:Dock(RIGHT)
+	self.DeathsCol:DockMargin(0, 0, 15, 0)
 	self.DeathsCol:SetFont("ZMScoreBoardPlayer")
 	self.DeathsCol:SetColor(color_white)
 	self.DeathsCol:SetText(translate.Get("scoreboard_deaths"))
@@ -221,32 +263,29 @@ function PANEL:Init()
 	self.m_HumanHeading:Dock(TOP)
 	self.m_HumanHeading:SetTeam(TEAM_SURVIVOR)
 
-	self.SurvivorsList = self.PlayerList:Add("DPanel")
+	self.SurvivorsList = self.PlayerList:Add("Panel")
 	self.SurvivorsList:Dock(TOP)
 	self.SurvivorsList:DockMargin(0, 0, 0, 4)
-	self.SurvivorsList.Paint = NoPanelDraw
 	
 	self.m_ZombieHeading = self.PlayerList:Add("DTeamHeading")
 	self.m_ZombieHeading:Dock(TOP)
 	self.m_ZombieHeading:SetTeam(TEAM_ZOMBIEMASTER)
 	
-	self.ZombieMasterList = self.PlayerList:Add("DPanel")
+	self.ZombieMasterList = self.PlayerList:Add("Panel")
 	self.ZombieMasterList:Dock(TOP)
 	self.ZombieMasterList:DockMargin(0, 0, 0, 4)
-	self.ZombieMasterList.Paint = NoPanelDraw
 	
 	self.m_SpectatorHeading = self.PlayerList:Add("DTeamHeading")
 	self.m_SpectatorHeading:Dock(TOP)
 	self.m_SpectatorHeading:SetTeam(TEAM_SPECTATOR)
 	
-	self.SpectatorsList = self.PlayerList:Add("DPanel")
+	self.SpectatorsList = self.PlayerList:Add("Panel")
 	self.SpectatorsList:Dock(TOP)
 	self.SpectatorsList:DockMargin(0, 0, 0, 4)
-	self.SpectatorsList.Paint = NoPanelDraw
 end
 
 function PANEL:PerformLayout()
-	self.PlayerList:SetSize(self:GetWide(), self:GetTall() - 84)
+	self.PlayerList:SetSize(self:GetWide(), self:GetTall() * 0.87)
 	self.HeadersPan:SetSize(self:GetWide(), 20)
 	
 	self.SurvivorsList:SetWide(self:GetWide())
@@ -273,6 +312,29 @@ end
 
 function PANEL:Think()
 	self.Name:SetText(GetHostName())
+	
+	local maxrounds = GetConVar("zm_roundlimit"):GetInt()
+	local roundsleft = GAMEMODE:GetRoundsPlayed()
+	local roundcount = maxrounds - roundsleft
+	if roundcount > 0 then
+		if roundcount == 1 then
+			self.RoundsLeft:SetText(translate.Format("x_round_left", roundcount))
+		else
+			self.RoundsLeft:SetText(translate.Format("x_rounds_left", roundcount))
+		end
+	elseif roundcount == 0 then
+		self.RoundsLeft:SetText(translate.Get("final_round"))
+	else
+		self.RoundsLeft:SetText(translate.Get("changing_map"))
+	end
+	
+	if roundcount <= math.floor(maxrounds * 0.25) then
+		self.RoundsLeft:SetTextColor(Color(255, 0, 0))
+	elseif roundcount <= math.floor(maxrounds * 0.5) then
+		self.RoundsLeft:SetTextColor(Color(255, 255, 0))
+	else
+		self.RoundsLeft:SetTextColor(Color(0, 255, 0))
+	end
 
 	local plyrs = player.GetAll()
 	for id, pl in pairs(plyrs) do

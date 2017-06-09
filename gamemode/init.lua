@@ -24,11 +24,11 @@ AddCSLuaFile("cl_zm_options.lua")
 AddCSLuaFile("cl_targetid.lua")
 AddCSLuaFile("cl_entites.lua")
 
-AddCSLuaFile("vgui/dpingmeter.lua")
 AddCSLuaFile("vgui/dteamheading.lua")
 AddCSLuaFile("vgui/dzombiepanel.lua")
 AddCSLuaFile("vgui/dpowerpanel.lua")
 AddCSLuaFile("vgui/dmodelselector.lua")
+AddCSLuaFile("vgui/dclickableavatar.lua")
 
 include("sv_zm_options.lua")
 include("sh_players.lua")
@@ -39,7 +39,6 @@ include("shared.lua")
 
 DEFINE_BASECLASS("gamemode_base")
 
-GM.RoundsPlayed = 0
 GM.UnReadyPlayers = {}
 GM.DeadPlayers = {}
 GM.ReadyTimer = 0
@@ -389,10 +388,6 @@ function GM:OnReloaded()
 		timer.Simple(0.25, function() 
 			self.Income_Time = 1
 			self:SetRoundActive(true)
-			
-			if file.Exists("zm_rounds.txt", "DATA") then
-				self.RoundsPlayed = tonumber(file.Read("zm_rounds.txt"))
-			end
 		end)
 	end
 	
@@ -507,7 +502,7 @@ end
 
 function GM:PlayerSay(sender, text, teamChat)
 	if string.lower(text) == "!roundsleft" then
-		local roundsleft = (GetConVar("zm_roundlimit"):GetInt() - self.RoundsPlayed) + 1
+		local roundsleft = (GetConVar("zm_roundlimit"):GetInt() - self:GetRoundsPlayed()) + 1
 		local roundtext = Either(roundsleft == 1, "round", "rounds")
 		PrintMessage(HUD_PRINTTALK, "There is currently "..roundsleft.." "..roundtext.." left.")
 	end
@@ -573,7 +568,7 @@ function GM:LoadNextMap()
 end
 
 function GM:FinishingRound(won, rounds)
-	if self.RoundsPlayed > rounds then
+	if self:GetRoundsPlayed() > rounds then
 		PrintTranslatedMessage(HUD_PRINTTALK, "map_changing")
 	else
 		PrintTranslatedMessage(HUD_PRINTTALK, "round_restarting")
@@ -618,7 +613,7 @@ function GM:TeamVictorious(won, message)
 	hook.Call("IncrementRoundCount", self)
 	
 	local rounds = GetConVar("zm_roundlimit"):GetInt()
-	if self.RoundsPlayed > rounds then
+	if self:GetRoundsPlayed() > rounds then
 		timer.Simple(3, function() hook.Call("LoadNextMap", self) end)
 	else
 		timer.Simple(4, function() hook.Call("EndRound", self) end)
@@ -636,7 +631,7 @@ function GM:TeamVictorious(won, message)
 end
 
 function GM:EndRound()
-	if self.RoundsPlayed > GetConVar("zm_roundlimit"):GetInt() then return end
+	if self:GetRoundsPlayed() > GetConVar("zm_roundlimit"):GetInt() then return end
 	
 	for _, pl in pairs(player.GetAll()) do
 		pl:StripWeapons()
@@ -670,8 +665,7 @@ function GM:EndRound()
 end
 
 function GM:IncrementRoundCount()
-	self.RoundsPlayed = self.RoundsPlayed + 1
-	file.Write("zm_rounds.txt", tostring(self.RoundsPlayed))
+	self:SetRoundsPlayed(self:GetRoundsPlayed() + 1)
 end
 
 function GM:SetupPlayer(ply)
@@ -1228,6 +1222,10 @@ end
 
 function GM:SetRoundEnd(active)
     SetGlobalBool("zm_round_ended", active)
+end
+
+function GM:SetRoundsPlayed(rounds)
+	SetGlobalInt("zm_rounds_played", rounds)
 end
 
 function GM:AddCurZombiePop(amount)

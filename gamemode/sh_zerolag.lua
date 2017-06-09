@@ -1,4 +1,20 @@
 AddCSLuaFile("sh_zerolag.lua")
+
+if CLIENT then
+	local CachedFontWidths = {}
+	local function draw_GetFontWidth(font)
+		if CachedFontWidths[font] then
+			return CachedFontWidths[font] 
+		end
+
+		surface.SetFont(font)
+		local w, h = surface.GetTextSize("W")
+		CachedFontWidths[font] = w
+
+		return w
+	end
+	draw.GetFontWidth = draw_GetFontWidth
+end
 	
 hook.Add("Initialize", "ZeroLag", function()
 	-- Why is this called so much?

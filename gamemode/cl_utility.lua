@@ -68,7 +68,3 @@ end
 function ScaleNumberByResolution(res, num)
 	return res * (num / res)
 end
-
-function BetterScreenScale()
-	return math.Clamp(ScrH() / 1080, 0.6, 1)
-end

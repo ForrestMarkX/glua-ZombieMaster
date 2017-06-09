@@ -1,6 +1,12 @@
 surface.CreateFont("OptionsHelp", {font = "Consolas", size = 20, weight = 450})
 surface.CreateFont("OptionsHelpBig", {font = "Consolas", size = 22, weight = 450})
 
+surface.CreateFont("zm_hud_font_tiny", {font = "Consolas", size = ScreenScale(6)})
+surface.CreateFont("zm_hud_font_smaller", {font = "Consolas", size = ScreenScale(5)})
+surface.CreateFont("zm_hud_font_small", {font = "Consolas", size = ScreenScale(9)})
+surface.CreateFont("zm_hud_font_normal", {font = "Consolas", size = ScreenScale(14)})
+surface.CreateFont("zm_hud_font_big", {font = "Consolas", size = ScreenScale(24)})
+
 function GM:HUDPaint()
 	if player_manager.RunClass(LocalPlayer(), "DrawHUD") then return end
 	
@@ -93,12 +99,6 @@ function MakepCredits()
 	frame:SetKeyboardInputEnabled(false)
 	frame.btnMinim:SetVisible(false)
 	frame.btnMaxim:SetVisible(false)
-	
-	frame.OnClose = function(self)
-		if not IsValid(self.OptionsMenu) then
-			GAMEMODE:ShowOptions()
-		end
-	end
 
 	local label = Label(GAMEMODE.Name.." Credits", frame)
 	label:SetFont("zm_hud_font_normal")
@@ -119,12 +119,11 @@ function MakepCredits()
 		base:DockMargin(0, 4, 0, 4)
 		base:DockPadding(0, 4, 0, 4)
 		
-		local avatar = vgui.Create("AvatarImage", base)
+		local avatar = vgui.Create("DClickableAvatar", base)
 		if authortab.SteamID ~= "" then
-			avatar:SetMouseInputEnabled(true)
-			avatar:SetKeyboardInputEnabled(true)
-			avatar:SetCursor("hand")
-			avatar.OnMousePressed = function(self, code) if code == MOUSE_FIRST then gui.OpenURL("http://steamcommunity.com/profiles/"..util.SteamIDTo64(authortab.SteamID)) end end
+			avatar.DoClick = function(self, code) gui.OpenURL("http://steamcommunity.com/profiles/"..util.SteamIDTo64(authortab.SteamID)) end
+		else
+			avatar:SetEnabled(false)
 		end
 		
 		local lineleft = Label(string.Replace(authortab.Name, "@", "(at)"), base)
@@ -395,15 +394,6 @@ function GM:ShowOptions()
 	but:DockPadding(0, 12, 0, 12)
 	but:Dock(TOP)
 	but.DoClick = function() MakepOptions() menu:Remove() end
-
-	local but = vgui.Create("DButton", menu)
-	but:SetFont("OptionsHelpBig")
-	but:SetText(translate.Get("button_credits"))
-	but:SetTall(32)
-	but:DockMargin(12, 0, 12, 12)
-	but:DockPadding(0, 12, 0, 12)
-	but:Dock(TOP)
-	but.DoClick = function() MakepCredits() menu:Remove() end
 
 	local but = vgui.Create("DButton", menu)
 	but:SetFont("OptionsHelpBig")

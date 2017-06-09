@@ -57,6 +57,9 @@ GM:IsMenuOpen()
 Hook. Called after the client has fully loaded or on LUA refresh (Called after InitPostEntity)
 GM:PostClientInit()
 
+Hook. Called when the player changes screen resolution
+GM:OnScreenSizeChange(int new_w, int new_h)
+
 =SERVER=
 Hook. Called after the gamemode loads and sets map entites
 GM:InitPostEntityMap()

@@ -39,12 +39,9 @@ function GM:Initialize()
 	game.AddAmmoType({ name = "buckshot", dmgtype = bit.bor(DMG_BULLET, DMG_BUCKSHOT), tracer = TRACER_LINE_AND_WHIZ, plydmg = GetConVar("sk_plr_dmg_buckshot"):GetInt(), npcdmg = GetConVar("sk_npc_dmg_buckshot"):GetInt(), maxcarry = GetConVar("zm_maxammo_buckshot"):GetInt(), force = 1200 })
 	game.AddAmmoType({ name = "revolver", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ, plydmg = 0, npcdmg = 0, maxcarry = GetConVar("zm_maxammo_revolver"):GetInt(), force = 5000 })
 	game.AddAmmoType({ name = "molotov", dmgtype = DMG_BURN, tracer = TRACER_NONE, plydmg = 0, npcdmg = 0, maxcarry = GetConVar("zm_maxammo_molotov"):GetInt(), force = 0 })
-	game.AddAmmoType({name = "unused"})
 	
 	hook.Call("BuildZombieDataTable", self)
 	hook.Call("SetupNetworkingCallbacks", self)
-	
-	if SERVER then game.ConsoleCommand("mp_flashlight 1\n") end
 end
 
 function GM:SetupCustomItems()
@@ -122,6 +119,10 @@ end
 
 function GM:GetRoundEnd()
     return GetGlobalBool("zm_round_ended", false)
+end
+
+function GM:GetRoundsPlayed()
+	return GetGlobalInt("zm_rounds_played", 0)
 end
 
 function GM:SetupMove(ply, mv, cmd)

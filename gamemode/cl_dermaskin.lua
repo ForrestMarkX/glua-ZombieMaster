@@ -17,7 +17,7 @@ SKIN.Colours = {}
 
 SKIN.Colours.Window = {}
 SKIN.Colours.Window.TitleActive		= color_white
-SKIN.Colours.Window.TitleInactive	= Color(40, 40, 40)
+SKIN.Colours.Window.TitleInactive	= SKIN.Colours.Window.TitleActive
 
 SKIN.Colours.Button = {}
 SKIN.Colours.Button.Normal				= color_white

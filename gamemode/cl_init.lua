@@ -10,11 +10,11 @@ include("cl_targetid.lua")
 include("cl_hud.lua")
 include("cl_zombie.lua")
 
-include("vgui/dpingmeter.lua")
 include("vgui/dteamheading.lua")
 include("vgui/dzombiepanel.lua")
 include("vgui/dpowerpanel.lua")
 include("vgui/dmodelselector.lua")
+include("vgui/dclickableavatar.lua")
 
 local zombieMenu	  = nil
 
@@ -33,6 +33,18 @@ local nightVision_ColorMod = {
 	["$pp_colour_mulg"] 		= 0.028,
 	["$pp_colour_mulb"] 		= 0
 }
+
+timer.Create("CheckForScreenSizeChange", 1, 0, function()
+	_curscrw = _curscrw or ScrW()
+	_curscrh = _curscrh or ScrH()
+
+	if _curscrh ~= ScrH() or _curscrw ~= ScrW() then
+		_curscrh = ScrH()
+		_curscrw = ScrW()
+		
+		hook.Call("OnScreenSizeChange", GAMEMODE, _curscrw, _curscrh)
+	end
+end)
 
 function GM:PostClientInit()
 	net.Start("zm_player_ready")
@@ -101,13 +113,6 @@ end
 function GM:PostGamemodeLoaded()
 	language.Add("revolver_ammo", "Revolver Ammo")
 	language.Add("molotov_ammo", "Molotov Ammo")
-	
-	local scale = BetterScreenScale()
-	surface.CreateFont("zm_hud_font_tiny", {font = "Consolas", size = 20 * scale, weight = 700})
-	surface.CreateFont("zm_hud_font_smaller", {font = "Consolas", size = 16 * scale, weight = 700})
-	surface.CreateFont("zm_hud_font_small", {font = "Consolas", size = 28 * scale, weight = 0})
-	surface.CreateFont("zm_hud_font_normal", {font = "Consolas", size = 42 * scale, weight = 0})
-	surface.CreateFont("zm_hud_font_big", {font = "Consolas", size = 72 * scale, weight = 0})
 end
 
 function GM:PrePlayerDraw(ply)
@@ -506,7 +511,7 @@ function GM:PostDrawOpaqueRenderables()
 		
 		render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
 			
-		if (zm_placedpoweritem and size >= 128) or size <= 0 then
+		if (zm_placedpoweritem and size >= 128) or (not zm_placedpoweritem and size <= 0) then
 			zm_rightclicked = false
 			zm_placedrally = false
 			zm_placedpoweritem = false
@@ -575,6 +580,9 @@ function GM:RestartRound()
 	isDragging = false
 	
 	gui.EnableScreenClicker(false)
+end
+
+function GM:OnScreenSizeChange(new_w, new_h)
 end
 
 net.Receive("zm_infostrings", function(length)

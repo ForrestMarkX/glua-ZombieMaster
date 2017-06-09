@@ -45,6 +45,11 @@ LANGUAGE.no_flat_or_range_ceiling 			= "Zombie was unable to find a solid ceilin
 LANGUAGE.enter_ambush_mode 					= "Creating ambush..." 
 LANGUAGE.zm_afk_warn 						= "Warning: You will be marked AFK soon and the round ended." 
 LANGUAGE.zm_was_afk 						= "The Zombie Master is AFK." 
+LANGUAGE.x_round_left 						= "%d round left!" 
+LANGUAGE.x_rounds_left 						= "%d rounds left!" 
+LANGUAGE.final_round 						= "Final round!" 
+LANGUAGE.changing_map 						= "Changing map!" 
+LANGUAGE.credit_text 						= "A gamemode created by ForrestMarkX.\nOriginal by BKU and the Zombie Master team."
 
 LANGUAGE.tooltip_select_all                 = "Select all: Select all your zombies."
 LANGUAGE.tooltip_defend                     = "Defend: Order selected units to defend their current location."
