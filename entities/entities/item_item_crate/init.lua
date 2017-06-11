@@ -54,7 +54,10 @@ end
 
 function ENT:Use(activator, caller)
 	if self:IsPlayerHolding() or IsValid(caller.HeldObject) then return end
-	caller:PickupObject(self)
+	
+	if hook.Call("AllowPlayerPickup", GAMEMODE, caller, self) then
+		caller:PickupObject(self)
+	end
 end
 
 ENT.IsAmmo = false
