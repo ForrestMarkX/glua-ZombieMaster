@@ -128,10 +128,10 @@ if CLIENT then
 		surface.SetTexture(skullMaterial)
 		surface.DrawTexturedRect(7, h - 41, 32, 32)
 		
-		draw.DrawText(tostring(LocalPlayer():GetZMPoints()), "zm_hud_font_tiny", 60, h - 42, color_white, 1)
+		draw.DrawText(tostring(LocalPlayer():GetZMPoints()), "zm_powerhud_small", 60, h - 42, color_white, 1)
 		
 		if LocalPlayer():GetZMPointIncome() then
-			draw.DrawText("+ " .. LocalPlayer():GetZMPointIncome(), "zm_hud_font_smaller", 90, h - 24, color_white, 1)
+			draw.DrawText("+ " .. LocalPlayer():GetZMPointIncome(), "zm_powerhud_smaller", 90, h - 24, color_white, 1)
 		end
 		
 		-- Population.
@@ -142,7 +142,7 @@ if CLIENT then
 		surface.SetTexture(popMaterial)
 		surface.DrawTexturedRect(6, h - 61, 16, 16)
 		
-		draw.DrawText(GAMEMODE:GetCurZombiePop() .. "/" .. GAMEMODE:GetMaxZombiePop(), "zm_hud_font_smaller", 60, h - 62, color_white, 1)
+		draw.DrawText(GAMEMODE:GetCurZombiePop() .. "/" .. GAMEMODE:GetMaxZombiePop(), "zm_powerhud_smaller", 60, h - 62, color_white, 1)
 
 		if isDragging then
 			local x, y = gui.MousePos()
@@ -186,6 +186,15 @@ function PLAYER:BindPress(bind, pressed)
 	elseif bind == "+speed" and pressed then
 		if not self.Player:KeyDown(IN_DUCK) then
 			gui.EnableScreenClicker(not vgui.CursorVisible())
+			
+			if IsValid(GAMEMODE.powerMenu) then
+				if vgui.CursorVisible() then
+					GAMEMODE.powerMenu:SetVisible(true)
+				else
+					GAMEMODE.powerMenu:SetVisible(false)
+				end
+			end
+			
 			return true
 		end
 	elseif bind == "+duck" then

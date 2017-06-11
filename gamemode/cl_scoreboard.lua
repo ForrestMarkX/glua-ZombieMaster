@@ -1,12 +1,3 @@
-surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = ScreenScale(11)})
-surface.CreateFont("ZMScoreBoardTitleSub", {font = "Verdana", size = 16, weight = 1000})
-surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana", size = 16})
-surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = 20})
-surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana", size = 24})
-
-surface.CreateFont("ZMScoreBoardPlayerBold", {font = "Verdana", size = 16, weight = 1000, outline = true, antialias = false})
-surface.CreateFont("ZMScoreBoardPlayerSmallBold", {font = "arial", size = 20, weight = 1000, outline = true, antialias = false})
-
 local PANEL = {}
 
 function PANEL:Init() 

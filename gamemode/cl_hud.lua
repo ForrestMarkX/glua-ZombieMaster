@@ -1,12 +1,3 @@
-surface.CreateFont("OptionsHelp", {font = "Consolas", size = 20, weight = 450})
-surface.CreateFont("OptionsHelpBig", {font = "Consolas", size = 22, weight = 450})
-
-surface.CreateFont("zm_hud_font_tiny", {font = "Consolas", size = ScreenScale(6)})
-surface.CreateFont("zm_hud_font_smaller", {font = "Consolas", size = ScreenScale(5)})
-surface.CreateFont("zm_hud_font_small", {font = "Consolas", size = ScreenScale(9)})
-surface.CreateFont("zm_hud_font_normal", {font = "Consolas", size = ScreenScale(14)})
-surface.CreateFont("zm_hud_font_big", {font = "Consolas", size = ScreenScale(24)})
-
 function GM:HUDPaint()
 	if player_manager.RunClass(LocalPlayer(), "DrawHUD") then return end
 	

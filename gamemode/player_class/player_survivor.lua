@@ -242,7 +242,7 @@ function PLAYER:DrawHUD()
 	local wid, hei = ScreenScale(75), ScreenScale(24)
 	local x, y = ScrW() * 0.035, ScrH() * 0.9
 	
-	draw.RoundedBox(16, x + 2, y + 2, wid, hei, Color(60, 0, 0, 200))
+	draw.RoundedBox(ScreenScale(5), x + 2, y + 2, wid, hei, Color(60, 0, 0, 200))
 	
 	local health = LocalPlayer():Health()
 	local healthCol = health <= 10 and Color(185, 0, 0, 255) or health <= 30 and Color(150, 50, 0) or health <= 60 and Color(255, 200, 0) or color_white

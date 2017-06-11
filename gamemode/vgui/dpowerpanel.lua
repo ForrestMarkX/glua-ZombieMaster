@@ -161,4 +161,8 @@ function PANEL:Paint(w, h)
 	draw.DrawSimpleOutlined(0, 32, w, h - 32, color_black)
 end
 
+function PANEL:PerformLayout(w, h)
+	self:SetPos(ScrW() - 130, ScrH() - 130)
+end
+
 vgui.Register("zm_powerpanel", PANEL, "DPanel")
