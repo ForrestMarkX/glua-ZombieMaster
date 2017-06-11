@@ -1149,9 +1149,12 @@ function GM:PlayerCanHearPlayersVoice(listener, talker)
 	return true, false
 end
 
+local function IsBadEnt(ent)
+	return ent:IsPlayer() or ent:IsWeapon() or ent:GetClass() == "item_zm_ammo"
+end
 function GM:FindUseEntity(ply, defaultEnt)
 	if IsValid(defaultEnt) then
-		if (defaultEnt:IsPlayer() or defaultEnt:IsWeapon() or defaultEnt:GetClass() == "item_zm_ammo") then
+		if IsBadEnt(defaultEnt) then
 			local tr = util.TraceHull({
 				start = ply:EyePos(),
 				endpos = ply:EyePos() + ply:EyeAngles():Forward() * 64,
@@ -1159,7 +1162,7 @@ function GM:FindUseEntity(ply, defaultEnt)
 				maxs = Vector(8, 8, 8),	
 				mask = bit.bor(MASK_SHOT, CONTENTS_GRATE),
 				filter = function(ent)
-					if not (ent:IsPlayer() or ent:IsWeapon() or ent:GetClass() == "item_zm_ammo") then return true end
+					return (not IsBadEnt(ent))
 				end
 			})
 			local ent = tr.Entity
@@ -1168,9 +1171,6 @@ function GM:FindUseEntity(ply, defaultEnt)
 			else
 				return defaultEnt
 			end
-		elseif defaultEnt:GetClass() == "item_item_crate" then
-			hook.Call("AllowPlayerPickup", self, ply, defaultEnt)
-			return defaultEnt
 		end
 	end
 	

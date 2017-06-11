@@ -9,6 +9,8 @@ function ENT:Initialize()
 	self:SetModel("models/Items/item_item_crate.mdl")
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetUseType(SIMPLE_USE)
 
 	local phys = self:GetPhysicsObject()
 	if phys:IsValid() then
@@ -48,6 +50,11 @@ function ENT:AcceptInput(name, activator, caller, args)
 		self:Remove()
 		return true
 	end
+end
+
+function ENT:Use(activator, caller)
+	if self:IsPlayerHolding() or IsValid(caller.HeldObject) then return end
+	caller:PickupObject(self)
 end
 
 ENT.IsAmmo = false

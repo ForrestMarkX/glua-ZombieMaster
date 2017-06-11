@@ -239,7 +239,6 @@ function PLAYER:BindPress(bind, pressed)
 end
 
 function PLAYER:DrawHUD()
-	local scale = BetterScreenScale()
 	local wid, hei = ScreenScale(75), ScreenScale(24)
 	local x, y = ScrW() * 0.035, ScrH() * 0.9
 	
