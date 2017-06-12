@@ -58,7 +58,7 @@ function meta:FindEnemy()
 end
 
 function meta:UpdateEnemy(enemy)
-	if IsValid(enemy) then
+	if IsValid(enemy) and IsValid(self) then
 		self:SetEnemy(enemy)
 		self:UpdateEnemyMemory(enemy, enemy:GetPos())
 		

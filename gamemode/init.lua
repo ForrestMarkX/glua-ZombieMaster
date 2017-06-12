@@ -397,10 +397,11 @@ function GM:OnReloaded()
 end
 
 function GM:PlayerSpawnAsSpectator(pl)
-	pl:StripWeapons()
-	pl:SetTeam(TEAM_SPECTATOR)
-	pl:Spectate(OBS_MODE_ROAMING)
+	hook.Call("PlayerJoinTeam", self, pl, TEAM_SPECTATOR)
+	hook.Call("PlayerSetClass", self, pl, "player_spectator")
 	
+	pl:StripWeapons()
+	pl:Spectate(OBS_MODE_ROAMING)
 	pl:SendLua([[
 		if IsValid(GAMEMODE.powerMenu) then
 			GAMEMODE.powerMenu:Remove()
@@ -410,8 +411,6 @@ function GM:PlayerSpawnAsSpectator(pl)
 			GAMEMODE.trapMenu:Remove()
 		end		
 	]])
-	
-	pl:SetClass("player_spectator")
 end
 
 function GM:PlayerDeathThink(pl)
@@ -431,7 +430,7 @@ function GM:PlayerDeathSound()
 end
 
 function GM:PlayerInitialSpawn(pl)
-	pl:SetTeam(TEAM_UNASSIGNED)
+	hook.Call("PlayerJoinTeam", self, pl, TEAM_UNASSIGNED)
 	pl:CrosshairDisable()
 	
 	if (self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and team.NumPlayers(TEAM_ZOMBIEMASTER) >= 1) and not NotifiedRestart then
@@ -526,6 +525,29 @@ function GM:OnPlayerChangedTeam(ply, oldTeam, newTeam)
 	else
 		ply:GodDisable()
 	end
+end
+
+function GM:PlayerJoinTeam(ply, teamid)
+	local iOldTeam = ply:Team()
+	
+	if ply:Alive() then
+		if iOldTeam == TEAM_SPECTATOR or iOldTeam == TEAM_UNASSIGNED then
+			ply:KillSilent()
+		else
+			ply:Kill()
+		end
+	end
+
+	ply:SetTeam(teamid)
+	ply.LastTeamSwitch = RealTime()
+	
+	hook.Call("OnPlayerChangedTeam", self, iOldTeam, teamid)
+end
+
+function GM:PlayerSetClass(ply, classname)
+	local oldclass = player_manager.GetPlayerClass(ply)
+	player_manager.SetPlayerClass(ply, class)
+	hook.Call("OnPlayerClassChanged", self, ply, class)
 end
 
 -- You can override or hook and return false in case you have your own map change system.
@@ -671,8 +693,8 @@ end
 function GM:SetupPlayer(ply)
 	if ply:GetInfoNum("zm_preference", 0) == 2 then return end
 	
-	ply:SetTeam(TEAM_SURVIVOR)
-	ply:SetClass("player_survivor")
+	hook.Call("PlayerJoinTeam", self, ply, TEAM_SURVIVOR)
+	hook.Call("PlayerSetClass", self, ply, "player_survivor")
 	
 	ply:UnSpectate()
 	ply:Spawn()
@@ -1063,8 +1085,9 @@ function GM:SetPlayerToZombieMaster(pl)
 	pl:SetFrags(0)
 	pl:SetDeaths(0)
 	pl:Spectate(OBS_MODE_ROAMING)
-	pl:SetTeam(TEAM_ZOMBIEMASTER)
-	pl:SetClass("player_zombiemaster")
+	
+	hook.Call("PlayerJoinTeam", self, pl, TEAM_ZOMBIEMASTER)
+	hook.Call("PlayerSetClass", self, pl, "player_zombiemaster")
 	
 	for _, pPlayer in pairs(player.GetAll()) do
 		if pPlayer ~= pl then 

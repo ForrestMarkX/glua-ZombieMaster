@@ -114,3 +114,6 @@ GM:AddNPCFriends(Entity npc, Entity ent)
 
 Hook. Randomly replaces a ent with a item crate based on player count. Class argument is optional
 GM:ReplaceItemWithCrate(Entity ent, String class)
+
+Hook. Sets the current players player_class to classname and calls OnPlayerClassChanged
+GM:PlayerSetClass(player ply, string classname)
