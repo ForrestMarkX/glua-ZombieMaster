@@ -8,6 +8,7 @@ NPC.Flag = FL_SPAWN_SHAMBLER_ALLOWED
 NPC.Cost = GetConVar("zm_cost_shambler"):GetInt()
 NPC.PopCost = GetConVar("zm_popcost_shambler"):GetInt()
 NPC.Health = GetConVar("zm_zombie_health"):GetInt()
+NPC.IsEngineNPC = true
 
 NPC.Model = {
 	"models/zombie/zm_classic.mdl",

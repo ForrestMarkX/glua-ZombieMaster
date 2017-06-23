@@ -24,7 +24,24 @@ function meta:TakeZMPoints(amount)
 end
 
 function meta:ChangeTeamDelayed(delay, teamid)
-	timer.Simple(delay, function() hook.Call("PlayerJoinTeam", GAMEMODE, self, teamid) end)
+	timer.Simple(delay, function() self:SetTeam(teamid) end)
+end
+
+meta.OldSetTeam = meta.OldSetTeam or meta.SetTeam
+function meta:SetTeam(teamid)
+	local oldteam = self:Team()
+	self:OldSetTeam(teamid)
+	if oldteam ~= teamid then
+		gamemode.Call("OnPlayerChangedTeam", self, oldteam, teamid)
+	end
+end
+
+function meta:SetClass(class)
+	local oldclass = player_manager.GetPlayerClass(self)
+	player_manager.SetPlayerClass(self, class)
+	if oldclass ~= class then
+		gamemode.Call("OnPlayerClassChanged", self, class)
+	end
 end
 
 function meta:Gib()

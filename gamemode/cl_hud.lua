@@ -456,7 +456,7 @@ function GM:ShowHelp()
 	lab:SetFont("OptionsHelpBig")
 	lab:AlignTop(8)
 	lab:AlignLeft(8)
-	lab:SetText(self.MapInfo)
+	lab:SetText(self.MapInfo or "")
 	lab:SetWrap(true)
 	lab:SetAutoStretchVertical(true)
 	

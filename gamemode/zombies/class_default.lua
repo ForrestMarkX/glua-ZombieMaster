@@ -46,7 +46,10 @@ function NPC:OnSpawned(npc)
 		npc:SetSkin(math.random(0, self.SkinNum))
 	end
 	
-	npc.IsEngineNPC = self.IsEngineNPC
+	if self.IsEngineNPC ~= nil then 
+		npc.IsEngineNPC = self.IsEngineNPC 
+	end 
+  
 	npc.NextBreakableScan = CurTime()
 	
 	npc:SetSolid(self.SolidType)

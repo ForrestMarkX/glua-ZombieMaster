@@ -6,6 +6,7 @@ NPC.Flag = FL_SPAWN_HULK_ALLOWED
 NPC.Cost = GetConVar("zm_cost_hulk"):GetInt()
 NPC.PopCost = GetConVar("zm_popcost_hulk"):GetInt()
 NPC.Health = GetConVar("zm_zombie_poison_health"):GetInt()
+NPC.IsEngineNPC = true
 
 NPC.Model = "models/zombie/hulk.mdl"
 NPC.HullType = HULL_MEDIUM_TALL
