@@ -19,12 +19,12 @@ function PLAYER:SetupMove(mv, cmd)
 	if CLIENT then
 		if not hook.Call("IsMenuOpen", GAMEMODE) and (input.WasMousePressed(MOUSE_WHEEL_UP) or input.WasMousePressed(MOUSE_WHEEL_DOWN)) then
 			if vgui.CursorVisible() then
-				local c_x, c_y = input.GetCursorPos()
+				RememberCursorPosition()
 				
 				gui.EnableScreenClicker(false)
 				timer.Simple(0, function() 
 					gui.EnableScreenClicker(true) 
-					input.SetCursorPos(c_x, c_y)
+					RestoreCursorPosition()
 				end)
 			end
 		end
