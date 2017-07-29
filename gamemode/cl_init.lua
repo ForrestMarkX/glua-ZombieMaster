@@ -99,7 +99,7 @@ function GM:InitPostEntity()
 	
 	vgui.CreateFromTable{
 		Base = "Panel",
-		Pain = function() return true end,
+		Paint = function() return true end,
 		PerformLayout = function()
 			hook.Run("OnScreenSizeChange", ScrW(), ScrH())
 		end
