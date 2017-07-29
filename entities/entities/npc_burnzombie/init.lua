@@ -8,6 +8,7 @@ DEFINE_BASECLASS("zm_npc_base")
 ENT.AttackDamage = 8
 ENT.CanSwatPhysicsObjects = false
 ENT.FootStepTime = 0.3
+ENT.DamageType   = DMG_BURN
 
 ENT.AttackSounds = "NPC_BurnZombie.Scream"
 ENT.DeathSounds  = "NPC_BurnZombie.Die"

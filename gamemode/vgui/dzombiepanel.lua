@@ -85,7 +85,9 @@ function PANEL:Init()
 	self.bardraw:SetSize(125, self:GetTall() - 62)
 	
 	self.bardraw.Paint = function(self, w, h)
-		draw.DrawSimpleRect(1, 0, 1, self:GetParent():GetTall() - 62, color_black)
+		DisableClipping(true)
+		draw.DrawSimpleRect(-3, 0, 1, self:GetParent():GetTall() - 62, color_black)
+		DisableClipping(false)
 	end
 	
 	self.removeOne = vgui.Create("DButton", self)
@@ -258,6 +260,13 @@ function PANEL:AddQueue(type)
 	local image = vgui.Create("DImage")
 	image:SetImage(smallImage)
 	image:SetSize(32, 32)
+	image.Paint = function(self, w, h)
+		draw.OutlinedBox(0, 0, w, h, 1, Color(115, 0, 0))
+		surface.SetDrawColor(Color(52, 0, 0, 250))
+		surface.DrawRect(1, 1, w - 2, h - 2)
+
+		self:PaintAt(0, 0, w, h)
+	end
 	
 	self.queue:Add(image)
 	

@@ -21,6 +21,7 @@ ENT.CanSwatPhysicsObjects = true
 ENT.FootStepTime 	= 0.3
 ENT.MoveTime		= CurTime()
 ENT.NextBreakableScan = CurTime()
+ENT.DamageType      = DMG_SLASH
 
 CreateConVar("zm_zombieswatforcemin", "20000", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Specifies the min force that a zombie can apply to a prop when swatting it.")
 CreateConVar("zm_zombieswatforcemax", "70000", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Specifies the max force that a zombie can apply to a prop when swatting it.")
@@ -159,8 +160,7 @@ function ENT:PlayAttackSequence()
 		self:PlayVoiceSound(self.AttackSounds)
 	end
 	
-	local seq = self:SelectWeightedSequence(ACT_MELEE_ATTACK1)
-	local len = self:SequenceDuration(seq)
+	local len = self:SequenceDuration()
 	self.AttackEnd = CurTime() + len
 	self.AttackTime = CurTime() + (len * 0.55)
 end
@@ -250,7 +250,7 @@ function ENT:CheckTraceHullAttack(vStart, vEnd, mins, maxs, iDamage, iDmgType, f
 end
 
 function ENT:ClawAttack(flDist, iDamage, qaViewPunch, vecVelocityPunch)
-	local iDamageType = DMG_SLASH
+	local iDamageType = self.DamageType
 	
 	if self:IsOnFire() then
 		iDamage = iDamage * (math.Rand(1, 2))
