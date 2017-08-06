@@ -21,7 +21,7 @@ function util.PrintMessageC(pl, msg, color, duration, fade)
 		local dtime = CurTime() - start
 
 		if dtime > duration then
-			hook.Remove( "HUDPaint", "CSayHelperDraw" )
+			hook.Remove( "HUDPaint", "PrintMessageCDraw" )
 			return
 		end
 
