@@ -352,7 +352,12 @@ end
 
 vgui.Register("ZMScoreBoard", PANEL, "EditablePanel")
 
+local bWasCursorVisable
 function GM:ScoreboardShow()
+	if LocalPlayer():IsZM() then
+		bWasCursorVisable = vgui.CursorVisible()
+	end
+	
 	gui.EnableScreenClicker(true)
 	
 	if not IsValid(g_Scoreboard) then
@@ -370,8 +375,8 @@ function GM:ScoreboardShow()
 end
 
 function GM:ScoreboardHide()
-	if not LocalPlayer():IsZM() then
-		gui.EnableScreenClicker(false)
+	if LocalPlayer():IsZM() then
+		gui.EnableScreenClicker(bWasCursorVisable)
 	end
 	
 	if IsValid(g_Scoreboard) then
