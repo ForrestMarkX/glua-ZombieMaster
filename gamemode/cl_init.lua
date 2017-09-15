@@ -34,6 +34,8 @@ local nightVision_ColorMod = {
 	["$pp_colour_mulb"] 		= 0
 }
 
+local ZombieModelOverrides = {}
+
 function GM:PostClientInit()
 	net.Start("zm_player_ready")
 	net.SendToServer()
@@ -63,14 +65,30 @@ local function FadeToDraw(self)
 		if self.OldDraw then	
 			self:OldDraw()
 		else 
-			self:DrawModel() 
+			if IsValid(self.c_Model) then
+				if not IsValid(self.c_Model:GetParent()) then
+					self.c_Model:SetParent(self)
+				end
+				
+				self.c_Model:DrawModel()
+			else 
+				self:DrawModel() 
+			end
 		end
 		render.SetBlend(1)
 	else
 		if self.OldDraw then	
 			self:OldDraw()
 		else 
-			self:DrawModel() 
+			if IsValid(self.c_Model) then
+				if not IsValid(self.c_Model:GetParent()) then
+					self.c_Model:SetParent(self)
+				end
+				
+				self.c_Model:DrawModel()
+			else 
+				self:DrawModel() 
+			end
 		end
 	end
 	
@@ -180,6 +198,18 @@ function GM:OnEntityCreated(ent)
 		if scripted_ents.GetType(entname) == nil then
 			ent.fadeAlpha = 0
 			ent.RenderOverride = FadeToDraw
+			
+			if ent:GetModel() == "models/zombie/classic.mdl" then
+				self:CallZombieFunction(ent, "SetupModel")
+							
+				ent.c_Model = ClientsideModel(ent:GetModel())
+				ent.c_Model:SetNoDraw(true)
+				ent.c_Model:SetParent(ent)
+				ent.c_Model:AddEffects(bit.bor(EF_BONEMERGE, EF_BONEMERGE_FASTCULL, EF_PARENT_ANIMATES))
+				ent.c_Model:SetSkin(ent:GetSkin())
+				
+				ZombieModelOverrides[ent] = ent.c_Model
+			end
 		end
 	end
 end
@@ -516,6 +546,10 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 			if not IsValid(ragdoll) then return end
 			ragdoll:SetSaveValue("m_bFadingOut", true)
 		end)
+		
+		if IsValid(ZombieModelOverrides[ent]) then
+			ZombieModelOverrides[ent]:Remove()
+		end
 	end
 end
 

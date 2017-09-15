@@ -8,3 +8,7 @@ NPC.PopCost = GetConVar("zm_popcost_immolator"):GetInt()
 NPC.Health = GetConVar("zm_burnzombie_health"):GetInt()
 
 NPC.Model = "models/zombie/burnzie.mdl"
+
+if SERVER then
+	NPC.Capabilities = bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1, CAP_SQUAD, CAP_SKIP_NAV_GROUND_CHECK)
+end

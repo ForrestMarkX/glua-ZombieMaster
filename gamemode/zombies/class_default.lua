@@ -19,15 +19,16 @@ NPC.SkinNum = 3
 NPC.BloodColor = BLOOD_COLOR_RED
 
 if SERVER then
+	NPC.ClearCapabilities = false
 	NPC.SpawnFlags = bit.bor(SF_NPC_LONG_RANGE, SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK, SF_NPC_NO_PLAYER_PUSHAWAY)
-	NPC.Capabilities = bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1, CAP_SQUAD, CAP_SKIP_NAV_GROUND_CHECK, CAP_OPEN_DOORS)
+	NPC.Capabilities = CAP_SKIP_NAV_GROUND_CHECK
 end
 
 function NPC:OnSpawned(npc)
 	npc:SetBloodColor(self.BloodColor)
 	
 	if self.Capabilities then
-		npc:CapabilitiesClear()
+		if self.ClearCapabilities then npc:CapabilitiesClear() end
 		npc:CapabilitiesAdd(self.Capabilities)
 	end
 	
@@ -40,10 +41,6 @@ function NPC:OnSpawned(npc)
 			if not IsValid(npc) then return end
 			npc:SetCollisionBounds(self.HullSizeMins, self.HullSizeMaxs)
 		end)
-	end
-	
-	if (self.SkinNum or 0) > 0 then
-		npc:SetSkin(math.random(0, self.SkinNum))
 	end
 	
 	if self.IsEngineNPC ~= nil then 
@@ -73,9 +70,15 @@ function NPC:SetupModel(npc)
 	
 	local mdl = ""
 	if type(self.Model) == "table" then
-		mdl = self.Model[math.random(#self.Model)]
+		local rand = math.Round(util.SharedRandom(npc:EntIndex().."_RandModel", 1, #self.Model))
+		mdl = self.Model[rand]
 	else
 		mdl = self.Model
+	end
+	
+	if (self.SkinNum or 0) > 0 then
+		local rand = math.Round(util.SharedRandom(npc:EntIndex().."_RandSkin", 0, self.SkinNum))
+		npc:SetSkin(rand)
 	end
 	
 	if self.DelaySetModel then

@@ -68,10 +68,8 @@ if SERVER then
 
 		if (GAMEMODE:GetCurZombiePop() + current_type.popCost) > GAMEMODE:GetMaxZombiePop() or not pZM:CanAfford(current_type.cost) then
 			self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat() + math.Rand(0.1, 0.2))
-			return
+			return true
 		end
-
-		self:CreateUnit(current_type)
 
 		net.Start("zm_remove_queue")
 			net.WriteInt(self:EntIndex(), 32)
@@ -79,7 +77,7 @@ if SERVER then
 	
 		table.remove(self.query, 1)
 		
-		return true
+		return self:CreateUnit(current_type)
 	end
 	
 	function ENT:CreateUnit(data)
@@ -109,7 +107,7 @@ if SERVER then
 			end
 		end)
 
-		return false
+		return true
 	end
 	
 	function ENT:KeyValue( key, value )
