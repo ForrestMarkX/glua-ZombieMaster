@@ -97,6 +97,8 @@ function GM:InitPostEntityMap()
 			self:ConvertAmmo(ent)
 		end
 	end
+	
+	self.bMapWasInitilized = true
 end
 
 function GM:EntityKeyValue(ent, key, value)
@@ -246,6 +248,12 @@ function GM:OnEntityCreated(ent)
 			SafeRemoveEntityDelayed(ent, 0)
 			return
 		end
+	end
+	
+	if (string.sub(ent:GetClass(), 1, 9) == "item_ammo" or string.sub(ent:GetClass(), 1, 8) == "item_box") and self.bMapWasInitilized then
+		timer.Simple(0, function()
+			self:ConvertAmmo(ent)
+		end)
 	end
 	
 	if ent:IsNPC() then

@@ -174,6 +174,8 @@ function MakepCredits()
 	frame:SetAlpha(0)
 	frame:AlphaTo(255, 0.5, 0)
 	frame:MakePopup()
+	
+	return frame
 end
 
 local function BinderTextUpdate(self)

@@ -205,8 +205,8 @@ function PANEL:Init()
 	self.CreditsButton = self.HeaderBottom:Add("DButton")
 	self.CreditsButton:Dock(LEFT)
 	self.CreditsButton:SetText(translate.Get("button_credits"))
-	self.CreditsButton.DoClick = function(self)
-		MakepCredits()
+	self.CreditsButton.DoClick = function(but)
+		self.CreditsPanel = MakepCredits()
 	end
 	
 	self.CreatorLabel = self.HeaderBottom:Add("DLabel")
@@ -377,6 +377,12 @@ end
 function GM:ScoreboardHide()
 	if LocalPlayer():IsZM() then
 		gui.EnableScreenClicker(bWasCursorVisable)
+	else
+		gui.EnableScreenClicker(false)
+	end
+	
+	if IsValid(g_Scoreboard.CreditsPanel) then
+		g_Scoreboard.CreditsPanel:Close()
 	end
 	
 	if IsValid(g_Scoreboard) then
