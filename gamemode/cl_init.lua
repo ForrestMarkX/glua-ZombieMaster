@@ -661,6 +661,7 @@ end)
 net.Receive("zm_spawnclientragdoll", function(length)
 	local ent = net.ReadEntity()
 	if IsValid(ent) then
+		if scripted_ents.GetType(ent:GetClass()) == nil then return end
 		ent:BecomeRagdollOnClient()
 	end
 end)

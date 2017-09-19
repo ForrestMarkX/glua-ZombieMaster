@@ -263,6 +263,7 @@ function GM:OnEntityCreated(ent)
 		end
 		
 		if string.sub(entclass, 1, 12) == "npc_headcrab" then
+			ent:DrawShadow(false)
 			SafeRemoveEntityDelayed(ent, 0)
 			return
 		end
@@ -271,6 +272,10 @@ function GM:OnEntityCreated(ent)
 			if not IsValid(ent) then return end
 			
 			if not ent.SpawnedFromNode then
+				if scripted_ents.GetType(entclass) == nil then
+					ent:SetNW2Bool("bIsEngineNPC", true)
+				end
+				
 				self:CallZombieFunction(ent, "OnSpawned")
 				self:CallZombieFunction(ent, "SetupModel")
 			end
