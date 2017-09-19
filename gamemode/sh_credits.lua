@@ -76,5 +76,11 @@ GM.Credits = {
 		SteamID = "", 
 		Website = "", 
 		Description = "Croatian & Serbian translation"
+	},
+	{
+		Name = "Gabi", 
+		SteamID = "STEAM_0:0:35752130", 
+		Website = "", 
+		Description = "Spanish translation"
 	}
 }
