@@ -49,22 +49,29 @@ if SERVER then
 	end
 
 	function ENT:SpawnThink()
+		if not self:GetActive() then
+			self:NextThink(CurTime() + 1)
+			
+			if self.m_bSpawning then self.m_bSpawning = false end
+			if #self.query > 0 then table.Empty(self.query) end
+			
+			return true
+		end
+		
 		if #self.query <= 0 then
 			self.m_bSpawning = false
 			return false
 		end
 		
-		if not self.m_bSpawning then
-			return true
-		end
+		if not self.m_bSpawning then return true end
 
 		self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat())
 
 		local current_type = self.query[1]
-		if not current_type then return end
+		if not current_type then return true end
 		
 		local pZM = current_type.ply
-		if not IsValid(pZM) then return end
+		if not IsValid(pZM) then return true end
 
 		if (GAMEMODE:GetCurZombiePop() + current_type.popCost) > GAMEMODE:GetMaxZombiePop() or not pZM:CanAfford(current_type.cost) then
 			self:NextThink(CurTime() + GetConVar("zm_spawndelay"):GetFloat() + math.Rand(0.1, 0.2))

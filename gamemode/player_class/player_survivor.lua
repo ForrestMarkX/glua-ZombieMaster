@@ -37,7 +37,13 @@ function PLAYER:Spawn()
 		
 		if IsValid(GAMEMODE.trapMenu) then
 			GAMEMODE.trapMenu:Remove()
-		end		
+		end
+		
+		local ply = LocalPlayer()
+		if not IsValid(ply.QuickInfo) then
+			ply.QuickInfo = vgui.Create("CHudQuickInfo")
+			ply.QuickInfo:Center()
+		end	
 	]])
 end
 
@@ -228,13 +234,13 @@ function PLAYER:CanPickupItem(item)
 	return false
 end
 
-function PLAYER:BindPress(bind, pressed)
-	if input.IsKeyDown(GetConVar("zm_dropweaponkey"):GetInt()) and pressed then
+function PLAYER:ButtonDown(button)
+	if SERVER then return end
+	
+	if button == cvars.Number("zm_dropweaponkey", 0) then
 		RunConsoleCommand("zm_dropweapon")
-		return true
-	elseif input.IsKeyDown(GetConVar("zm_dropammokey"):GetInt()) and pressed then
+	elseif button == cvars.Number("zm_dropammokey", 0) then
 		RunConsoleCommand("zm_dropammo")
-		return true
 	end
 end
 
@@ -252,6 +258,12 @@ end
 
 function PLAYER:PreDeath(inflictor, attacker)
 	BaseClass.PreDeath(self, inflictor, attacker)
+	
+	self.Player:SendLua([[
+		if IsValid(LocalPlayer().QuickInfo) then
+			LocalPlayer().QuickInfo:Remove()
+		end
+	]])
 	
 	for _, wep in pairs(self.Player:GetWeapons()) do
 		if IsValid(wep) and not wep.Undroppable then
@@ -272,7 +284,6 @@ function PLAYER:OnDeath(attacker, dmginfo)
 	end
 	
 	self.Player:Flashlight(false)
-	self.Player:CrosshairDisable()
 	self.Player:RemoveEffects(EF_DIMLIGHT)
 end
 
@@ -304,7 +315,7 @@ function PLAYER:OnTakeDamage(attacker, dmginfo)
 		self.Player.DrownDamage = (self.Player.DrownDamage or 0) + dmginfo:GetDamage()
 	end
 	
-	if dmginfo:GetDamage() > 0 and self.Player:Health() > 0 and bit.band(dmginfo:GetDamageType(), DMG_DROWN) == 0 and self:ShouldTakeDamage(attacker) then
+	if dmginfo:GetDamage() > 0 and self.Player:Health() > 0 and bit.band(dmginfo:GetDamageType(), DMG_DROWN) == 0 and self:ShouldTakeDamage(attacker) and not self.Player:HasGodMode() then
 		self.Player:PlayPainSound()
 	end
 end

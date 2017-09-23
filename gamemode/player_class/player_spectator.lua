@@ -8,7 +8,6 @@ function PLAYER:Spawn()
 	
 	self.Player:Spectate(OBS_MODE_ROAMING)
 	self.Player:Flashlight(false)
-	self.Player:CrosshairDisable()
 	self.Player:SetMoveType(MOVETYPE_NOCLIP)
 	self.Player:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 	self.Player:RemoveEffects(EF_DIMLIGHT)
@@ -99,14 +98,6 @@ function PLAYER:PostThink()
 			self.Player:SpectateEntity(NULL)
 			self.Player.SpectatedPlayerKey = nil
 		end
-	end
-end
-
-local NextThink = 0
-function PLAYER:Think()
-	if NextThink < CurTime() and SERVER then
-		NextThink = CurTime() + 0.35
-		self.Player:CrosshairDisable()
 	end
 end
 

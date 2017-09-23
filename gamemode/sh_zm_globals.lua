@@ -106,20 +106,6 @@ COND_NO_CUSTOM_INTERRUPTS = 70
 HUMAN_WIN_SCORE = 50
 HUMAN_LOSS_SCORE = 50
 
-GM.ContributorList = {}
-GM.ContributorList["STEAM_0:1:3307510"]  = "JetBoom"
-GM.ContributorList["STEAM_0:0:8232794"] = "Chewgum"
-GM.ContributorList["STEAM_0:0:18000855"] = "Mka0207"
-GM.ContributorList["STEAM_0:0:8169277"] = "AzoNa"
-GM.ContributorList["STEAM_0:0:54424319"] = "FoxHound"
-GM.ContributorList["STEAM_0:1:77685948"] = "plianes766"
-GM.ContributorList["STEAM_0:0:78650013"] = "Gabil"
-GM.ContributorList["STEAM_0:1:19573596"] = "Navi"
-GM.ContributorList["STEAM_0:1:43090758"] = "Kit Ballard"
-GM.ContributorList["STEAM_0:0:18209215"] = "RS689"
-GM.ContributorList["STEAM_0:1:52431091"] = "Brendan Tan"
-GM.ContributorList["STEAM_0:0:7621671"] = "Marco"
-
 GM.AmmoClass = {}
 GM.AmmoClass["item_ammo_357"] = "357"
 GM.AmmoClass["item_ammo_357_large"] = "357_large"

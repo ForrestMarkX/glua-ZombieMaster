@@ -15,6 +15,7 @@ include("vgui/dzombiepanel.lua")
 include("vgui/dpowerpanel.lua")
 include("vgui/dmodelselector.lua")
 include("vgui/dclickableavatar.lua")
+include("vgui/dcrosshairinfo.lua")
 
 local zombieMenu	  = nil
 
@@ -558,12 +559,10 @@ function GM:PostDrawOpaqueRenderables()
 		local size = Either(zm_placedpoweritem, 1 * ((CurTime() - click_delta) * 350), 64 * (1 - (CurTime() - click_delta) * 4))
 		render.SuppressEngineLighting(true)
 		render.OverrideDepthEnable(true, true)
-		if zm_rightclicked then
+		if zm_rightclicked or zm_placedpoweritem then
 			render.SetMaterial(selectringMaterial)
 		elseif zm_placedrally then
 			render.SetMaterial(rallyringMaterial)
-		elseif zm_placedpoweritem then
-			render.SetMaterial(selectringMaterial)
 		end
 		
 		render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
@@ -693,4 +692,8 @@ net.Receive("zm_coloredprintmessage", function(length)
 	local fade = net.ReadFloat()
 	
 	util.PrintMessageC(nil, msg, color, dur, fade)
+end)
+
+net.Receive("zm_sendlua", function(length)
+	RunString(net.ReadString(), "SendLua")
 end)

@@ -23,14 +23,7 @@ concommand.Add("zm_debug_spawn_zombie", function(ply, cmd, args)
 	if not tr.Hit then return end
 	
 	local class = args[1] or "npc_zombie"
-	local ent = ents.Create(class)
-	if IsValid(ent) then
-		ent:SetPos(tr.HitPos + Vector(0, 0, 25))
-		ent:Spawn()
-		ent:Activate()
-		
-		GAMEMODE:CallZombieFunction(ent, "OnSpawned")
-	end
+	GAMEMODE:SpawnZombie(nil, class, tr.HitPos + Vector(0, 0, 25), Angle(0, 0, 0), 0, false)
 end)
 
 concommand.Add("zm_debug_testspottrace", function(ply, cmd, args)
@@ -236,9 +229,7 @@ local function ZM_Drop_Ammo(len, ply)
 		ent.ClassName = ammoclass
 		
 		local pObj = ent:GetPhysicsObject()
-		
 		local vecVelocity = ply:GetAimVector() * 200
-		
 		if IsValid(pObj) then
 			pObj:AddVelocity(vecVelocity)
 		else
@@ -261,13 +252,7 @@ local function ZM_Drop_Weapon(len, ply)
 	local wep = ply:GetActiveWeapon()
 	if IsValid(wep) and not wep.Undroppable then
 		ply:DropWeapon(wep)
-		
-		local weps = ply:GetWeapons()
-		local randwep = weps[math.random(#weps)]
-		
-		if randwep then
-			ply:SelectWeapon(randwep:GetClass())
-		end
+		ply:SelectWeapon("weapon_zm_fists")
 	end
 end
 net.Receive("zm_net_dropweapon", ZM_Drop_Weapon)

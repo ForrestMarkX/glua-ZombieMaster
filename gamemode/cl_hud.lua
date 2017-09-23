@@ -4,9 +4,9 @@ function GM:HUDPaint()
 	if not self:GetRoundActive() then
 		local h, w = ScrH(), ScrW()
 		if not self:GetZMSelection() then
-			draw.SimpleText(translate.Get("waiting_on_players"), "zm_hud_font_small", w * 0.5, h * 0.25, Color(150, 0, 0), TEXT_ALIGN_CENTER)
+			draw.SimpleTextOutlined(translate.Get("waiting_on_players"), "zm_hud_font_small", w * 0.5, h * 0.25, Color(150, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
 		else
-			draw.SimpleText(translate.Get("players_ready"), "zm_hud_font_small", w * 0.5, h * 0.25, Color(0, 150, 0), TEXT_ALIGN_CENTER)
+			draw.SimpleTextOutlined(translate.Get("players_ready"), "zm_hud_font_small", w * 0.5, h * 0.25, Color(0, 150, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
 		end
 	end
 	
@@ -16,7 +16,11 @@ function GM:HUDPaint()
 end
 
 function GM:HUDShouldDraw(name)
-	return name ~= "CHudHealth" and name ~= "CHudBattery" and name ~= "CHudAmmo" and name ~= "CHudSecondaryAmmo"
+	if LocalPlayer().IsSurvivor and LocalPlayer():IsSurvivor() and name == "CHudCrosshair" then
+		return true
+	else
+		return name ~= "CHudHealth" and name ~= "CHudBattery" and name ~= "CHudAmmo" and name ~= "CHudSecondaryAmmo" and name ~= "CHudCrosshair"
+	end
 end
 
 local defaultHelpStr = [[
@@ -97,8 +101,8 @@ function MakepCredits()
 	label:AlignTop(8)
 	label:CenterHorizontal()
 	
-	local creditslist = vgui.Create("Panel", frame)
-	creditslist:SetWide(wid * 0.99)
+	local creditslist = vgui.Create("DScrollPanel", frame)
+	creditslist:SetSize(wid * 0.99, ScrH() * 0.55)
 	creditslist:MoveBelow(label)
 	creditslist:CenterHorizontal()
 
@@ -149,7 +153,7 @@ function MakepCredits()
 
 		avatar:AlignLeft(8)
 		lineleft:AlignLeft(48)
-		lineright:AlignRight(8)
+		lineright:AlignRight(24)
 		linemid:CenterHorizontal()
 
 		if linesub then
@@ -164,9 +168,6 @@ function MakepCredits()
 		
 		alphatime = alphatime + 0.1
 	end
-
-	creditslist:InvalidateLayout(true)
-	creditslist:SizeToChildren(false, true)
 	
 	frame:InvalidateLayout(true)
 	frame:SizeToChildren(false, true)

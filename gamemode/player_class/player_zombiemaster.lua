@@ -7,7 +7,6 @@ function PLAYER:Spawn()
 	BaseClass.Spawn(self)
 	
 	self.Player:Flashlight(false)
-	self.Player:CrosshairDisable()
 	self.Player:RemoveEffects(EF_DIMLIGHT)
 end
 

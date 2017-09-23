@@ -1,5 +1,5 @@
 AddCSLuaFile()
-DEFINE_BASECLASS("weapon_zm_base")
+DEFINE_BASECLASS("weapon_zm_basemelee")
 
 if CLIENT then 
 	SWEP.PrintName 				= "Carry"
@@ -30,6 +30,8 @@ SWEP.Secondary.ClipSize	   = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic   = true
 SWEP.Secondary.Ammo		   = ""
+
+SWEP.Undroppable 		   = true
 
 function SWEP:Initialize()
 	self:SetWeaponHoldType(self.HoldType)
@@ -122,9 +124,4 @@ end
 
 function SWEP:Deploy()
 	self:SetNextSecondaryFire(CurTime() + 1)
-end
-
-if not CLIENT then return end
-
-function SWEP:DrawHUD()
 end

@@ -16,6 +16,11 @@ ENT.PainSounds   = "NPC_BurnZombie.Pain"
 ENT.MoanSounds   = "NPC_BurnZombie.Idle"
 ENT.AlertSounds	 = "NPC_BurnZombie.Alert"
 
+function ENT:Initialize()
+	BaseClass.Initialize(self)
+	self:CapabilitiesAdd(bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1, CAP_SQUAD))
+end
+
 function ENT:CustomThink()
 	if self:WaterLevel() >= 2 then
 		self:TakeDamage(self:Health(), self, self)

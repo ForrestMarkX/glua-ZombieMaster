@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+DEFINE_BASECLASS("zm_npc_base")
+
 ENT.AttackDamage = 10
 ENT.AttackRange	 = 120
 ENT.NextDoorFind = CurTime()
@@ -15,6 +17,11 @@ ENT.MoanSounds   = "NPC_DragZombie.Idle"
 ENT.AlertSounds  = "NPC_DragZombie.Alert"
 ENT.ClawHitSounds = ""
 ENT.ClawMissSounds = ""
+
+function ENT:Initialize()
+	BaseClass.Initialize(self)
+	self:CapabilitiesAdd(bit.bor(CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1, CAP_SQUAD))
+end
 
 function ENT:FindDoor()
 	local position = self:GetPos() + Vector(0, 0, 25)

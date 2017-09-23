@@ -20,8 +20,8 @@ NPC.BloodColor = BLOOD_COLOR_RED
 
 if SERVER then
 	NPC.ClearCapabilities = false
-	NPC.SpawnFlags = bit.bor(SF_NPC_LONG_RANGE, SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK, SF_NPC_NO_PLAYER_PUSHAWAY)
-	NPC.Capabilities = CAP_SKIP_NAV_GROUND_CHECK
+	NPC.SpawnFlags = bit.bor(SF_NPC_LONG_RANGE, SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK, SF_NPC_NO_PLAYER_PUSHAWAY, SF_ZOMBIE_WANDER_ON_IDLE)
+	NPC.Capabilities = bit.bor(CAP_SKIP_NAV_GROUND_CHECK, CAP_FRIENDLY_DMG_IMMUNE)
 end
 
 function NPC:OnSpawned(npc)
@@ -52,7 +52,6 @@ function NPC:OnSpawned(npc)
 	npc:SetSolid(self.SolidType)
 	npc:SetMoveType(self.MoveType)
 	npc:SetNW2Bool("selected", false)
-	npc:SetNW2Bool("bDead", false)
 	
 	if self.Health and self.Health ~= 0 then
 		npc:SetHealth(self.Health)
@@ -201,8 +200,7 @@ function NPC:Think(npc)
 					if not npc.IsEngineNPC then
 						npc.IsAttacking = true
 						
-						local seq = npc:SelectWeightedSequence(ACT_MELEE_ATTACK1)
-						local len = npc:SequenceDuration(seq)
+						local len = npc:SequenceDuration()
 						timer.Simple(len, function()
 							if not IsValid(npc) or not IsValid(npc.BreakableEnt) then return end
 							npc.BreakableEnt:TakeDamage(npc.AttackDamage, npc, npc)
@@ -248,8 +246,8 @@ function NPC:PostDraw(npc)
 		
 		if npc.bIsSelected then
 			render.SetMaterial(circleMaterial)
-			render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour, (CurTime() * 50) % 360)
-			render.DrawQuadEasy(pos, -Vector(0, 0, 1), 40, 40, colour, (CurTime() * 50) % 360)
+			render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
+			render.DrawQuadEasy(pos, -Vector(0, 0, 1), 40, 40, colour)
 		end
 	end
 end

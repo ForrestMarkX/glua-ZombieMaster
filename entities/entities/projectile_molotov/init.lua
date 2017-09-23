@@ -3,58 +3,72 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+ENT.m_flDamage = 40
+ENT.m_DmgRadius = 128
+
 function ENT:Initialize()
-	self:SetModel("models/weapons/molotov3rd_zm.mdl")
-	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetMoveType(MOVETYPE_VPHYSICS)
-	self:SetSolid(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_FLYGRAVITY)
+	self:SetMoveCollide(MOVECOLLIDE_FLY_BOUNCE)
+	self:SetSolid(SOLID_BBOX)
+	self:SetCollisionGroup(COLLISION_GROUP_PROJECTILE)
+	self:RemoveEffects(EF_NOINTERP)
 	
-	self:GetPhysicsObject():Wake()
-	self:SetAngles(Angle(math.random(0, 360), math.random(0, 360), math.random(0, 360)))
+	self:SetModel("models/weapons/molotov3rd_zm.mdl")
+	
+	self:SetGravity(1.0)
+	self:SetFriction(0.8)
+	self:SetSequence(1)
 	
 	local fireTrail = ents.Create("env_fire_trail")
-	fireTrail:SetPos(self:GetPos())
-	fireTrail:SetParent(self)
+	fireTrail:FollowBone(self, self:LookupBone("flame"))
 	fireTrail:Spawn()
 	fireTrail:Activate()
+	
+	self:SetTrigger(true)
 end
 
-function ENT:PhysicsCollide(data, physObject)
-	if self.bRemove then return end
+function ENT:Touch(pOther)
+	if (bit.band(pOther:GetSolidFlags(), FSOLID_TRIGGER) == 0 or bit.band(pOther:GetSolidFlags(), FSOLID_VOLUME_CONTENTS) == 0) and pOther:GetCollisionGroup() ~= COLLISION_GROUP_WEAPON then
+		return
+	end
+
+	self:Detonate()
+end
+
+function ENT:Detonate() 
+	self:SetNoDraw(true)
+	self:AddSolidFlags(FSOLID_NOT_SOLID)
 	
+	local trace = self:GetTouchTrace()
+	if trace.Fraction ~= 1.0 then
+		self:SetLocalPos(trace.HitPos + (trace.HitNormal * (self.m_flDamage - 24) * 0.6))
+	end
+
 	local contents = util.PointContents(self:GetPos())
 	if bit.band(contents, MASK_WATER) ~= 0 then
-		self.bRemove = true
+		self:Remove()
 		return
 	end
 	
 	local dmginfo = DamageInfo()
 		dmginfo:SetAttacker(self.Owner)
 		dmginfo:SetInflictor(self)
-		dmginfo:SetDamage(40)
-		dmginfo:SetDamagePosition(self:GetPos())
+		dmginfo:SetDamage(self.m_flDamage)
+		dmginfo:SetDamagePosition(trace.HitPos)
 		dmginfo:SetDamageType(DMG_BURN)
-	util.BlastDamageInfo(dmginfo, self:GetPos(), 128)
+	util.BlastDamageInfo(dmginfo, trace.HitPos, self.m_DmgRadius)
 	
 	local effectdata = EffectData()
-		effectdata:SetOrigin(self:GetPos())
+		effectdata:SetOrigin(trace.HitPos)
 	util.Effect("HelicopterMegaBomb", effectdata)
 	
+	util.Decal("Scorch", self:GetPos(), trace.HitPos - trace.HitNormal)
+
 	self:EmitSound("Grenade_Molotov.Detonate")
 	self:EmitSound("Grenade_Molotov.Detonate2")
 	
-	self.bRemove = true
-end
-
-function ENT:Think()
-	if self.bRemove then
-		self:Remove()
-	end
-end
-
-function ENT:OnRemove()
 	local owner = self:GetOwner()
-    for _, v in pairs(ents.FindInSphere(self:GetPos(), 128)) do
+    for _, v in pairs(ents.FindInSphere(trace.HitPos, self.m_DmgRadius)) do
 		if v:IsNPC() then
 			v:Ignite(100)
 		elseif v == owner then
@@ -64,7 +78,7 @@ function ENT:OnRemove()
 	
 	for i = 1, 10 do
 		local fire = ents.Create("env_fire")
-		fire:SetPos(self:GetPos() +Vector(math.random(-80, 80), math.random(-80, 80), 0))
+		fire:SetPos(trace.HitPos + Vector(math.random(-80, 80), math.random(-80, 80), 0))
 		fire:SetKeyValue("health", 25)
 		fire:SetKeyValue("firesize", "60")
 		fire:SetKeyValue("fireattack", "2")
@@ -85,7 +99,7 @@ function ENT:OnRemove()
 	
 	for i=1, 8 do
 		local sparks = ents.Create( "env_spark" )
-		sparks:SetPos( self:GetPos() + Vector( math.random( -40, 40 ), math.random( -40, 40 ), math.random( -40, 40 ) ) )
+		sparks:SetPos( trace.HitPos + Vector( math.random( -40, 40 ), math.random( -40, 40 ), math.random( -40, 40 ) ) )
 		sparks:SetKeyValue( "MaxDelay", "0" )
  		sparks:SetKeyValue( "Magnitude", "2" )
 		sparks:SetKeyValue( "TrailLength", "3" )

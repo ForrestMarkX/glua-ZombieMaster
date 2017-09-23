@@ -85,12 +85,12 @@ function GM:IsSpecialPerson(pl, image)
 	elseif pl:IsAdmin() then
 		img = "icon16/shield.png"
 		tooltip = "Admin"
-	end
-	
-	local contributor = self.ContributorList[steamid]
-	if contributor then
-		img = "icon16/heart.png"
-		tooltip = contributor.."\nContributor!"
+	else
+		local contributor = self.ContributorList[steamid]
+		if contributor then
+			img = "icon16/heart.png"
+			tooltip = contributor.."\nContributor!"
+		end
 	end
 
 	if img then
@@ -152,4 +152,12 @@ end
 
 function GM:GravGunPickupAllowed(ply, ent)
 	return player_manager.RunClass(ply, "AllowPickup", ent)
+end
+
+function GM:PlayerButtonDown(ply, button)
+	player_manager.RunClass(ply, "ButtonDown", button)
+end
+
+function GM:PlayerButtonUp(ply, button)
+	player_manager.RunClass(ply, "ButtonUp", button)
 end

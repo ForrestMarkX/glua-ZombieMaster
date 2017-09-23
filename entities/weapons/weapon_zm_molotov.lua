@@ -60,6 +60,12 @@ function SWEP:Initialize()
 	self:SetCollisionBounds(self:OBBMins() * 4, self:OBBMaxs() * 4)
 end
 
+function SWEP:Deploy()
+	self:SetNextIdle(CurTime() + self:SequenceDuration())
+	self:EmitSound(self.DrawSound)
+	return true
+end
+
 function SWEP:PreDrawViewModel()
 	if self.noammo then
 		render.SetBlend(0)
@@ -103,6 +109,9 @@ function SWEP:Think()
 				local right = owner:EyeAngles():Right()
 				local up = owner:EyeAngles():Up()
 				
+				self:CallOnClient("SpawnClothFlame", "false")
+				self:CallOnClient("SpawnLighterFlame", "false")
+				
 				local ent = ents.Create("projectile_molotov")
 				
 				if IsValid(ent) then
@@ -144,4 +153,72 @@ function SWEP:Think()
 		self:SendWeaponAnim(ACT_VM_IDLE)
 		self:SetNextIdle(0)
 	end
+end
+
+function SWEP:FireAnimationEvent(pos, ang, event, name)
+	if event == 48 then
+		self:CallOnClient("SpawnLighterFlame", "true")
+	elseif event == 3900 then
+		self:CallOnClient("SpawnClothFlame", "true")
+	end
+end
+
+if SERVER then return end
+
+function SWEP:SpawnLighterFlame(b)
+	b = tobool(b)
+	
+	if b then self:SetJiggerVars() end
+	self.m_bLighterFlame = b
+end
+
+function SWEP:SpawnClothFlame(b)
+	b = tobool(b)
+	
+	if b then self:SetJiggerVars() end
+	self.m_bClothFlame = b
+end
+
+function SWEP:SetJiggerVars()
+	self.m_fNextJiggerTime = CurTime()
+	self.m_iLastJiggerX = 2
+	self.m_iLastJiggerY = 4
+end
+
+local flamemat = Material("sprites/fire_vm_grey")
+function SWEP:ViewModelDrawn(ViewModel)
+	if self.m_bLighterFlame then
+		local id = ViewModel:LookupBone("ValveBiped.LighterFlame")
+		if id ~= 0 then
+			local m = ViewModel:GetBoneMatrix(id)
+			local pos, ang = m:GetTranslation(), m:GetAngles()
+			
+			render.SetMaterial(flamemat)
+			self:DrawJiggeringSprite(pos + (ang:Forward() * 2))		
+		end
+	end
+	
+	if self.m_bClothFlame then
+		local id = ViewModel:LookupBone("cloth5")
+		if id ~= 0 then
+			local m = ViewModel:GetBoneMatrix(id)
+			local pos, ang = m:GetTranslation(), m:GetAngles()
+			
+			render.SetMaterial(flamemat)
+			self:DrawJiggeringSprite(pos)			
+		end
+	end
+end
+
+function SWEP:DrawJiggeringSprite(vecAttach)
+	local green = 165 - math.random(0, 64)
+	local flamecolor = Color(255, green, 0)
+
+	if CurTime() >= self.m_fNextJiggerTime then
+		self.m_iLastJiggerX = math.Rand(1.0, 2.0)
+		self.m_iLastJiggerY = math.Rand(3.8, 4.2)
+		self.m_fNextJiggerTime = CurTime() + math.Rand(0.2, 1.0)
+	end
+
+	render.DrawSprite(vecAttach, self.m_iLastJiggerX, self.m_iLastJiggerY, flamecolor)
 end

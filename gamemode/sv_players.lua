@@ -44,21 +44,6 @@ function meta:SetClass(class)
 	end
 end
 
-function meta:Gib()
-	local pos = self:LocalToWorld(self:OBBCenter())
-
-	local effectdata = EffectData()
-		effectdata:SetEntity(self)
-		effectdata:SetOrigin(pos)
-	util.Effect("gib_player", effectdata, true, true)
-
-	self.Gibbed = CurTime()
-
-	timer.Simple(0, function()
-		GAMEMODE.CreateGibs(GAMEMODE, pos, self:LocalToWorld(self:OBBMaxs()).z - pos.z)
-	end)
-end
-
 function meta:DropAllAmmo()
 	local ammotbl = {}
 	for _, wep in pairs(self:GetWeapons()) do
@@ -93,4 +78,25 @@ function meta:DropAllAmmo()
 			ent:Spawn()
 		end
 	end
+end
+
+function meta:Gib()
+	local pos = self:LocalToWorld(self:OBBCenter())
+
+	local effectdata = EffectData()
+		effectdata:SetEntity(self)
+		effectdata:SetOrigin(pos)
+	util.Effect("gib_player", effectdata, true, true)
+
+	self.Gibbed = CurTime()
+
+	timer.Simple(0, function()
+		GAMEMODE.CreateGibs(GAMEMODE, pos, self:LocalToWorld(self:OBBMaxs()).z - pos.z)
+	end)
+end
+
+function meta:SendLua(str)
+	net.Start("zm_sendlua")
+		net.WriteString(str)
+	net.Send(self)
 end

@@ -29,6 +29,7 @@ AddCSLuaFile("vgui/dzombiepanel.lua")
 AddCSLuaFile("vgui/dpowerpanel.lua")
 AddCSLuaFile("vgui/dmodelselector.lua")
 AddCSLuaFile("vgui/dclickableavatar.lua")
+AddCSLuaFile("vgui/dcrosshairinfo.lua")
 
 include("sv_zm_options.lua")
 include("sh_players.lua")
@@ -50,6 +51,12 @@ GM.Income_Time = 0
 
 if file.Exists(GM.FolderName.."/gamemode/maps/"..game.GetMap()..".lua", "LUA") then
 	include("maps/"..game.GetMap()..".lua")
+end
+
+function BroadcastLua(str)
+	net.Start("zm_sendlua")
+		net.WriteString(str)
+	net.Broadcast()
 end
 
 function GM:InitPostEntity()
@@ -375,6 +382,7 @@ function GM:PostGamemodeLoaded()
 	util.AddNetworkString("zm_player_ready")
 	util.AddNetworkString("zm_create_ambush_point")
 	util.AddNetworkString("zm_cling_ceiling")
+	util.AddNetworkString("zm_sendlua")
 	
 	game.ConsoleCommand("fire_dmgscale 1\nmp_falldamage 1\nsv_gravity 600\n")
 	
@@ -445,7 +453,6 @@ end
 
 function GM:PlayerInitialSpawn(pl)
 	pl:SetTeam(TEAM_UNASSIGNED)
-	pl:CrosshairDisable()
 	
 	if (self:GetRoundActive() and team.NumPlayers(TEAM_SURVIVOR) == 0 and team.NumPlayers(TEAM_ZOMBIEMASTER) >= 1) and not NotifiedRestart then
 		PrintTranslatedMessage(HUD_PRINTTALK, "round_restarting")
@@ -481,8 +488,7 @@ function GM:IncreaseResources(pZM)
 end
 
 function GM:PlayerNoClip(ply, desiredState)
-	if not desiredState then return true end
-	return ply:IsAdmin()
+	return ply:IsAdmin() or not desiredState
 end
 
 function GM:OnNPCKilled(ent, attacker, inflictor)

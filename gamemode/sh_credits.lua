@@ -82,5 +82,16 @@ GM.Credits = {
 		SteamID = "STEAM_0:0:35752130", 
 		Website = "", 
 		Description = "Spanish translation"
+	},
+	{
+		Name = "zamboni", 
+		SteamID = "STEAM_0:1:48113854", 
+		Website = "", 
+		Description = "HL2 Quick Info code"
 	}
 }
+
+GM.ContributorList = {}
+for _, credit in ipairs(GM.Credits) do
+	GM.ContributorList[credit.SteamID] = credit.Name
+end

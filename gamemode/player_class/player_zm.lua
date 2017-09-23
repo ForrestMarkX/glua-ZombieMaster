@@ -247,6 +247,12 @@ end
 function PLAYER:BindPress(bind, pressed)
 end
 
+function PLAYER:ButtonDown(button)
+end
+
+function PLAYER:ButtonUp(button)
+end
+
 function PLAYER:ShouldTakeDamage(attacker)
 	return false
 end
