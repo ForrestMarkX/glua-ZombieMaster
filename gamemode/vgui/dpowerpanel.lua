@@ -62,33 +62,23 @@ function PANEL:Init()
 			end
 			
 			button.OnCursorEntered = function(self)
-				self.toolpan = vgui.Create("DPanel")
-				self.toolpan:SetSize(ScrW() * 0.1, ScrH() * 0.03)
-				self.toolpan:InvalidateLayout(true)
-				self.toolpan:Center()
-				self.toolpan:AlignBottom(10)
+				GAMEMODE.DrawingPowerTooltip = true
+				GAMEMODE.ToolPan_Center_Tip:SetVisible(true)
+
+				GAMEMODE.ToolLab_Center_Tip:SetText(v.tooltip)
+				GAMEMODE.ToolLab_Center_Tip:SizeToContents()
 				
-				self.toollab = vgui.Create("DLabel", self.toolpan)
-				self.toollab:SetTextColor(color_white)
-				self.toollab:SetText(v.tooltip)
-				self.toollab:SetFont("OptionsHelpBig")
-				self.toollab:SizeToContents()
-				
-				self.toolpan:InvalidateLayout(true)
-				self.toolpan:SizeToChildren(true, false)
-				self.toolpan:SetSize(self.toolpan:GetWide() + 15, self.toolpan:GetTall())
-				self.toollab:Center()
-				self.toolpan:Center()
-				self.toolpan:AlignBottom(10)
-				
-				GAMEMODE.ToolPan_Center_Tip = self.toolpan
+				GAMEMODE.ToolPan_Center_Tip:InvalidateLayout(true)
+				GAMEMODE.ToolPan_Center_Tip:SizeToChildren(true, false)
+				GAMEMODE.ToolPan_Center_Tip:SetSize(GAMEMODE.ToolPan_Center_Tip:GetWide() + 15, GAMEMODE.ToolPan_Center_Tip:GetTall())
+				GAMEMODE.ToolLab_Center_Tip:Center()
+				GAMEMODE.ToolPan_Center_Tip:Center()
+				GAMEMODE.ToolPan_Center_Tip:AlignBottom(10)
 			end
 			
 			button.OnCursorExited = function(self)
-				if self.toolpan then
-					self.toolpan:Remove()
-					GAMEMODE.ToolPan_Center_Tip = nil
-				end
+				GAMEMODE.DrawingPowerTooltip = false
+				GAMEMODE.ToolPan_Center_Tip:SetVisible(false)
 			end
 			
 			self.list:Add(button)

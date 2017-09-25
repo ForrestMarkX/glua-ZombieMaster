@@ -31,13 +31,7 @@ function PLAYER:Spawn()
 	end
 	
 	self.Player:SendLua([[
-		if IsValid(GAMEMODE.powerMenu) then
-			GAMEMODE.powerMenu:Remove()
-		end
-		
-		if IsValid(GAMEMODE.trapMenu) then
-			GAMEMODE.trapMenu:Remove()
-		end
+		gamemode.Call("RemoveZMPanels")
 		
 		local ply = LocalPlayer()
 		if not IsValid(ply.QuickInfo) then

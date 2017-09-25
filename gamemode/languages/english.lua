@@ -63,6 +63,13 @@ LANGUAGE.tooltip_select_squad               = "Select squad: Select the chosen s
 LANGUAGE.tooltip_ambush             		= "Ambush: Set up an ambush using selected units. The units will stay put until a human comes near the ambush trigger."
 LANGUAGE.tooltip_ceiling             		= "Ceiling ambush: Order applicable and selected zombies to cling to the ceiling and hide until humans pass underneath."
 
+LANGUAGE.targetid_tooltip_human             = "%s: A human who as of yet has survived. The insolent fool."
+LANGUAGE.targetid_tooltip_shambler			= "%s: slow zombie that dies (again) quickly, but packs a mean swipe. The only anti-barricade unit."
+LANGUAGE.targetid_tooltip_banshee			= "%s: quick, agile and fragile."
+LANGUAGE.targetid_tooltip_hulk          	= "%s: very tough and deadly, but not fast or cheap."
+LANGUAGE.targetid_tooltip_drifter          	= "%s: spits acidic blood to disorient players from a short distance."
+LANGUAGE.targetid_tooltip_immolator         = "%s: a fiery package."
+
 LANGUAGE.npc_class_shambler                 = "Shambler"
 LANGUAGE.npc_class_banshee                  = "Banshee"
 LANGUAGE.npc_class_hulk                     = "Hulk"

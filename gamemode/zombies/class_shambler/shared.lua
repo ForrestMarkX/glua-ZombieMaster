@@ -1,5 +1,3 @@
-DEFINE_BASECLASS("class_default")
-
 NPC.Class = "npc_zombie"
 NPC.Name = translate.Get("npc_class_shambler")
 NPC.Description = translate.Get("npc_description_shambler")
@@ -22,18 +20,3 @@ NPC.Model = {
 	"models/zombie/zm_classic_08.mdl",
 	"models/zombie/zm_classic_09.mdl"
 }
-
-function NPC:OnTakeDamage(npc, attacker, inflictor, dmginfo)
-	if dmginfo:IsExplosionDamage() then
-		dmginfo:SetDamageType(DMG_DIRECT)
-	end
-		
-	return BaseClass.OnTakeDamage(self, npc, attacker, inflictor, dmginfo)
-end
-
-function NPC:OnDamagedEnt(npc, ent, dmginfo)
-	local damage = dmginfo:GetDamage()
-	if damage == cvars.Number("sk_zombie_dmg_one_slash", 0) or damage == cvars.Number("sk_zombie_dmg_both_slash", 0) then
-		dmginfo:SetDamage(GetConVar("zm_zombie_dmg_one_slash"):GetInt())
-	end
-end

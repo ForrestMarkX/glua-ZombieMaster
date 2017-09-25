@@ -34,15 +34,26 @@ function GM:DrawZMTargetID()
 		endpos = LocalPlayer():GetShootPos() + (mousepos * 56756)
 	})
 	
-	if not tr.Hit or not tr.HitNonWorld then return end
+	if not tr.Hit or not tr.HitNonWorld then 
+		if not self.DrawingPowerTooltip and IsValid(self.ToolPan_Center_Tip) then self.ToolPan_Center_Tip:SetVisible(false) end
+		return 
+	end
 	
 	local ent = tr.Entity
 	if not IsValid(ent) then return end
 	
-	local ts = ent:GetPos():ToScreen()
-	local x, y = ts.x, math.Clamp(ts.y, 0, ScrH() * 0.95)
+	if not (ent:IsPlayer() or ent:IsNPC()) then
+		if not self.DrawingPowerTooltip then
+			if IsValid(self.ToolPan_Center_Tip) then self.ToolPan_Center_Tip:SetVisible(false) end
+		end
+		
+		return
+	end
+	
+	self.ToolPan_Center_Tip:SetVisible(true)
 	if ent:IsPlayer() then
-		draw.SimpleTextBlurry(ent:Name(), "zm_hud_font_big", x, y, Color(255, 64, 64, 255), TEXT_ALIGN_CENTER)
+		self.ToolLab_Center_Tip:SetText(translate.Format("targetid_tooltip_human", ent:Name()))
+		self.ToolLab_Center_Tip:SizeToContents()
 	elseif ent:IsNPC() then
 		local name = "ERROR"
 		local datatable = self:GetZombieTable()
@@ -53,8 +64,16 @@ function GM:DrawZMTargetID()
 			end
 		end
 		
-		draw.SimpleTextBlurry(name, "zm_hud_font_big", x, y, Color(153, 255, 153, 255), TEXT_ALIGN_CENTER)
+		self.ToolLab_Center_Tip:SetText(translate.Format("targetid_tooltip_"..string.lower(name), name))
+		self.ToolLab_Center_Tip:SizeToContents()
 	end
+	
+	self.ToolPan_Center_Tip:InvalidateLayout(true)
+	self.ToolPan_Center_Tip:SizeToChildren(true, false)
+	self.ToolPan_Center_Tip:SetSize(self.ToolPan_Center_Tip:GetWide() + 15, self.ToolPan_Center_Tip:GetTall())
+	self.ToolLab_Center_Tip:Center()
+	self.ToolPan_Center_Tip:Center()
+	self.ToolPan_Center_Tip:AlignBottom(10)
 end
 
 function GM:DrawSpectatorTargetID()

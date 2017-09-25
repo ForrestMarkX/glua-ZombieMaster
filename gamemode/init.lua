@@ -1,6 +1,7 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 
+AddCSLuaFile("cl_credits.lua")
 AddCSLuaFile("cl_killicons.lua")
 AddCSLuaFile("cl_utility.lua")
 AddCSLuaFile("cl_scoreboard.lua")
@@ -9,7 +10,6 @@ AddCSLuaFile("cl_dermaskin.lua")
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_zombie.lua")
 
-AddCSLuaFile("sh_credits.lua")
 AddCSLuaFile("sh_weapons.lua")
 AddCSLuaFile("sh_players.lua")
 AddCSLuaFile("sh_entites.lua")
@@ -294,6 +294,7 @@ function GM:OnEntityCreated(ent)
 			end
 			
 			ent:SetShouldServerRagdoll(false)
+			ent:CapabilitiesAdd(CAP_SKIP_NAV_GROUND_CHECK)
 		end)
 		
 		for index, npc in pairs(self.iZombieList) do
@@ -421,17 +422,7 @@ function GM:PlayerSpawnAsSpectator(pl)
 	pl:StripWeapons()
 	pl:SetTeam(TEAM_SPECTATOR)
 	pl:Spectate(OBS_MODE_ROAMING)
-	
-	pl:SendLua([[
-		if IsValid(GAMEMODE.powerMenu) then
-			GAMEMODE.powerMenu:Remove()
-		end
-		
-		if IsValid(GAMEMODE.trapMenu) then
-			GAMEMODE.trapMenu:Remove()
-		end		
-	]])
-	
+	pl:SendLua("gamemode.Call('RemoveZMPanels')")
 	pl:SetClass("player_spectator")
 end
 

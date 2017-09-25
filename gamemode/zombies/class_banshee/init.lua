@@ -1,44 +1,17 @@
-DEFINE_BASECLASS("class_default")
-
-NPC.Class = "npc_fastzombie"
-NPC.Name = translate.Get("npc_class_banshee")
-NPC.Description = translate.Get("npc_description_banshee")
-NPC.Icon = "VGUI/zombies/info_banshee"
-NPC.Flag = FL_SPAWN_BANSHEE_ALLOWED
-NPC.Cost = GetConVar("zm_cost_banshee"):GetInt()
-NPC.PopCost = GetConVar("zm_popcost_banshee"):GetInt()
-NPC.Health = GetConVar("zm_fastzombie_health"):GetInt()
-NPC.IsEngineNPC = true
-
-NPC.Model = "models/zombie/zm_fast.mdl"
-NPC.DelaySetModel = true
 NPC.CanClingToCeiling = true
 NPC.HullSizeMins = Vector(13, 13, 50)
 NPC.HullSizeMaxs = Vector(-13, -13, 0)
 
 function NPC:OnSpawned(npc)
-	BaseClass.OnSpawned(self, npc)
+	self.BaseClass.OnSpawned(self, npc)
 	
 	npc.NextLeap = CurTime()
 	npc:SetNW2Bool("bClingingCeiling", false)
 end
 
 function NPC:OnKilled(npc, attacker, inflictor)
-	BaseClass.OnKilled(self, npc, attacker, inflictor)
+	self.BaseClass.OnKilled(self, npc, attacker, inflictor)
 	npc:SetNW2Bool("bClingingCeiling", false)
-end
-
-function NPC:Think(npc)
-	local enemy = npc:GetEnemy()
-	if IsValid(enemy) then
-		local distance = npc:GetPos():Distance(enemy:GetPos())
-		if distance < 360 and distance > 32 then
-			if npc:HasCondition(COND_SEE_ENEMY) and not npc:HasCondition(COND_FLOATING_OFF_GROUND) and npc.NextLeap < CurTime() then	
-				npc.NextLeap = CurTime() + 4
-				npc:SetSchedule(SCHED_RANGE_ATTACK1)
-			end
-		end
-	end
 end
 
 function NPC:IsCeilingFlat(npc, plane_normal)
@@ -122,7 +95,18 @@ function NPC:DetachFromCeiling(npc)
 end
 
 function NPC:Think(npc)
-	BaseClass.Think(self, npc)
+	self.BaseClass.Think(self, npc)
+	
+	local enemy = npc:GetEnemy()
+	if IsValid(enemy) then
+		local distance = npc:GetPos():Distance(enemy:GetPos())
+		if distance < 360 and distance > 32 then
+			if npc:HasCondition(COND_SEE_ENEMY) and not npc:HasCondition(COND_FLOATING_OFF_GROUND) and npc.NextLeap < CurTime() then	
+				npc.NextLeap = CurTime() + 4
+				npc:SetSchedule(SCHED_RANGE_ATTACK1)
+			end
+		end
+	end
 	
 	if npc.m_bClinging and npc.m_flLastClingCheck and npc.m_flLastClingCheck < CurTime() then
 		local nearest = self:GetClingAmbushTarget(npc)

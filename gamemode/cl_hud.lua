@@ -605,7 +605,6 @@ function GM:SpawnTrapMenu(class, ent)
 			trapEntity = nil
 		end
 		
-		local description = ent:GetDescription()
 		local trapPanel = vgui.Create("DFrame")
 		trapPanel:SetWide(326.4)
 		trapPanel:SetTall(345)

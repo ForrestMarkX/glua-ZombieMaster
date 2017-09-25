@@ -1,28 +1,10 @@
-NPC.Class = ""
-NPC.Name = ""
-NPC.Description = ""
-NPC.Icon = ""
-NPC.Flag = 0
-NPC.Cost = 0
-NPC.PopCost = 0
-NPC.SortIndex = 0
-
-NPC.Hidden = true
-NPC.DelaySetModel = false
-
-NPC.Health = 0
-NPC.Model = "models/zombie/zm_classic.mdl"
 NPC.HullType = HULL_HUMAN
 NPC.SolidType = SOLID_BBOX
 NPC.MoveType = MOVETYPE_STEP
-NPC.SkinNum = 3
 NPC.BloodColor = BLOOD_COLOR_RED
 
-if SERVER then
-	NPC.ClearCapabilities = false
-	NPC.SpawnFlags = bit.bor(SF_NPC_LONG_RANGE, SF_NPC_FADE_CORPSE, SF_NPC_ALWAYSTHINK, SF_NPC_NO_PLAYER_PUSHAWAY, SF_ZOMBIE_WANDER_ON_IDLE)
-	NPC.Capabilities = bit.bor(CAP_SKIP_NAV_GROUND_CHECK, CAP_FRIENDLY_DMG_IMMUNE)
-end
+NPC.SpawnFlags = bit.bor(SF_NPC_ALWAYSTHINK, SF_NPC_LONG_RANGE)
+NPC.Capabilities = CAP_FRIENDLY_DMG_IMMUNE
 
 function NPC:OnSpawned(npc)
 	npc:SetBloodColor(self.BloodColor)
@@ -62,31 +44,6 @@ function NPC:OnSpawned(npc)
 	end
 
 	npc:UpdateEnemy(npc:FindEnemy())
-end
-
-function NPC:SetupModel(npc)
-	if not self.Model then return end
-	
-	local mdl = ""
-	if type(self.Model) == "table" then
-		local rand = math.Round(util.SharedRandom(npc:EntIndex().."_RandModel", 1, #self.Model))
-		mdl = self.Model[rand]
-	else
-		mdl = self.Model
-	end
-	
-	if (self.SkinNum or 0) > 0 then
-		local rand = math.Round(util.SharedRandom(npc:EntIndex().."_RandSkin", 0, self.SkinNum))
-		npc:SetSkin(rand)
-	end
-	
-	if self.DelaySetModel then
-		npc:SetModelDelayed(0, mdl)
-	else
-		npc:SetModel(mdl)
-	end
-	
-	npc.CurrentModel = mdl
 end
 
 function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
@@ -222,32 +179,5 @@ function NPC:Think(npc)
 		end
 		
 		npc.NextDefenceCheck = CurTime() + 1.0
-	end
-end
-
-local circleMaterial 	   = Material("SGM/playercircle")
-local healthcircleMaterial = Material("effects/zm_healthring")
-local healthcolmax 		   = Color(20, 255, 20)
-local healthcolmin 		   = Color(255, 0, 0)
-function NPC:PostDraw(npc)
-	if LocalPlayer():IsZM() and npc:Health() > 0 then
-		local Health, MaxHealth = npc:Health(), npc:GetMaxHealth()
-		local pos = npc:GetPos() + Vector(0, 0, 2)
-		local colour = Color(0, 0, 0, 125)
-		local healthfrac = math.max(Health, 0) / MaxHealth
-		
-		colour.r = Lerp(healthfrac, healthcolmin.r, healthcolmax.r)
-		colour.g = Lerp(healthfrac, healthcolmin.g, healthcolmax.g)
-		colour.b = Lerp(healthfrac, healthcolmin.b, healthcolmax.b)
-		
-		render.SetMaterial(healthcircleMaterial)
-		render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
-		render.DrawQuadEasy(pos, -Vector(0, 0, 1), 40, 40, colour)
-		
-		if npc.bIsSelected then
-			render.SetMaterial(circleMaterial)
-			render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
-			render.DrawQuadEasy(pos, -Vector(0, 0, 1), 40, 40, colour)
-		end
 	end
 end

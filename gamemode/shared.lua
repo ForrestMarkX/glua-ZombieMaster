@@ -4,7 +4,6 @@ GM.Email = "forrestmarkx@outlook.com"
 GM.Website = "http://steamcommunity.com/id/ForrestMarkX/"
 GM.TeamBased = true
 
-include("sh_credits.lua")
 include("sh_translate.lua")
 include("sh_sounds.lua")
 include("sh_zm_globals.lua")

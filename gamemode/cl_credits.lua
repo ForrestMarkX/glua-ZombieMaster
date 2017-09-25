@@ -93,5 +93,17 @@ GM.Credits = {
 
 GM.ContributorList = {}
 for _, credit in ipairs(GM.Credits) do
-	GM.ContributorList[credit.SteamID] = credit.Name
+	steamworks.RequestPlayerInfo(util.SteamIDTo64(credit.SteamID))
 end
+
+timer.Simple(1, function()
+	for _, credit in ipairs(GAMEMODE.Credits) do
+		local steamname = steamworks.GetPlayerName(util.SteamIDTo64(credit.SteamID))
+		if steamname and steamname ~= "" then
+			GAMEMODE.ContributorList[credit.SteamID] = steamname
+			credit.Name = steamname
+		else
+			GAMEMODE.ContributorList[credit.SteamID] = credit.Name
+		end
+	end
+end)

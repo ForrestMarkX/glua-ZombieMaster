@@ -1,4 +1,5 @@
 include("shared.lua")
+include("cl_credits.lua")
 include("cl_utility.lua")
 include("cl_killicons.lua")
 include("cl_scoreboard.lua")
@@ -489,6 +490,18 @@ function GM:CreateVGUI()
 	gui.EnableScreenClicker(true)
 	self.powerMenu = vgui.Create("zm_powerpanel")
 	
+	self.ToolPan_Center_Tip = vgui.Create("DPanel")
+	self.ToolPan_Center_Tip:SetVisible(false)
+	self.ToolPan_Center_Tip:SetSize(ScrW() * 0.1, ScrH() * 0.03)
+	self.ToolPan_Center_Tip:InvalidateLayout(true)
+	self.ToolPan_Center_Tip:Center()
+	self.ToolPan_Center_Tip:AlignBottom(10)
+	self.ToolPan_Center_Tip:ParentToHUD()
+	
+	self.ToolLab_Center_Tip = vgui.Create("DLabel", self.ToolPan_Center_Tip)
+	self.ToolLab_Center_Tip:SetTextColor(color_white)
+	self.ToolLab_Center_Tip:SetFont("OptionsHelpBig")
+				
 	timer.Simple(0.25, function()
 		if not IsValid(self.powerMenu) then
 			self.powerMenu = vgui.Create("zm_powerpanel")
@@ -602,17 +615,7 @@ function GM:RenderScreenspaceEffects()
 end
 
 function GM:RestartRound()
-	if IsValid(self.trapPanel) then
-		trapPanel:Remove()
-	end
-	
-	if IsValid(self.powerMenu) then
-		self.powerMenu:Remove()
-		
-		if IsValid(self.ToolPan_Center_Tip) then
-			self.ToolPan_Center_Tip:Remove()
-		end
-	end
+	gamemode.Call("RemoveZMPanels")
 	
 	table.Empty(self.iZombieList)
 	
@@ -636,6 +639,24 @@ function GM:RestartRound()
 	isDragging = false
 	
 	gui.EnableScreenClicker(false)
+end
+
+function GM:RemoveZMPanels()
+	if IsValid(self.trapPanel) then
+		trapPanel:Remove()
+	end
+	
+	if IsValid(self.powerMenu) then
+		self.powerMenu:Remove()
+	end
+	
+	if IsValid(self.ToolPan_Center) then
+		self.ToolPan_Center_Tip:Remove()
+	end
+	
+	if IsValid(self.ToolLab_Center_Tip) then
+		self.ToolLab_Center_Tip:Remove()
+	end
 end
 
 function GM:OnScreenSizeChange(new_w, new_h)
