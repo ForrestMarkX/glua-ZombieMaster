@@ -93,7 +93,6 @@ function PLAYER:OnTakeDamage(attacker, dmginfo)
 end
 
 function PLAYER:PreDeath(inflictor, attacker)
-	-- Don't spawn for at least 2 seconds
 	self.Player.NextSpawnTime = CurTime() + 2
 	self.Player.DeathTime = CurTime()
 	
@@ -106,13 +105,10 @@ function PLAYER:PreDeath(inflictor, attacker)
 	if not IsValid(inflictor) and IsValid(attacker) then
 		inflictor = attacker
 	end
-
-	-- Convert the inflictor to the weapon that they're holding if we can.
-	-- This can be right or wrong with NPCs since combine can be holding a
-	-- pistol but kill you by hitting you with their arm.
-	if IsValid( inflictor ) and inflictor == attacker and (inflictor:IsPlayer() or inflictor:IsNPC()) then
+	
+	if IsValid(inflictor) and inflictor == attacker and (inflictor:IsPlayer() or inflictor:IsNPC()) then
 		inflictor = inflictor:GetActiveWeapon()
-		if ( !IsValid( inflictor ) ) then inflictor = attacker end
+		if not IsValid(inflictor) then inflictor = attacker end
 	end
 
 	if attacker == self.Player then
