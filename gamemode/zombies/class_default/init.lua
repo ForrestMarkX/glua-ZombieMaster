@@ -62,7 +62,7 @@ function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
 			else
 				dmginfo:ScaleDamage(2)
 			end
-		elseif hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG then
+		elseif hitgroup == HITGROUP_LEFTARM or hitgroup == HITGROUP_RIGHTARM or hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG or hitgroup == HITGROUP_GEAR then
 			dmginfo:ScaleDamage(0.25)
 		end
 	end
