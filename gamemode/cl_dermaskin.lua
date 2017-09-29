@@ -116,6 +116,10 @@ function SKIN:PaintButton(panel, w, h)
 	draw.RoundedBox(2, 2, 2, w - 4, h - 4, col2)
 end
 
+function SKIN:PaintComboBox(panel, w, h)
+	self:PaintButton(panel, w, h)
+end
+
 local color_tab_active = Color(95, 0, 0, 220)
 local color_tab_border = Color(145, 0, 0)
 function SKIN:PaintPropertySheet(panel, w, h)

@@ -8,6 +8,8 @@ CreateClientConVar("zm_dropammokey", "32", true, false, "Key enum to use for dro
 CreateClientConVar("zm_shouldragdollsfade", "1", true, false, "Should ragdolls spawned by zombies fade out?")
 CreateClientConVar("zm_cl_ragdoll_fadetime", "30", true, false, "How much time in seconds before the ragdolls fadeout.")
 
+CreateClientConVar("zm_healthcircle_brightness", "0.5", true, false, "Healthcircle brightness between 1.0 and 0.0, where 1.0 is brightest and 0.0 is off. Clientside.")
+
 local function ZM_Open_Preferred_Menu(ply)
 	if not IsValid(ply) then return end
 	GAMEMODE:MakePreferredMenu()

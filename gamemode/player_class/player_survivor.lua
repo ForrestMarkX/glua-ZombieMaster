@@ -323,6 +323,8 @@ function PLAYER:ShouldTakeDamage(attacker)
 		local entteam = attacker.OwnerTeam
 		if attacker:GetClass() == "env_fire" and entteam == self.Player:Team() and attacker:GetOwner() ~= self.Player then
 			return false
+		elseif attacker:GetClass() == "env_delayed_physexplosion" then
+			return false
 		end
 	end
 

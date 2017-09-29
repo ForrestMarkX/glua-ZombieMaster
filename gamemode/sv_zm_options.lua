@@ -445,6 +445,8 @@ net.Receive("zm_creategroup", function(len, ply)
 			end
 		end
 		
+		if #groupadd <= 0 then return end
+		
 		GAMEMODE.selectedgroup = currentmaxgroup
 		
 		ply:PrintTranslatedMessage(HUD_PRINTTALK, "group_created")
@@ -485,6 +487,8 @@ net.Receive("zm_selectgroup", function(len, ply)
 				npc:SetNW2Bool("selected", true)
 			end
 		end
+		
+		if #selection <= 0 then return end
 		
 		ply:PrintTranslatedMessage(HUD_PRINTTALK, "group_selected")
 	end

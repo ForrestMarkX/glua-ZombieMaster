@@ -36,51 +36,30 @@ function PLAYER:CreateMove(cmd)
 		
 		local menuopen = hook.Call("IsMenuOpen", GAMEMODE)
 		if not menuopen then
-			local x, y = gui.MousePos()
-			if x ~= 0 or y ~= 0 then
-				if x < 3 then
-					mouseonedge = true
-					mouseonedgex = true
-					mouseonedgey = false
-				elseif x > ScrW() - 3 then
-					mouseonedge = true
-					mouseonedgex = true
-					mouseonedgey = false
-				elseif y < 3 then
-					mouseonedge = true
-					mouseonedgex = false
-					mouseonedgey = true
-				elseif y > ScrH() - 3 then
-					mouseonedge = true
-					mouseonedgex = false
-					mouseonedgey = true
-				elseif mouseonedge then
-					mouseonedge = false
-					mouseonedgex = false
-					mouseonedgey = false
-				end
-				
-				if mouseonedge then
-					local mouse_vect = gui.ScreenToVector(x, y)
-					
-					if not keepoldz then
-						old_mouse_vect = mouse_vect
-					end
-					
-					if mouseonedgex then
-						mouse_vect.z = old_mouse_vect.z
-						keepoldz = true
-					elseif mouseonedgey then
-						mouse_vect.x = 0
-						keepoldz = false
-					end
-					
-					local oldang = cmd:GetViewAngles()
-					local newang = (mouse_vect - EyePos()):Angle()
-					oldang.pitch = math.ApproachAngle(oldang.pitch, newang.pitch, FrameTime() * math.max(45, math.abs(math.AngleDifference(oldang.pitch, newang.pitch)) ^ 1.05))
-					oldang.yaw = math.ApproachAngle(oldang.yaw, newang.yaw, FrameTime() * math.max(45, math.abs(math.AngleDifference(oldang.yaw, newang.yaw)) ^ 1.05))
-					cmd:SetViewAngles(oldang)
-				end
+			local mousex, mousey = gui.MousePos()
+			if mousex <= SCROLL_THRESHOLD then
+				RunConsoleCommand("+left")
+				RunConsoleCommand("-right")
+			elseif mousex >= (ScrW() - SCROLL_THRESHOLD) then
+				RunConsoleCommand("+right")
+				RunConsoleCommand("-left")
+			else
+				RunConsoleCommand("-right")
+				RunConsoleCommand("-left")
+			end
+			
+			local viewangle = cmd:GetViewAngles()
+			local bSetViewAng = false
+			if mousey <= SCROLL_THRESHOLD then
+				viewangle.p = viewangle.p - (RealFrameTime() * cvars.Number("cl_pitchspeed", 0)) * 0.5
+				bSetViewAng = true
+			elseif mousey >= (ScrH() - SCROLL_THRESHOLD) then
+				viewangle.p = viewangle.p + (RealFrameTime() * cvars.Number("cl_pitchspeed", 0)) * 0.5
+				bSetViewAng = true
+			end
+			
+			if bSetViewAng then
+				cmd:SetViewAngles(viewangle)
 			end
 		end
 	end

@@ -31,15 +31,18 @@ function meta:ForceSwat(pTarget, breakable)
 		self:SetEnemy(pTarget)
 		self:SetTarget(pTarget)
 		self:SetSchedule(SCHED_TARGET_FACE)
-		self:SetSchedule(SCHED_MELEE_ATTACK1)
 		
-		if not self.IsEngineNPC then
-			self.IsAttacking = true
-			timer.Simple(1, function()
-				if not IsValid(self) then return end
-				pTarget:TakeDamage(self.AttackDamage, self, self)
-			end)
-		end
+		timer.Simple(0.25, function()
+			self:SetSchedule(SCHED_MELEE_ATTACK1)
+			
+			if not self.IsEngineNPC then
+				self.IsAttacking = true
+				timer.Simple(1, function()
+					if not IsValid(self) then return end
+					pTarget:TakeDamage(self.AttackDamage, self, self)
+				end)
+			end
+		end)
 	else
 		self:ForceGo(pTarget:GetPos())
 	end

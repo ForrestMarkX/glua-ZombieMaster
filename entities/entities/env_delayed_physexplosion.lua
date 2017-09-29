@@ -1,6 +1,6 @@
 AddCSLuaFile()
 
-ENT.Type = "anim"
+ENT.Type = "point"
 
 util.PrecacheSound("ZMPower.PhysExplode_Buildup")
 util.PrecacheSound("ZMPower.PhysExplode_Boom")
@@ -16,6 +16,8 @@ function ENT:DelayedExplode(delay)
 end
 
 function ENT:Think()
+	if self.bPendingDelete then return end
+	
 	if self.delayset then
 		self:EmitSound("ZMPower.PhysExplode_Boom")
 
@@ -31,6 +33,10 @@ function ENT:Think()
 		//actual physics explosion
 		local entity = ents.Create( "env_physexplosion" )
 		if IsValid( entity ) then
+			for _, ent in pairs(ents.FindInSphere(self:LocalToWorld(self:OBBCenter()), ZM_PHYSEXP_RADIUS)) do
+				ent:SetPhysicsAttacker(self)
+			end
+			
 			entity:SetPos( self:GetPos() )
 			entity:SetKeyValue( "magnitude", ZM_PHYSEXP_DAMAGE )
 			entity:SetKeyValue( "radius", ZM_PHYSEXP_RADIUS )
@@ -52,15 +58,24 @@ function ENT:Think()
 		effectdata:SetMagnitude(15)
 		effectdata:SetScale(3)
 		util.Effect("Sparks",effectdata)
+		
+		self.sparks:Remove()
+		self.bPendingDelete = true
+		
+		self:AddEFlags(EFL_DORMANT)
 
 		//TGB: clean ourselves up, else we stay around til round end
-		self:Remove()
-		self.sparks:Remove()
+		timer.Simple(10, function()
+			self:Remove()
+		end)
+		
 		return true
 	end
 end
 
 function ENT:CreateDelayEffects(delay)
+	if self.bPendingDelete then return end
+	
 	self:EmitSound("ZMPower.PhysExplode_Buildup")
 
 	//TGB: we want a particle effect instead

@@ -152,17 +152,20 @@ function NPC:Think(npc)
 					npc:SetEnemy(npc.BreakableEnt)
 					npc:SetTarget(npc.BreakableEnt)
 					npc:SetSchedule(SCHED_TARGET_FACE)
-					npc:SetSchedule(SCHED_MELEE_ATTACK1)
 					
-					if not npc.IsEngineNPC then
-						npc.IsAttacking = true
+					timer.Simple(0.25, function()
+						npc:SetSchedule(SCHED_MELEE_ATTACK1)
 						
-						local len = npc:SequenceDuration()
-						timer.Simple(len, function()
-							if not IsValid(npc) or not IsValid(npc.BreakableEnt) then return end
-							npc.BreakableEnt:TakeDamage(npc.AttackDamage, npc, npc)
-						end)
-					end
+						if not npc.IsEngineNPC then
+							npc.IsAttacking = true
+							
+							local len = npc:SequenceDuration()
+							timer.Simple(len, function()
+								if not IsValid(npc) or not IsValid(npc.BreakableEnt) then return end
+								npc.BreakableEnt:TakeDamage(npc.AttackDamage, npc, npc)
+							end)
+						end
+					end)
 				end
 			end
 		end
@@ -171,11 +174,11 @@ function NPC:Think(npc)
 	end
 	
 	if npc.InDefenceMode and npc.NextDefenceCheck and CurTime() >= npc.NextDefenceCheck then
-		if npc:GetPos():Distance(npc.AmbushPoint or npc:GetPos()) > 512 then
+		if npc:GetPos():Distance(npc.DefencePoint or npc:GetPos()) > 512 then
 			npc:SetEnemy(NULL)
 			npc:SetSchedule(SCHED_AMBUSH)
 			npc:SetCondition(COND_ENEMY_UNREACHABLE)
-			npc:ForceGo(npc.AmbushPoint or npc:GetPos())
+			npc:ForceGo(npc.DefencePoint or npc:GetPos())
 		end
 		
 		npc.NextDefenceCheck = CurTime() + 1.0
