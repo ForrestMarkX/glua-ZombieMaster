@@ -37,24 +37,22 @@ function PLAYER:CreateMove(cmd)
 		local menuopen = hook.Call("IsMenuOpen", GAMEMODE)
 		if not menuopen then
 			local mousex, mousey = gui.MousePos()
-			if mousex <= SCROLL_THRESHOLD then
-				RunConsoleCommand("+left")
-				RunConsoleCommand("-right")
-			elseif mousex >= (ScrW() - SCROLL_THRESHOLD) then
-				RunConsoleCommand("+right")
-				RunConsoleCommand("-left")
-			else
-				RunConsoleCommand("-right")
-				RunConsoleCommand("-left")
-			end
-			
 			local viewangle = cmd:GetViewAngles()
 			local bSetViewAng = false
+			
+			if mousex <= SCROLL_THRESHOLD then
+				viewangle.y = viewangle.y + ((RealFrameTime() * cvars.Number("cl_pitchspeed", 0)) * 0.5)
+				bSetViewAng = true
+			elseif mousex >= (ScrW() - SCROLL_THRESHOLD) then
+				viewangle.y = viewangle.y - ((RealFrameTime() * cvars.Number("cl_pitchspeed", 0)) * 0.5)
+				bSetViewAng = true
+			end
+			
 			if mousey <= SCROLL_THRESHOLD then
-				viewangle.p = viewangle.p - (RealFrameTime() * cvars.Number("cl_pitchspeed", 0)) * 0.5
+				viewangle.p = viewangle.p - ((RealFrameTime() * cvars.Number("cl_pitchspeed", 0)) * 0.5)
 				bSetViewAng = true
 			elseif mousey >= (ScrH() - SCROLL_THRESHOLD) then
-				viewangle.p = viewangle.p + (RealFrameTime() * cvars.Number("cl_pitchspeed", 0)) * 0.5
+				viewangle.p = viewangle.p + ((RealFrameTime() * cvars.Number("cl_pitchspeed", 0)) * 0.5)
 				bSetViewAng = true
 			end
 			
