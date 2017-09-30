@@ -9,6 +9,7 @@ CreateClientConVar("zm_shouldragdollsfade", "1", true, false, "Should ragdolls s
 CreateClientConVar("zm_cl_ragdoll_fadetime", "30", true, false, "How much time in seconds before the ragdolls fadeout.")
 
 CreateClientConVar("zm_healthcircle_brightness", "0.5", true, false, "Healthcircle brightness between 1.0 and 0.0, where 1.0 is brightest and 0.0 is off. Clientside.")
+CreateClientConVar("zm_cl_scrollspeed", "40", true, true, "How fast the speed is for the Zombie Master when using scroll to move up and down.")
 
 local function ZM_Open_Preferred_Menu(ply)
 	if not IsValid(ply) then return end

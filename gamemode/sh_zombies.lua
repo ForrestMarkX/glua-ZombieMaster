@@ -59,7 +59,7 @@ end
 local function AddZombieTypes(filename, directory, bWasFolderType)
 	local fname = string.StripExtension(string.lower(filename))
 	if bWasFolderType and (fname == "init" or fname == "shared" or fname == "cl_init") then
-		if CLIENT and fname == "init" then return end
+		if CLIENT and fname == "init" then return
 		elseif SERVER and (fname == "shared" or fname == "cl_init") then AddCSLuaFile(directory) end
 		
 		include(directory)

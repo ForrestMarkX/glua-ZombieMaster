@@ -12,20 +12,18 @@ end
 
 function PLAYER:SetupMove(mv, cmd)
 	if cmd:GetMouseWheel() ~= 0 then
-		mv:SetOrigin(mv:GetOrigin() + Vector(0, 0, (cmd:GetMouseWheel() * 20)))
+		mv:SetOrigin(mv:GetOrigin() + Vector(0, 0, (cmd:GetMouseWheel() * self.Player:GetInfo("zm_cl_scrollspeed"))))
 	end
 	
 	if CLIENT then
-		if not hook.Call("IsMenuOpen", GAMEMODE) and (input.WasMousePressed(MOUSE_WHEEL_UP) or input.WasMousePressed(MOUSE_WHEEL_DOWN)) then
-			if vgui.CursorVisible() then
-				RememberCursorPosition()
-				
-				gui.EnableScreenClicker(false)
-				timer.Simple(0, function() 
-					gui.EnableScreenClicker(true) 
-					RestoreCursorPosition()
-				end)
-			end
+		if not hook.Call("IsMenuOpen", GAMEMODE) and (input.WasMousePressed(MOUSE_WHEEL_UP) or input.WasMousePressed(MOUSE_WHEEL_DOWN)) and vgui.CursorVisible() then
+			RememberCursorPosition()
+			gui.EnableScreenClicker(false)
+			
+			timer.Simple(0, function() 
+				gui.EnableScreenClicker(true) 
+				RestoreCursorPosition()
+			end)
 		end
 	end
 end
