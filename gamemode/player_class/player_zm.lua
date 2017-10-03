@@ -40,9 +40,30 @@ VoiceSetTranslate["models/player/monk.mdl"] = "monk"
 VoiceSetTranslate["models/player/mossman.mdl"] = "female"
 VoiceSetTranslate["models/player/odessa.mdl"] = "male"
 VoiceSetTranslate["models/player/police.mdl"] = "combine"
+
+local PlayerSkinReplacment = {}
+PlayerSkinReplacment["models/player/group01/male_01.mdl"] = "models/Humans/Male/Group02/MaleSurvivor1"
+PlayerSkinReplacment["models/player/group01/male_02.mdl"] = "models/Humans/Male/Group02/MaleSurvivor2"
+PlayerSkinReplacment["models/player/group01/male_03.mdl"] = "models/Humans/Male/Group02/MaleSurvivor3"
+PlayerSkinReplacment["models/player/group01/male_04.mdl"] = "models/Humans/Male/Group02/MaleSurvivor4"
+PlayerSkinReplacment["models/player/group01/male_05.mdl"] = "models/Humans/Male/Group02/MaleSurvivor5"
+PlayerSkinReplacment["models/player/group01/male_06.mdl"] = "models/Humans/Male/Group02/MaleSurvivor6"
+PlayerSkinReplacment["models/player/group01/male_07.mdl"] = "models/Humans/Male/Group02/MaleSurvivor7"
+PlayerSkinReplacment["models/player/group01/male_08.mdl"] = "models/Humans/Male/Group02/MaleSurvivor8"
+PlayerSkinReplacment["models/player/group01/male_09.mdl"] = "models/Humans/Male/Group02/MaleSurvivor9"
+PlayerSkinReplacment["models/player/group01/female_01.mdl"] = "models/Humans/Female/Group02/Fem_Survivor1"
+PlayerSkinReplacment["models/player/group01/female_02.mdl"] = "models/Humans/Female/Group02/Fem_Survivor2"
+PlayerSkinReplacment["models/player/group01/female_03.mdl"] = "models/Humans/Female/Group02/Fem_Survivor3"
+PlayerSkinReplacment["models/player/group01/female_04.mdl"] = "models/Humans/Female/Group02/Fem_Survivor4"
+PlayerSkinReplacment["models/player/group01/female_05.mdl"] = "models/Humans/Female/Group02/Fem_Survivor5"
+PlayerSkinReplacment["models/player/group01/female_06.mdl"] = "models/Humans/Female/Group02/Fem_Survivor6"
+function PLAYER:GetReplacmentSkin(model)
+	return PlayerSkinReplacment[model]
+end
+
 function PLAYER:SetModel()
 	local cl_playermodel = self.Player:GetInfo("cl_playermodel")
-	local modelname = player_manager.TranslatePlayerModel(cl_playermodel)
+	local modelname = string.lower(player_manager.TranslatePlayerModel(cl_playermodel))
 	if #cl_playermodel == 0 then
 		modelname = "models/player/kleiner.mdl"
 	end
@@ -58,6 +79,21 @@ function PLAYER:SetModel()
 	local groups = string.Explode(" ", groups)
 	for k = 0, self.Player:GetNumBodyGroups() - 1 do
 		self.Player:SetBodygroup(k, tonumber(groups[ k + 1 ]) or 0)
+	end
+	
+	if string.find(modelname, "male", 1, true) then
+		self.Player:SetSkin(skin)
+	end
+	
+	if PlayerSkinReplacment[modelname] then
+		for i, mat in pairs(self.Player:GetMaterials()) do
+			if string.find(mat, "players_sheet") then
+				self.Player:SetSubMaterial(i - 1, PlayerSkinReplacment[modelname])
+				self.Player:SetNW2Int("bSkinReplacmentIndex", i - 1)
+				self.Player:SetNW2String("bSkinReplacmentMat", PlayerSkinReplacment[modelname])
+				break
+			end
+		end
 	end
 	
 	if VoiceSetTranslate[modelname] then

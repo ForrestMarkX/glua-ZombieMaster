@@ -547,22 +547,26 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 		ragdoll:Remove()
 	end
 	
-	if IsValid(ent) and ent:IsNPC() then
-		if not GetConVar("zm_shouldragdollsfade"):GetBool() then return end
-		
-		local ragdollnum = #ents.FindByClass(ragdoll:GetClass())
-		if ragdollnum > GetConVar("zm_max_ragdolls"):GetInt() then
-			ragdoll:SetSaveValue("m_bFadingOut", true)
-		end
-		
-		local fadetime = GetConVar("zm_cl_ragdoll_fadetime"):GetInt()
-		timer.Simple(fadetime, function()
-			if not IsValid(ragdoll) then return end
-			ragdoll:SetSaveValue("m_bFadingOut", true)
-		end)
-		
-		if IsValid(ZombieModelOverrides[ent]) then
-			ZombieModelOverrides[ent]:Remove()
+	if IsValid(ent) then
+		if ent:IsNPC() then
+			if not GetConVar("zm_shouldragdollsfade"):GetBool() then return end
+			
+			local ragdollnum = #ents.FindByClass(ragdoll:GetClass())
+			if ragdollnum > GetConVar("zm_max_ragdolls"):GetInt() then
+				ragdoll:SetSaveValue("m_bFadingOut", true)
+			end
+			
+			local fadetime = GetConVar("zm_cl_ragdoll_fadetime"):GetInt()
+			timer.Simple(fadetime, function()
+				if not IsValid(ragdoll) then return end
+				ragdoll:SetSaveValue("m_bFadingOut", true)
+			end)
+			
+			if IsValid(ZombieModelOverrides[ent]) then
+				ZombieModelOverrides[ent]:Remove()
+			end
+		elseif ent:IsPlayer() then
+			ragdoll:SetSubMaterial(ent.bSkinReplacmentIndex, ent.bSkinReplacmentMat)
 		end
 	end
 end
