@@ -457,8 +457,10 @@ function GM:PlayerInitialSpawn(pl)
 		zm_start_round = true
 	end
 	
-	table.insert(self.UnReadyPlayers, pl)
-	
+	if not pl:IsBot() then
+		table.insert(self.UnReadyPlayers, pl)
+	end
+		
 	net.Start("zm_infostrings")
 		net.WriteString(self.MapInfo)
 		net.WriteString(self.HelpInfo)
@@ -699,7 +701,10 @@ end
 
 function GM:InitClient(pl)
 	if not pl:IsValid() then return end
-	table.RemoveByValue(self.UnReadyPlayers, pl)
+	
+	if not pl:IsBot() then
+		table.RemoveByValue(self.UnReadyPlayers, pl)
+	end
 	
 	if self.ReadyTimer == 0 and not zm_timer_started then
 		zm_timer_started = true
