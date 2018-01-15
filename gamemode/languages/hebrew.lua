@@ -85,3 +85,26 @@ LANGUAGE.button_credits                     = "זכויות"
 LANGUAGE.button_close                       = "סגור"
 LANGUAGE.button_okay                        = "בסדר"
 LANGUAGE.button_cancel                      = "בטל"
+LANGUAGE.button_preferred                   = "פתח תפריט מועדף"
+LANGUAGE.button_options                     = "אפשרויות"
+
+LANGUAGE.team_survivor_l 					= "ניצולים"
+LANGUAGE.team_zombiemaster_l 				= "מאסטר זומבי"
+LANGUAGE.team_spectators_l 					= "צופים"
+
+LANGUAGE.volunteer_settings 				= "הגדרות התנדבות"
+LANGUAGE.dont_show_vol_menu 				= "אל תציג תפריט מתנדבים"
+LANGUAGE.open_vol_menu 						= "פתח תפריט מתנדבים"
+
+LANGUAGE.keybind_settings 					= "מפתח נקשר"
+LANGUAGE.drop_wep_key 						= "שחרור כלי נשק"
+LANGUAGE.drop_ammo_key 						= "שחרור תחמושת מפתח"
+
+LANGUAGE.ragdoll_settings 					= "הגדרות Ragdoll"
+LANGUAGE.ragdoll_fadeout 					= "צריך ragdolls fadeout"
+LANGUAGE.ragdoll_fade_speed 				= "מהירות דהייה"
+LANGUAGE.ragdoll_fade_time 					= "זמן לפני fadeout"
+
+LANGUAGE.other_settings 					= "הגדרות אחרות"
+LANGUAGE.health_circle_brightness 			= "בהירות מעגל הבריאות"
+LANGUAGE.zm_scrollspeed 					= "Zombie Master Scroll Speed"

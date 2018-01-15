@@ -57,14 +57,14 @@ end
 
 function GM:CreateTeams()
 	TEAM_SURVIVOR = 1
-	team.SetUp(TEAM_SURVIVOR, "Survivors", Color(255, 64, 64, 255)) 
+	team.SetUp(TEAM_SURVIVOR, Either(CLIENT, translate.Get("team_survivor_l"), "Survivors"), Color(255, 64, 64, 255)) 
 	team.SetSpawnPoint(TEAM_SURVIVOR, "info_player_deathmatch")
 	
 	TEAM_ZOMBIEMASTER = 2
-	team.SetUp(TEAM_ZOMBIEMASTER, "Zombie Master", Color(153, 255, 153, 255))
+	team.SetUp(TEAM_ZOMBIEMASTER, Either(CLIENT, translate.Get("team_zombiemaster_l"), "Zombie Master"), Color(153, 255, 153, 255))
 	team.SetSpawnPoint(TEAM_ZOMBIEMASTER, "info_player_zombiemaster")
 	
-	team.SetUp(TEAM_SPECTATOR, "Spectators", Color(120, 120, 120, 255))
+	team.SetUp(TEAM_SPECTATOR, Either(CLIENT, translate.Get("team_spectators_l"), "Spectators"), Color(120, 120, 120, 255))
 	team.SetSpawnPoint(TEAM_SPECTATOR, {"info_player_deathmatch", "info_player_zombiemaster", "worldspawn"})
 end
 

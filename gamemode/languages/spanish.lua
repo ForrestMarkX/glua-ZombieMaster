@@ -102,3 +102,24 @@ LANGUAGE.button_okay                        = "De acuerdo"
 LANGUAGE.button_cancel                      = "Cancelar"
 LANGUAGE.button_preferred                   = "Abrir Menu Preferido"
 LANGUAGE.button_options                     = "Opciones"
+
+LANGUAGE.team_survivor_l 					= "Sobrevivientes"
+LANGUAGE.team_zombiemaster_l 				= "Maestro Zombi"
+LANGUAGE.team_spectators_l 					= "Espectadores"
+
+LANGUAGE.volunteer_settings 				= "Configuración voluntaria"
+LANGUAGE.dont_show_vol_menu 				= "No mostrar el menú de voluntarios"
+LANGUAGE.open_vol_menu 						= "Abrir menú voluntario"
+
+LANGUAGE.keybind_settings 					= "Enlaces clave"
+LANGUAGE.drop_wep_key 						= "Soltar clave de arma"
+LANGUAGE.drop_ammo_key 						= "Soltar clave de munición"
+
+LANGUAGE.ragdoll_settings 					= "Configuraciones de Ragdoll"
+LANGUAGE.ragdoll_fadeout 					= "Si los ragdolls se desvanecen"
+LANGUAGE.ragdoll_fade_speed 				= "Velocidad de fundido"
+LANGUAGE.ragdoll_fade_time 					= "Tiempo antes del fadeout"
+
+LANGUAGE.other_settings 					= "Otras configuraciones"
+LANGUAGE.health_circle_brightness 			= "Brillo del círculo de salud"
+LANGUAGE.zm_scrollspeed 					= "Velocidad de desplazamiento maestro Zombie"

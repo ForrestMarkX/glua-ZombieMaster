@@ -86,3 +86,26 @@ LANGUAGE.button_credits                     = "Krediter"
 LANGUAGE.button_close                       = "Stäng"
 LANGUAGE.button_okay                        = "Ok"
 LANGUAGE.button_cancel                      = "Avbryt"
+LANGUAGE.button_preferred                   = "Öppna önskad meny"
+LANGUAGE.button_options                     = "Alternativ"
+
+LANGUAGE.team_survivor_l 					= "Survivors"
+LANGUAGE.team_zombiemaster_l 				= "Zombie Master"
+LANGUAGE.team_spectators_l 					= "Åskådare"
+
+LANGUAGE.volunteer_settings 				= "Volontär inställningar"
+LANGUAGE.dont_show_vol_menu 				= "Visa inte volontärmenyn"
+LANGUAGE.open_vol_menu 						= "Öppna volontärmenyn"
+
+LANGUAGE.keybind_settings 					= "Key Binds"
+LANGUAGE.drop_wep_key 						= "Släpp vapennyckel"
+LANGUAGE.drop_ammo_key 						= "Drop Ammo Key"
+
+LANGUAGE.ragdoll_settings 					= "Ragdoll Settings"
+LANGUAGE.ragdoll_fadeout 					= "Ska ragdolls fadeout"
+LANGUAGE.ragdoll_fade_speed 				= "Fade Speed"
+LANGUAGE.ragdoll_fade_time					= "Tid före fadeout"
+
+LANGUAGE.other_settings 					= "Övriga inställningar"
+LANGUAGE.health_circle_brightness 			= "Helhetscirkelens ljusstyrka"
+LANGUAGE.zm_scrollspeed 					= "Zombie Master Scroll Speed"

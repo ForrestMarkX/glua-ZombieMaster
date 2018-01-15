@@ -134,28 +134,29 @@ function GM:PostGamemodeLoaded()
 end
 
 function GM:SetupFonts()
-	surface.CreateFont("zm_powerhud_smaller", {font = "Consolas", size = 15})
-	surface.CreateFont("zm_powerhud_small", {font = "Consolas", size = 18})
+	surface.CreateFont("zm_powerhud_smaller", {font = "Consolas", size = ScreenScale(5)})
+	surface.CreateFont("zm_powerhud_small", {font = "Consolas", size = ScreenScale(6)})
 	
-	surface.CreateFont("OptionsHelp", {font = "Consolas", size = 20, weight = 450})
-	surface.CreateFont("OptionsHelpBig", {font = "Consolas", size = 22, weight = 450})
+	surface.CreateFont("OptionsHelp", {font = "Verdana RU", size = ScreenScale(7), weight = 450})
+	surface.CreateFont("OptionsHelpBig", {font = "Verdana RU", size = ScreenScale(8), weight = 450})
 
-	surface.CreateFont("zm_hud_font_tiny", {font = "Consolas", size = ScreenScale(6)})
-	surface.CreateFont("zm_hud_font_smaller", {font = "Consolas", size = ScreenScale(5)})
-	surface.CreateFont("zm_hud_font_small", {font = "Consolas", size = ScreenScale(9)})
-	surface.CreateFont("zm_hud_font_normal", {font = "Consolas", size = ScreenScale(14)})
-	surface.CreateFont("zm_hud_font_big", {font = "Consolas", size = ScreenScale(24)})
+	surface.CreateFont("zm_hud_font_tiny", {font = "Verdana RU", size = ScreenScale(6), weight = 1000})
+	surface.CreateFont("zm_hud_font_smaller", {font = "Verdana RU", size = ScreenScale(5), weight = 1000})
+	surface.CreateFont("zm_hud_font_small", {font = "Verdana RU", size = ScreenScale(9), weight = 1000})
+	surface.CreateFont("zm_hud_font_normal", {font = "Verdana RU", size = ScreenScale(14), weight = 1000})
+	surface.CreateFont("zm_hud_font_big", {font = "Verdana RU", size = ScreenScale(24), weight = 1000})
 	
-	surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana", size = ScreenScale(11)})
-	surface.CreateFont("ZMScoreBoardTitleSub", {font = "Verdana", size = 16, weight = 1000})
-	surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana", size = 16})
-	surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = 20})
-	surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana", size = 24})
+	surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana RU", size = ScreenScale(11)})
+	surface.CreateFont("ZMScoreBoardTitleSub", {font = "Verdana RU", size = ScreenScale(5), weight = 1000})
+	surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana RU", size = ScreenScale(5)})
+	surface.CreateFont("ZMScoreBoardPlayerSmall", {font = "arial", size = ScreenScale(7)})
+	surface.CreateFont("ZMScoreBoardHeading", {font = "Verdana RU", size = ScreenScale(8)})
 
-	surface.CreateFont("ZMScoreBoardPlayerBold", {font = "Verdana", size = 16, weight = 1000, outline = true, antialias = false})
-	surface.CreateFont("ZMScoreBoardPlayerSmallBold", {font = "arial", size = 20, weight = 1000, outline = true, antialias = false})
+	surface.CreateFont("ZMScoreBoardPlayerBold", {font = "Verdana RU", size = ScreenScale(5), weight = 1000, outline = true, antialias = false})
+	surface.CreateFont("ZMScoreBoardPlayerSmallBold", {font = "arial", size = ScreenScale(7), weight = 1000, outline = true, antialias = false})
 	
 	surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = ScreenScale(40), weight = 500})
+	surface.CreateFont("ZMCrosshair", {font = "Crosshairs", extended = false, size = ScreenScale(40)})
 end
 
 function GM:PrePlayerDraw(ply)

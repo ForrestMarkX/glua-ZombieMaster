@@ -86,3 +86,26 @@ LANGUAGE.button_credits                     = "Credits"
 LANGUAGE.button_close                       = "Schließen"
 LANGUAGE.button_okay                        = "Okay"
 LANGUAGE.button_cancel                      = "Abbrechen"
+LANGUAGE.button_preferred                   = "Öffnen Sie das bevorzugte Menü"
+LANGUAGE.button_options                     = "Optionen"
+
+LANGUAGE.team_survivor_l 					= "Überlebende"
+LANGUAGE.team_zombiemaster_l 				= "Zombiemeister"
+LANGUAGE.team_spectators_l 					= "Zuschauer"
+
+LANGUAGE.volunteer_settings 				= "Freiwilligeneinstellungen"
+LANGUAGE.dont_show_vol_menu 				= "Freiwilliges Menü nicht anzeigen"
+LANGUAGE.open_vol_menu 						= "Freiwilligenmenü öffnen"
+
+LANGUAGE.keybind_settings 					= "Key Binds"
+LANGUAGE.drop_wep_key 						= "Waffenschlüssel fallen lassen"
+LANGUAGE.drop_ammo_key 						= "Drop Ammo Key"
+
+LANGUAGE.ragdoll_settings 					= "Ragdoll Einstellungen"
+LANGUAGE.ragdoll_fadeout 					= "Sollen Ragdolls ausbleichen"
+LANGUAGE.ragdoll_fade_speed 				= "Fade-Geschwindigkeit"
+LANGUAGE.ragdoll_fade_time 					= "Zeit vor dem Ausblenden"
+
+LANGUAGE.other_settings 					= "Andere Einstellungen"
+LANGUAGE.health_circle_brightness 			= "Health Circle Brightness"
+LANGUAGE.zm_scrollspeed 					= "Zombie Master Scroll Geschwindigkeit"

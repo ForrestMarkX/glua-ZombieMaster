@@ -109,3 +109,24 @@ LANGUAGE.button_okay                        = "Okay"
 LANGUAGE.button_cancel                      = "Cancel"
 LANGUAGE.button_preferred                   = "Open Preferred Menu"
 LANGUAGE.button_options                     = "Options"
+
+LANGUAGE.team_survivor_l					= "Survivors"
+LANGUAGE.team_zombiemaster_l				= "Zombie Master"
+LANGUAGE.team_spectators_l					= "Spectators"
+
+LANGUAGE.volunteer_settings 				= "Volunteer Settings"
+LANGUAGE.dont_show_vol_menu 				= "Don't show volunteer menu"
+LANGUAGE.open_vol_menu 						= "Open Volunteer Menu"
+
+LANGUAGE.keybind_settings 					= "Key Binds"
+LANGUAGE.drop_wep_key 						= "Drop Weapon Key"
+LANGUAGE.drop_ammo_key 						= "Drop Ammo Key"
+
+LANGUAGE.ragdoll_settings 					= "Ragdoll Settings"
+LANGUAGE.ragdoll_fadeout 					= "Should ragdolls fadeout"
+LANGUAGE.ragdoll_fade_speed 				= "Fade Speed"
+LANGUAGE.ragdoll_fade_time 					= "Time before fadeout"
+
+LANGUAGE.other_settings 					= "Other Settings"
+LANGUAGE.health_circle_brightness 			= "Health Circle Brightness"
+LANGUAGE.zm_scrollspeed 					= "Zombie Master Scroll Speed"
