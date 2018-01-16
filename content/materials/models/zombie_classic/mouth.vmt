@@ -1,0 +1,6 @@
+//"Teeth"
+"VertexLitGeneric"
+{
+	"$basetexture" "models/Zombie_Classic/mouth"
+	"$model" 1
+}

@@ -1,6 +1,10 @@
 local meta = FindMetaTable("NPC")
 if not meta then return end
 
+function meta:IsScripted()
+	return scripted_ents.GetType(self:GetClass()) == "ai"
+end
+
 meta.CustomScheds = {}
 function meta:DefineCustomSchedule(sched)
 	if self.CustomScheds[sched.DebugName] then return end
@@ -30,7 +34,7 @@ function meta:ForceSwat(pTarget, breakable)
 	if self:GetPos():Distance(pTarget:GetPos()) < (self.GetClawAttackRange and self:GetClawAttackRange() or 72) then
 		self:SetEnemy(pTarget)
 		self:SetTarget(pTarget)
-		self:SetSchedule(SCHED_TARGET_FACE)
+		self:SetSchedule(SCHED_COMBAT_FACE)
 		
 		timer.Simple(0.25, function()
 			self:SetSchedule(SCHED_MELEE_ATTACK1)
