@@ -96,12 +96,14 @@ function PLAYER:SetModel()
 		end
 	end
 	
-	if VoiceSetTranslate[modelname] then
-		self.Player.VoiceSet = VoiceSetTranslate[modelname]
-	elseif string.find(modelname, "female", 1, true) then
-		self.Player.VoiceSet = "female"
-	else
-		self.Player.VoiceSet = "male"
+	if not GetConVar("zm_disable_playersnds"):GetBool() then
+		if VoiceSetTranslate[modelname] then
+			self.Player.VoiceSet = VoiceSetTranslate[modelname]
+		elseif string.find(modelname, "female", 1, true) then
+			self.Player.VoiceSet = "female"
+		else
+			self.Player.VoiceSet = "male"
+		end
 	end
 end
 

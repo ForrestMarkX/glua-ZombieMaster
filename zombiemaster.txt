@@ -271,6 +271,15 @@
 			"help"		"How much health a Drifter will have on spawn."
 			"type"		"Numeric"
 			"default"	"60"
+		}		
+		
+		31
+		{
+			"name"		"zm_disable_playersnds"
+			"text"		"Disable Player Pain/Deaths Sounds"
+			"help"		"Disables the sounds players use when taking damage or dieing"
+			"type"		"CheckBox"
+			"default"	"0"
 		}
 	}
 }

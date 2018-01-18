@@ -1,5 +1,6 @@
 CreateConVar("zm_physexp_forcedrop_radius", "128", FCVAR_NOTIFY, "Radius in which players are forced to drop what they carry so that the physexp can affect the objects.")
 CreateConVar("zm_loadout_disable", "0", FCVAR_NOTIFY, "If set to 1, any info_loadout entity will not hand out weapons. Not recommended unless you're intentionally messing with game balance and playing on maps that support this move.")
+CreateConVar("zm_disable_playersnds", "0", FCVAR_NOTIFY + FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE, "Disable the pain and death sounds of players.")
 
 CreateConVar("zm_disableplayercollision", "0", FCVAR_NOTIFY, "Disables player to player collisions.")
 cvars.AddChangeCallback("zm_disableplayercollision", function(convar_name, value_old, value_new)
