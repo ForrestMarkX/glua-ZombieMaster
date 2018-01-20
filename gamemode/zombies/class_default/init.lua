@@ -41,6 +41,7 @@ function NPC:OnSpawned(npc)
 	end
 
 	timer.Simple(1, function()
+		if not IsValid(npc) then return end
 		npc:UpdateEnemy(npc:FindEnemy())
 	end)
 end
