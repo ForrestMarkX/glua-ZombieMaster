@@ -283,6 +283,7 @@ function GM:OnEntityCreated(ent)
 				
 				self:CallZombieFunction(ent, "OnSpawned")
 				self:CallZombieFunction(ent, "SetupModel")
+				self:CallZombieFunction(ent, "SetupCapabilities")
 			end
 			
 			if ent.GetNumBodyGroups and ent.SetBodyGroup then
@@ -292,7 +293,6 @@ function GM:OnEntityCreated(ent)
 			end
 			
 			ent:SetShouldServerRagdoll(false)
-			ent:CapabilitiesAdd(CAP_SKIP_NAV_GROUND_CHECK)
 		end)
 		
 		for index, npc in pairs(self.iZombieList) do
@@ -303,6 +303,8 @@ end
 
 function GM:ReplaceItemWithCrate(ent, class)
 	local playercount = player.GetCount()
+	if playercount <= 16 then return end
+	
 	local chance = math.min(playercount / 100, 1) * 2
 	if math.random() <= chance then
 		local itemcount = math.ceil(playercount / 10)
@@ -611,7 +613,9 @@ function GM:CreateGibs(pos, headoffset)
 end
 
 function GM:TeamVictorious(won, message)
-	if self:GetRoundEnd() then return end
+	if self:GetPreRoundEnd() then return end
+	
+	self:SetPreRoundEnd(true)
 	
 	local winscore = Either(won, HUMAN_WIN_SCORE, HUMAN_LOSS_SCORE)
 	local winningteam = Either(won, TEAM_SURVIVOR, TEAM_ZOMBIEMASTER)
@@ -619,7 +623,6 @@ function GM:TeamVictorious(won, message)
 		ply:AddFrags(winscore)
 	end
 	
-	self:SetRoundEnd(true)
 	hook.Call("IncrementRoundCount", self)
 	
 	local rounds = GetConVar("zm_roundlimit"):GetInt()
@@ -641,7 +644,7 @@ function GM:TeamVictorious(won, message)
 end
 
 function GM:EndRound()
-	if self:GetRoundsPlayed() > GetConVar("zm_roundlimit"):GetInt() then return end
+	if self:GetRoundsPlayed() > GetConVar("zm_roundlimit"):GetInt() or self:GetRoundEnd() then return end
 	
 	for _, pl in pairs(player.GetAll()) do
 		pl:StripWeapons()
@@ -664,9 +667,12 @@ function GM:EndRound()
 	self:SetCurZombiePop(0)
 	NotifiedRestart = false
 	
-	self:SetRoundEnd(false)
+	self:SetRoundEnd(true)
 	
 	timer.Simple(1, function()
+		self:SetPreRoundEnd(false)
+		self:SetRoundEnd(false)
+		
 		hook.Call("SetupZombieMasterVolunteers", self)
 		for _, ent in pairs(ents.FindByClass("info_loadout")) do
 			ent:Distribute()
@@ -1231,6 +1237,10 @@ end
 
 function GM:SetRoundStart(active)
     SetGlobalBool("zm_round_start", active)
+end
+
+function GM:SetPreRoundEnd(active)
+    SetGlobalBool("zm_preround_ended", active)
 end
 
 function GM:SetRoundEnd(active)

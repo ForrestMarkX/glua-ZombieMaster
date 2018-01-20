@@ -4,15 +4,12 @@ NPC.MoveType = MOVETYPE_STEP
 NPC.BloodColor = BLOOD_COLOR_RED
 
 NPC.SpawnFlags = bit.bor(SF_NPC_ALWAYSTHINK, SF_NPC_LONG_RANGE)
-NPC.Capabilities = CAP_FRIENDLY_DMG_IMMUNE
+NPC.Capabilities = bit.bor(CAP_FRIENDLY_DMG_IMMUNE, CAP_MOVE_GROUND, CAP_INNATE_MELEE_ATTACK1, CAP_SKIP_NAV_GROUND_CHECK)
 
 function NPC:OnSpawned(npc)
 	npc:SetBloodColor(self.BloodColor)
 	
-	if self.Capabilities then
-		if self.ClearCapabilities then npc:CapabilitiesClear() end
-		npc:CapabilitiesAdd(self.Capabilities)
-	end
+	self:SetupCapabilities(npc)
 	
 	if self.HullType then
 		npc:SetHullType(self.HullType)
@@ -43,7 +40,16 @@ function NPC:OnSpawned(npc)
 		npc:SetMaxYawSpeed(self.MaxYawSpeed)
 	end
 
-	npc:UpdateEnemy(npc:FindEnemy())
+	timer.Simple(1, function()
+		npc:UpdateEnemy(npc:FindEnemy())
+	end)
+end
+
+function NPC:SetupCapabilities(npc)
+	if not self.Capabilities then return end
+	
+	npc:CapabilitiesClear()
+	npc:CapabilitiesAdd(self.Capabilities)
 end
 
 function NPC:OnScaledDamage(npc, hitgroup, dmginfo)

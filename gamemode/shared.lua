@@ -118,6 +118,10 @@ function GM:GetRoundActive()
     return GetGlobalBool("zm_round_active", false)
 end
 
+function GM:GetPreRoundEnd()
+    return GetGlobalBool("zm_preround_ended", false)
+end
+
 function GM:GetRoundEnd()
     return GetGlobalBool("zm_round_ended", false)
 end

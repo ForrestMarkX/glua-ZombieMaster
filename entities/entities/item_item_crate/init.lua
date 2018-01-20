@@ -67,13 +67,11 @@ function ENT:SetObjectHealth(health)
 		self.Destroyed = true
 		
 		local playercount = player.GetCount()
-		if playercount > 64 then
-			self.itemcount = math.Round(self.itemcount * 4)
-		elseif playercount > 32 then
-			self.itemcount = math.Round(self.itemcount * 3)
-		elseif playercount > 16 then
+		if playercount >= 64 then
 			self.itemcount = math.Round(self.itemcount * 2.5)
-		elseif playercount > 8 then
+		elseif playercount >= 32 then
+			self.itemcount = math.Round(self.itemcount * 2)
+		elseif playercount >= 16 then
 			self.itemcount = math.Round(self.itemcount * 1.5)
 		end
 		

@@ -2,6 +2,8 @@ NPC.CanClingToCeiling = true
 NPC.HullSizeMins = Vector(13, 13, 50)
 NPC.HullSizeMaxs = Vector(-13, -13, 0)
 
+NPC.Capabilities = bit.bor(CAP_FRIENDLY_DMG_IMMUNE, CAP_MOVE_JUMP, CAP_MOVE_GROUND, CAP_INNATE_RANGE_ATTACK1, CAP_INNATE_MELEE_ATTACK1, CAP_MOVE_CLIMB, CAP_SKIP_NAV_GROUND_CHECK)
+
 function NPC:OnSpawned(npc)
 	self.BaseClass.OnSpawned(self, npc)
 	
