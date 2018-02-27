@@ -109,8 +109,11 @@ function GM:RefreshReadyPanel()
 	
 	for pl, ready in pairs(playerReadyList) do
 		if not IsValid(pl) then 
-			table.RemoveByValue(playerReadyList, pl)
-			table.RemoveByValue(self.PlayerLobby.PlayerList.PlayerPan, pl)
+			if self.PlayerLobby.PlayerList.PlayerPan then
+				self.PlayerLobby.PlayerList.PlayerPan:Remove()
+			end
+			
+			playerReadyList[pl] = nil
 			continue 
 		end
 		
