@@ -84,7 +84,7 @@ function GM:PostClientInit()
 		self.ReadyButton:SetText("Ready")
 		
 		function self.ReadyButton:DoClick()
-			if GAMEMODE:GetGameStarting() then return end
+			if GAMEMODE:GetGameStarting() or self.Cooldown > CurTime() then return end
 			
 			playerReadyList[LocalPlayer()] = not playerReadyList[LocalPlayer()]
 			
@@ -99,6 +99,8 @@ function GM:PostClientInit()
 			net.Start("zm_playeready")
 				net.WriteBool(playerReadyList[LocalPlayer()])
 			net.SendToServer()
+			
+			self.Cooldown = CurTime() + 0.5
 		end
 	end
 end
@@ -830,6 +832,13 @@ net.Receive("zm_sendlua", function(length)
 end)
 
 net.Receive("zm_updateclientreadytable", function(length)
+	local bFullUpdate = net.ReadBool()
+	if bFullUpdate then
+		playerReadyList = net.ReadTable()
+		hook.Call("RefreshReadyPanel", GAMEMODE)
+		return
+	end
+	
 	local pl = net.ReadEntity()
 	if not IsValid(pl) then return end
 	
