@@ -108,14 +108,7 @@ function GM:RefreshReadyPanel()
 	if not IsValid(self.PlayerLobby) then return end
 	
 	for pl, ready in pairs(playerReadyList) do
-		if not IsValid(pl) then 
-			if self.PlayerLobby.PlayerList.PlayerPan then
-				self.PlayerLobby.PlayerList.PlayerPan:Remove()
-			end
-			
-			playerReadyList[pl] = nil
-			continue 
-		end
+		if not IsValid(pl) then continue end
 		
 		if self.PlayerLobby.PlayerList.PlayerPan[pl] then
 			local tab = self.PlayerLobby.PlayerList.PlayerPan[pl]
@@ -127,8 +120,15 @@ function GM:RefreshReadyPanel()
 			if tab then
 				self.PlayerLobby.PlayerList.PlayerPan[pl] = tab
 				
+				tab.PlayerOwner = pl
 				tab:Dock(TOP)
 				tab:DockMargin(5, 2, 5, 2)
+				
+				function tab:Think()
+					if not IsValid(self.PlayerOwner) then
+						self:Remove()
+					end
+				end
 				
 				local avatar = tab:Add("DClickableAvatar")
 				avatar:SetSize(32, 32)
