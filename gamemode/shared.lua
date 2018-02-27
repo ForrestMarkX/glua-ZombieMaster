@@ -130,6 +130,14 @@ function GM:GetRoundsPlayed()
 	return GetGlobalInt("zm_rounds_played", 0)
 end
 
+function GM:GetReadyCount()
+	return GetGlobalInt("zm_ready_counter", -1)
+end
+
+function GM:GetGameStarting()
+	return GetGlobalBool("zm_game_ready", false)
+end
+
 function GM:SetupMove(ply, mv, cmd)
 	player_manager.RunClass(ply, "SetupMove", mv, cmd)
 end

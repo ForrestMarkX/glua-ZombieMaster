@@ -36,9 +36,131 @@ local nightVision_ColorMod = {
 	["$pp_colour_mulb"] 		= 0
 }
 
+local playerReadyList = {}
 function GM:PostClientInit()
 	net.Start("zm_player_ready")
 	net.SendToServer()
+	
+	if GetConVar("zm_debug_nolobby"):GetBool() then return end
+	
+	if not (self.RoundStarted and self.RoundStarted ~= 0 and self:GetRoundActive()) then
+		gui.EnableScreenClicker(true)
+		
+		local lobby = vgui.Create("DFrame")
+		lobby:SetSize(ScrW() * 0.3, ScrH() * 0.5)
+		lobby:Center()
+		lobby:ShowCloseButton(false)
+		lobby:SetTitle("")
+		self.PlayerLobby = lobby
+		
+		function lobby:Think()
+			if GAMEMODE:GetRoundActive() then 
+				self:Remove() 
+			elseif GAMEMODE:GetGameStarting() then
+				gui.EnableScreenClicker(false)
+				GAMEMODE.ReadyButton:Remove()
+			end
+		end
+		
+		local lobbytext = vgui.Create("DLabel", lobby)
+		lobbytext:SetText("Ready Up!")
+		lobbytext:SetFont("zm_hud_font_small")
+		lobbytext:SizeToContents()
+		lobbytext:Center()
+		lobbytext:AlignTop(4)
+		self.PlayerLobby.LobbyText = lobbytext
+		
+		local lobbylist = vgui.Create("DScrollPanel", lobby)
+		lobbylist:Dock(FILL)
+		lobbylist:MoveBelow(lobbytext, 4)
+		lobbylist.PlayerPan = {}
+		self.PlayerLobby.PlayerList = lobbylist
+		
+		self.ReadyButton = vgui.Create("DButton")
+		self.ReadyButton:SetFont("zm_hud_font_small")
+		self.ReadyButton:SetSize(ScrW() * 0.09, ScrH() * 0.05)
+		self.ReadyButton:AlignBottom(ScrH() * 0.035)
+		self.ReadyButton:AlignRight(ScrW() * 0.025)
+		self.ReadyButton:SetText("Ready")
+		
+		function self.ReadyButton:DoClick()
+			if GAMEMODE:GetGameStarting() then return end
+			
+			playerReadyList[LocalPlayer()] = not playerReadyList[LocalPlayer()]
+			
+			if playerReadyList[LocalPlayer()] then
+				surface.PlaySound("buttons/button17.wav")
+			else
+				surface.PlaySound("buttons/button18.wav")
+			end
+			
+			self:SetText(playerReadyList[LocalPlayer()] and "Un-Ready" or "Ready")
+			
+			net.Start("zm_playeready")
+				net.WriteBool(playerReadyList[LocalPlayer()])
+			net.SendToServer()
+		end
+	end
+end
+
+-- Could probably use player.GetAll() in a custom panel but this will do for now
+function GM:RefreshReadyPanel()
+	if not IsValid(self.PlayerLobby) then return end
+	
+	for pl, ready in pairs(playerReadyList) do
+		if not IsValid(pl) then 
+			table.RemoveByValue(playerReadyList, pl)
+			table.RemoveByValue(self.PlayerLobby.PlayerList.PlayerPan, pl)
+			continue 
+		end
+		
+		if self.PlayerLobby.PlayerList.PlayerPan[pl] then
+			local tab = self.PlayerLobby.PlayerList.PlayerPan[pl]
+			tab.ReadyText:SetText(ready and "Ready" or "Not Ready")
+			tab.ReadyText:SetTextColor(ready and Color(0, 255, 0) or Color(255, 0, 0))
+			tab.ReadyText:SizeToContents()
+		else
+			local tab = self.PlayerLobby.PlayerList:Add("DPanel")
+			if tab then
+				self.PlayerLobby.PlayerList.PlayerPan[pl] = tab
+				
+				tab:Dock(TOP)
+				tab:DockMargin(5, 2, 5, 2)
+				
+				local avatar = tab:Add("DClickableAvatar")
+				avatar:SetSize(32, 32)
+				avatar:SetPlayer(pl, 32)
+				avatar.DoClick = function() pl:ShowProfile() end
+				tab.Avatar = avatar
+				
+				local name = tab:Add("DLabel")
+				name:SetText(pl:Nick())
+				name:SetFont("zm_hud_font_smaller")
+				tab.Name = name
+				
+				local readylab = vgui.Create("DLabel", tab)
+				readylab:SetText(ready and "Ready" or "Not Ready")
+				readylab:SetTextColor(ready and Color(0, 255, 0) or Color(255, 0, 0))
+				readylab:SetFont("zm_hud_font_smaller")
+				readylab:Dock(RIGHT)
+				readylab:DockMargin(5, 0, 5, 0)
+				tab.ReadyText = readylab
+				
+				tab:SizeToChildren(false, true)
+				tab:SetTall(tab:GetTall() + 4)
+				
+				avatar:AlignLeft(18)
+				avatar:CenterVertical()
+				
+				name:SizeToContents()
+				name:CenterVertical()
+				name:MoveRightOf(avatar, 8)	
+				
+				readylab:SizeToContents()
+				readylab:CenterVertical()
+			end
+		end
+	end
 end
 
 function GM:OnReloaded()
@@ -149,6 +271,7 @@ function GM:PostPlayerDraw(pl)
 	if not player_manager.RunClass(LocalPlayer(), "PostDraw", pl) then return true end
 end
 
+local lastwarntim = -1
 function GM:Think()
 	player_manager.RunClass(LocalPlayer(), "Think")
 	
@@ -160,6 +283,19 @@ function GM:Think()
 		ang.x = 0.0
 		ang.z = 0.0
 		self.HiddenCSEnt:SetAngles(ang)
+	end
+	
+	if not (self.RoundStarted and self.RoundStarted ~= 0 and self:GetRoundActive()) then
+		local endtime = self:GetReadyCount()
+		if endtime ~= -1 then
+			local timleft = math.max(0, endtime - CurTime())
+			if timleft <= 5 and lastwarntim ~= math.ceil(timleft) then
+				lastwarntim = math.ceil(timleft)
+				if 0 < lastwarntim then
+					surface.PlaySound("buttons/lightswitch2.wav")
+				end
+			end
+		end
 	end
 end
 
@@ -688,4 +824,14 @@ end)
 
 net.Receive("zm_sendlua", function(length)
 	RunString(net.ReadString(), "SendLua")
+end)
+
+net.Receive("zm_updateclientreadytable", function(length)
+	local pl = net.ReadEntity()
+	if not IsValid(pl) then return end
+	
+	local bReady = net.ReadBool()
+	playerReadyList[pl] = bReady
+	
+	hook.Call("RefreshReadyPanel", GAMEMODE)
 end)

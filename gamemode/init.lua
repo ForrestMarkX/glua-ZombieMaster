@@ -40,14 +40,14 @@ include("shared.lua")
 
 DEFINE_BASECLASS("gamemode_base")
 
-GM.UnReadyPlayers = {}
 GM.DeadPlayers = {}
-GM.ReadyTimer = 0
 GM.DontConvertProps = true
 GM.PlayerHeldObjects = {}
 GM.ZombieMasterPriorities = {}
 
 GM.Income_Time = 0
+
+local playerReadyList = {}
 
 if file.Exists(GM.FolderName.."/gamemode/maps/"..game.GetMap()..".lua", "LUA") then
 	include("maps/"..game.GetMap()..".lua")
@@ -384,6 +384,8 @@ function GM:PostGamemodeLoaded()
 	util.AddNetworkString("zm_create_ambush_point")
 	util.AddNetworkString("zm_cling_ceiling")
 	util.AddNetworkString("zm_sendlua")
+	util.AddNetworkString("zm_playeready")
+	util.AddNetworkString("zm_updateclientreadytable")
 	
 	game.ConsoleCommand("fire_dmgscale 1\nmp_falldamage 1\nsv_gravity 600\n")
 	
@@ -451,14 +453,14 @@ function GM:PlayerInitialSpawn(pl)
 		NotifiedRestart = true
 	end
 	
+	if pl:IsBot() then
+		hook.Call("InitClient", self, pl)
+	end
+	
 	pl.NextPainSound = 0
 	
 	if not zm_start_round and not self:GetRoundActive() then
 		zm_start_round = true
-	end
-	
-	if not pl:IsBot() then
-		table.insert(self.UnReadyPlayers, pl)
 	end
 		
 	net.Start("zm_infostrings")
@@ -687,6 +689,7 @@ end
 function GM:SetupPlayer(ply)
 	if ply:GetInfoNum("zm_preference", 0) == 2 then return end
 	
+	ply:Freeze(false)
 	ply:SetTeam(TEAM_SURVIVOR)
 	ply:SetClass("player_survivor")
 	
@@ -706,13 +709,10 @@ end
 function GM:InitClient(pl)
 	if not pl:IsValid() then return end
 	
-	if not pl:IsBot() then
-		table.RemoveByValue(self.UnReadyPlayers, pl)
-	end
+	pl:Freeze(true)
 	
-	if self.ReadyTimer == 0 and not zm_timer_started then
-		zm_timer_started = true
-		self.ReadyTimer = CurTime() + 15
+	if self:GetReadyCount() == -1 and (player.GetCount() > 1 or GetConVar("zm_debug_nolobby"):GetBool()) then
+		self:SetReadyCount(CurTime() + (GetConVar("zm_debug_nolobby"):GetBool() and 5 or GetConVar("zm_readytimerlength"):GetInt()))
 	end
 	
 	if pl:GetInfoNum("zm_nopreferredmenu", 0) <= 0 then
@@ -759,6 +759,15 @@ function GM:InitClient(pl)
 			if IsValid(pZM) then
 				pZM:SetZMPointIncome(pZM:GetZMPointIncome() + 5)
 			end
+		end
+	else
+		playerReadyList[pl] = pl:IsBot()
+		
+		if not GetConVar("zm_debug_nolobby"):GetBool() then
+			net.Start("zm_updateclientreadytable")
+				net.WriteEntity(pl)
+				net.WriteBool(playerReadyList[pl])
+			net.Broadcast()
 		end
 	end
 	
@@ -977,22 +986,16 @@ function GM:Think()
 			hook.Call("SetupZombieMasterVolunteers", self, true)
 		end
 		
-		if self.ReadyTimer ~= 0 and CurTime() > self.ReadyTimer then
-			table.Empty(self.UnReadyPlayers)
-			self.ReadyTimer = 0
-		end
-		
 		if zm_start_round then
-			if #self.UnReadyPlayers == 0 and self:GetRoundStart() and not zm_selection_started then
+			if self:GetReadyCount() ~= -1 and CurTime() >= self:GetReadyCount() and self:GetRoundStart() and not zm_selection_started then
 				self:SetZMSelection(true)
 				zm_selection_started = true
 				zm_start_round = false
-				timer.Simple(self:GetRoundStartTime(), function()
-					hook.Call("SetupZombieMasterVolunteers", self)
-					for _, ent in pairs(ents.FindByClass("info_loadout")) do
-						ent:Distribute()
-					end
-				end)
+				
+				hook.Call("SetupZombieMasterVolunteers", self)
+				for _, ent in pairs(ents.FindByClass("info_loadout")) do
+					ent:Distribute()
+				end
 			end
 		end
 	end
@@ -1082,6 +1085,7 @@ function GM:SetPlayerToZombieMaster(pl)
 	pl:SetFrags(0)
 	pl:SetDeaths(0)
 	pl:Spectate(OBS_MODE_ROAMING)
+	pl:Freeze(false)
 	pl:SetTeam(TEAM_ZOMBIEMASTER)
 	pl:SetClass("player_zombiemaster")
 	
@@ -1251,6 +1255,14 @@ function GM:SetRoundsPlayed(rounds)
 	SetGlobalInt("zm_rounds_played", rounds)
 end
 
+function GM:SetReadyCount(time)
+	SetGlobalInt("zm_ready_counter", time)
+end
+
+function GM:SetGameStarting(b)
+	SetGlobalBool("zm_game_ready", b)
+end
+
 function GM:AddCurZombiePop(amount)
 	self:SetCurZombiePop(self:GetCurZombiePop() + amount)
 end
@@ -1352,6 +1364,28 @@ function GM:CheckIfPlayerStuck(pl)
 		end
 	end
 end
+
+net.Receive("zm_playeready", function(len, pl)
+	local bReady = net.ReadBool()
+	playerReadyList[pl] = bReady
+	
+	net.Start("zm_updateclientreadytable")
+		net.WriteEntity(pl)
+		net.WriteBool(bReady)
+	net.Broadcast()
+	
+	if player.GetCount() > 1 then
+		local bNotReady = false
+		for pl, b in pairs(playerReadyList) do
+			if not b then bNotReady = true break end
+		end
+		
+		if not bNotReady then
+			GAMEMODE:SetReadyCount(CurTime() + 5)
+			GAMEMODE:SetGameStarting(true)
+		end
+	end
+end)
 
 function GM:AddResources()
 	resource.AddFile( "materials/background01.vtf" )

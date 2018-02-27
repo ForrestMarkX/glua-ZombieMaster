@@ -377,7 +377,7 @@ end
 function GM:ScoreboardHide()
 	if LocalPlayer():IsZM() then
 		gui.EnableScreenClicker(bWasCursorVisable)
-	else
+	elseif not IsValid(GAMEMODE.ReadyButton) then
 		gui.EnableScreenClicker(false)
 	end
 	

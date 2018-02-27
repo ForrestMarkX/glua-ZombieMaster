@@ -3,11 +3,21 @@ function GM:HUDPaint()
 	
 	if not self:GetRoundActive() then
 		local h, w = ScrH(), ScrW()
-		if not self:GetZMSelection() then
-			draw.SimpleTextOutlined(translate.Get("waiting_on_players"), "zm_hud_font_small", w * 0.5, h * 0.25, Color(150, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
-		else
-			draw.SimpleTextOutlined(translate.Get("players_ready"), "zm_hud_font_small", w * 0.5, h * 0.25, Color(0, 150, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+		local time = math.max(0, self:GetReadyCount() - CurTime())
+		local col = color_white
+		
+		if player.GetCount() <= 1 and not GetConVar("zm_debug_nolobby"):GetBool() then
+			time = GetConVar("zm_readytimerlength"):GetInt()
 		end
+		
+		if time < 5 then
+			local glow = math.sin(RealTime() * 8) * 200 + 255
+			col = Color(255, glow, glow)
+		else
+			col = color_white
+		end
+		
+		draw.SimpleTextOutlined(string.FormattedTime(time, "%02i:%02i"), "zm_hud_font_normal", w * 0.5, h * 0.925, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
 	end
 	
 	hook.Call( "HUDDrawTargetID", self )

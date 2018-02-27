@@ -80,3 +80,6 @@ CreateConVar("zm_zombie_poison_dmg_slash_max", "50", { FCVAR_NOTIFY, FCVAR_REPLI
 CreateConVar("zm_fastzombie_clawdamage", "9", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets how much damage a Banshee does.")
 CreateConVar("zm_fastzombie_leapdamage", "5", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets how much damage a Banshees leap does.")
 CreateConVar("zm_dragzombie_damage", "3", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets how much damage a Drifter does.")
+
+CreateConVar("zm_readytimerlength", "90", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "How long in seconds the ready timer takes to count down.")
+CreateConVar("zm_debug_nolobby", "0", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Used for debug, will not show a lobby menu at start.")
