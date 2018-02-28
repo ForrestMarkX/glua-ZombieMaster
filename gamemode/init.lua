@@ -468,7 +468,7 @@ function GM:PlayerInitialSpawn(pl)
 		net.WriteString(self.HelpInfo)
 	net.Send(pl)	
 	
-	if not GetConVar("zm_debug_nolobby"):GetBool() then
+	if not GetConVar("zm_debug_nolobby"):GetBool() and not self:GetRoundActive() then
 		net.Start("zm_updateclientreadytable")
 			net.WriteBool(true)
 			net.WriteTable(playerReadyList)
@@ -1374,12 +1374,11 @@ function GM:CheckIfPlayerStuck(pl)
 end
 
 net.Receive("zm_playeready", function(len, pl)
-	if ReadyCooldowns[pl] and ReadyCooldowns[pl] > CurTime() then return end
-	
 	local bReady = net.ReadBool()
 	playerReadyList[pl] = bReady
 	
 	net.Start("zm_updateclientreadytable")
+		net.WriteBool(false)
 		net.WriteEntity(pl)
 		net.WriteBool(bReady)
 	net.Broadcast()

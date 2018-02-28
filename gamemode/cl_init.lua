@@ -84,7 +84,7 @@ function GM:PostClientInit()
 		self.ReadyButton:SetText("Ready")
 		
 		function self.ReadyButton:DoClick()
-			if GAMEMODE:GetGameStarting() or self.Cooldown > CurTime() then return end
+			if GAMEMODE:GetGameStarting() or (self.Cooldown or 0) > CurTime() then return end
 			
 			playerReadyList[LocalPlayer()] = not playerReadyList[LocalPlayer()]
 			
@@ -100,7 +100,7 @@ function GM:PostClientInit()
 				net.WriteBool(playerReadyList[LocalPlayer()])
 			net.SendToServer()
 			
-			self.Cooldown = CurTime() + 0.5
+			self.Cooldown = CurTime() + 1
 		end
 	end
 end
