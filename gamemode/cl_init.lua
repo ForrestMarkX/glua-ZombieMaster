@@ -43,7 +43,7 @@ function GM:PostClientInit()
 	
 	if GetConVar("zm_debug_nolobby"):GetBool() then return end
 	
-	if not (self.RoundStarted and self.RoundStarted ~= 0 and self:GetRoundActive()) then
+	if not self:GetRoundActive() then
 		gui.EnableScreenClicker(true)
 		
 		local lobby = vgui.Create("DFrame")
@@ -290,7 +290,7 @@ function GM:Think()
 		self.HiddenCSEnt:SetAngles(ang)
 	end
 	
-	if not (self.RoundStarted and self.RoundStarted ~= 0 and self:GetRoundActive()) then
+	if not self:GetRoundActive() then
 		local endtime = self:GetReadyCount()
 		if endtime ~= -1 then
 			local timleft = math.max(0, endtime - CurTime())
