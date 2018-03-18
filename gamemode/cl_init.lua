@@ -43,8 +43,11 @@ function GM:PostClientInit()
 	
 	if GetConVar("zm_debug_nolobby"):GetBool() then return end
 	
-	if not self:GetRoundActive() then
-		gui.EnableScreenClicker(true)
+	local bRoundActive = self:GetRoundActive() or team.NumPlayers(TEAM_ZOMBIEMASTER) > 0
+	if not bRoundActive then
+		timer.Simple(1, function()
+			gui.EnableScreenClicker(true)
+		end)
 		
 		local lobby = vgui.Create("DFrame")
 		lobby:SetSize(ScrW() * 0.3, ScrH() * 0.5)
@@ -52,15 +55,6 @@ function GM:PostClientInit()
 		lobby:ShowCloseButton(false)
 		lobby:SetTitle("")
 		self.PlayerLobby = lobby
-		
-		function lobby:Think()
-			if GAMEMODE:GetRoundActive() then 
-				self:Remove() 
-			elseif GAMEMODE:GetGameStarting() then
-				gui.EnableScreenClicker(false)
-				GAMEMODE.ReadyButton:Remove()
-			end
-		end
 		
 		local lobbytext = vgui.Create("DLabel", lobby)
 		lobbytext:SetText("Ready Up!")
@@ -288,6 +282,12 @@ function GM:Think()
 		ang.x = 0.0
 		ang.z = 0.0
 		self.HiddenCSEnt:SetAngles(ang)
+	end
+	
+	if IsValid(self.PlayerLobby) and (self:GetRoundActive() or self:GetGameStarting()) then 
+		self.PlayerLobby:Remove() 
+		self.ReadyButton:Remove()
+		gui.EnableScreenClicker(false)
 	end
 	
 	if not self:GetRoundActive() then

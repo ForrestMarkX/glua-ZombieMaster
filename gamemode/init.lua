@@ -716,7 +716,9 @@ end
 function GM:InitClient(pl)
 	if not pl:IsValid() then return end
 	
-	pl:Freeze(true)
+	if not self:GetRoundActive() then
+		pl:Freeze(true)
+	end
 	
 	if self:GetReadyCount() == -1 and (player.GetCount() > 1 or GetConVar("zm_debug_nolobby"):GetBool()) then
 		self:SetReadyCount(CurTime() + (GetConVar("zm_debug_nolobby"):GetBool() and 5 or GetConVar("zm_readytimerlength"):GetInt()))

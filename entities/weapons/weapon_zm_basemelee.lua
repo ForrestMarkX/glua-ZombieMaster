@@ -43,18 +43,25 @@ function SWEP:PrimaryAttack()
     if trace.Hit then
 		self:SendWeaponAnim(ACT_VM_HITCENTER)
 		
-		bullet 		  = {}
-		bullet.Num    = 1
-		bullet.Src    = owner:GetShootPos()
-		bullet.Dir    = owner:GetAimVector()
-		bullet.Distance = self.Primary.Reach
-		bullet.Spread = Vector(0, 0, 0)
-		bullet.Tracer = 0
-		bullet.Force  = self.Primary.Force
-		bullet.Damage = damage
-		bullet.Callback = self.DefaultCallBack
+        bullet        = {}
+        bullet.Num    = 1
+        bullet.Src    = owner:GetShootPos()
+        bullet.Dir    = owner:GetAimVector()
+        bullet.Distance = self.Primary.Reach
+        bullet.Spread = Vector(0, 0, 0)
+        bullet.Tracer = 0
+        bullet.Force  = self.Primary.Force
+        bullet.Damage = damage
+        bullet.Callback = self.DefaultCallBack
 		
-		owner:FireBullets(bullet)
+        owner:FireBullets(bullet)
+		
+		if trace.MatType == MAT_GRATE then
+			local ent = trace.Entity
+			if IsValid(ent) and ent.TakeDamage then
+				ent:TakeDamage(damage, owner, self)
+			end
+		end
 		
 		if trace.MatType == MAT_FLESH then
 			self:EmitSound(self.Primary.HitFleshSound)

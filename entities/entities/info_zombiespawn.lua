@@ -100,14 +100,17 @@ if SERVER then
 		if not IsValid(zombie) then return false end
 		
 		timer.Simple(0.25, function()
+			if not IsValid(zombie) then return end
+			
 			if IsValid(self) then
 				local rally = self:GetRallyEntity()
 				if IsValid(rally) then
 					zombie:ForceGo(rally:GetPos())
 					
-					if scripted_ents.GetType(data.type) ~= nil then
-						timer.Simple(0.1, function()
-							zombie:ForceGo(rally:GetPos())
+					if zombie:IsScripted() then
+						timer.Create("ZombieForceGo_"..zombie:EntIndex(), 0.1, 10, function() 
+							if not (IsValid(zombie) or IsValid(rally)) then return end
+							zombie:ForceGo(rally:GetPos()) 
 						end)
 					end
 				end
