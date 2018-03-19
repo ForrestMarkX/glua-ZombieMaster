@@ -648,9 +648,7 @@ function GM:MakePreferredMenu()
 	frame.btnMaxim:SetVisible(false)
 	
 	frame.Close = function(self)
-		if not LocalPlayer():IsZM() then
-			gui.EnableScreenClicker(false)
-		end
+		gui.EnableScreenClicker((LocalPlayer():IsZM() and GAMEMODE.powerMenu:IsVisible()) or not GAMEMODE:GetRoundActive())
 		self:Remove()
 	end
 	
