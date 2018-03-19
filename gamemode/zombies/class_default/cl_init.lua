@@ -23,6 +23,14 @@ function NPC:PreDraw(npc)
 			end
 		end
 		
+		if cvars.Number("zm_cl_spawntype", 0) == 1 then
+			if npc.Time == nil then
+				return true
+			elseif npc.LifeTime > CurTime() then 
+				return false 
+			end
+		end
+		
 		local v_qual = GetConVar("zm_vision_quality"):GetInt()
 		if v_qual >= 2 then
 			render.ClearStencil()

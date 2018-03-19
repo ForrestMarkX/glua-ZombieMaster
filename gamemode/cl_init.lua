@@ -189,27 +189,65 @@ local startVal = 0
 local endVal = 1
 local fadeSpeed = 1.6
 local function FadeToDraw(self)
-	if GAMEMODE:CallZombieFunction(self, "PreDraw") then return end
-	
-	if self.fadeAlpha < 1 then
-		self.fadeAlpha = self.fadeAlpha + fadeSpeed * FrameTime()
-		self.fadeAlpha = math.Clamp(self.fadeAlpha, startVal, endVal)
-		
-		render.SetBlend(self.fadeAlpha)
-		if self.OldDraw then	
-			self:OldDraw()
-		else 
-			self:DrawModel() 
+	if cvars.Number("zm_cl_spawntype", 0) == 1 then
+		if self.LifeTime > CurTime() then
+			local mn, mx = self:GetRenderBounds()
+			local Down = -self:GetUp()
+			local Bottom = self:GetPos() + mn
+			local Top = self:GetPos() + mx
+
+			local Fraction = (self.LifeTime - CurTime()) / self.Time
+			Fraction = math.Clamp(Fraction / 1, 0, 1)
+
+			local Lerped = LerpVector(Fraction, Top, Bottom)
+
+			local normal = Down
+			local distance = normal:Dot(Lerped)
+
+			local bEnabled = render.EnableClipping(true)
+			render.PushCustomClipPlane(normal, distance)
+				render.SetBlend(Lerp(Fraction, 1, 0))
+				render.SetColorModulation(1, 0, 0)
+					if self.OldDraw then	
+						self:OldDraw()
+					else 
+						self:DrawModel() 
+					end 
+				render.SetBlend(1)
+				render.SetColorModulation(1, 1, 1)
+			render.PopCustomClipPlane()
+			render.EnableClipping(bEnabled)
+		else
+			if self.OldDraw then	
+				self:OldDraw()
+			else 
+				self:DrawModel() 
+			end
 		end
-		render.SetBlend(1)
 	else
-		if self.OldDraw then	
-			self:OldDraw()
-		else 
-			self:DrawModel() 
+		if self.fadeAlpha < 1 then
+			self.fadeAlpha = self.fadeAlpha + fadeSpeed * FrameTime()
+			self.fadeAlpha = math.Clamp(self.fadeAlpha, startVal, endVal)
+			
+			render.SetBlend(self.fadeAlpha)
+				if self.OldDraw then	
+					self:OldDraw()
+				else 
+					self:DrawModel() 
+				end 
+			render.SetBlend(1)
+		else
+			if self.OldDraw then	
+				self:OldDraw()
+			else 
+				self:DrawModel() 
+			end
 		end
 	end
-	
+end
+local function OverrideDraw(self)
+	if GAMEMODE:CallZombieFunction(self, "PreDraw") then return end
+	FadeToDraw(self)
 	GAMEMODE:CallZombieFunction(self, "PostDraw")
 end
 function GM:InitPostEntity()
@@ -230,7 +268,7 @@ function GM:InitPostEntity()
 		
 		ENT.fadeAlpha = 0
 		ENT.OldDraw = ENT.OldDraw or ENT.Draw
-		ENT.Draw = FadeToDraw
+		ENT.Draw = OverrideDraw
 	end
 	
 	vgui.CreateFromTable{
@@ -240,6 +278,22 @@ function GM:InitPostEntity()
 			hook.Run("OnScreenSizeChange", ScrW(), ScrH())
 		end
 	}:ParentToHUD()
+end
+
+function GM:NetworkEntityCreated( ent )
+	-- Used from Sandbox cause I'm too lazy to port my version from ZS
+	if ent:GetSpawnEffect() and ent:GetCreationTime() > (CurTime() - 1.0) then
+		-- Okay so it seems scripted ents set all variables to nil on spawn and can't be set until 1 frame after spawn probably when Initialize is called
+		if ent:IsScripted() then
+			timer.Simple(0, function()
+				ent.Time = 0.55
+				ent.LifeTime = CurTime() + ent.Time
+			end)
+		else
+			ent.Time = 0.55
+			ent.LifeTime = CurTime() + ent.Time
+		end
+	end
 end
 
 function GM:PostGamemodeLoaded()
@@ -336,7 +390,7 @@ function GM:OnEntityCreated(ent)
 
 		if not ent:IsScripted() then
 			ent.fadeAlpha = 0
-			ent.RenderOverride = FadeToDraw
+			ent.RenderOverride = OverrideDraw
 		end
 	end
 	

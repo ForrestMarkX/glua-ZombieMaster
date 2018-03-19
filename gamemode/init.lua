@@ -302,6 +302,8 @@ function GM:OnEntityCreated(ent)
 			ent:SetShouldServerRagdoll(false)
 		end)
 		
+		ent:SetSpawnEffect(true)
+		
 		for index, npc in pairs(self.iZombieList) do
 			hook.Call("AddNPCFriends", self, npc, ent)
 		end
@@ -1333,7 +1335,7 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 		pZombie:Spawn()
 		pZombie:Activate()
 		pZombie:AddEFlags(EFL_IN_SKYBOX)
-
+		
 		self:CallZombieFunction(pZombie, "SetupModel")
 		self:CallZombieFunction(pZombie, "OnSpawned")
 		

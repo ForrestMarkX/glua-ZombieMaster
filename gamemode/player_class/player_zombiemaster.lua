@@ -64,6 +64,7 @@ end
 local healthcircleMaterial = Material("effects/zm_healthring")
 local healtheffect		   = Material("effects/yellowflare")
 local undovision		   = false
+local zmvisionstencil	   = true
 function PLAYER:PreDraw(ply)
 	if ply:IsSurvivor() and ply:Alive() then
 		local plHealth, plMaxHealth = ply:Health(), ply:GetMaxHealth()
@@ -85,28 +86,21 @@ function PLAYER:PreDraw(ply)
 		
 		local v_qual = GetConVar("zm_vision_quality"):GetInt()
 		if v_qual >= 2 then
+			cam.Start3D2D(ply:GetPos(), ply:GetAngles(), 1)
 			render.ClearStencil()
 			render.SetStencilEnable(true)
 			
-				render.SetStencilWriteMask(255)
-				render.SetStencilTestMask(255)
-				render.SetStencilReferenceValue(15)
+			render.SetStencilWriteMask(255)
+			render.SetStencilTestMask(255)
+			render.SetStencilReferenceValue(15)
+			
+			render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+			render.SetStencilZFailOperation(STENCILOPERATION_REPLACE)
+			render.SetStencilPassOperation(STENCILOPERATION_KEEP)
+			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
 				
-				render.SetStencilFailOperation(STENCILOPERATION_KEEP)
-				render.SetStencilZFailOperation(STENCILOPERATION_REPLACE)
-				render.SetStencilPassOperation(STENCILOPERATION_KEEP)
-				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
-				
-				ply:DrawModel()
-				
-				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
-				cam.Start3D2D(npc:GetPos(), npc:GetAngles(), 1)
-					render.SetMaterial(ZM_Vision)
-					render.DrawScreenQuad()
-				cam.End3D2D()
-				
-			render.SetStencilEnable(false)
-		elseif v_qual == 1 and not self.Player:IsLineOfSightClear(ply:GetPos()) then
+			zmvisionstencil = true
+		elseif v_qual == 1 and not self.Player:IsLineOfSightClear(ply) then
 			undovision = true
 			
 			render.ModelMaterialOverride(ZM_Vision_Low)
@@ -123,6 +117,16 @@ function PLAYER:PostDraw(ply)
 		
 		render.ModelMaterialOverride()
 		render.SetColorModulation(1, 1, 1)
+	end
+	
+	if zmvisionstencil then
+		zmvisionstencil = false
+		
+		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+		render.SetMaterial(ZM_Vision)
+		render.DrawScreenQuad()
+		render.SetStencilEnable(false)
+		cam.End3D2D()
 	end
 	
 	return BaseClass.PostDraw(self, ply)

@@ -129,8 +129,9 @@ LANGUAGE.ragdoll_fade_speed                 = "Fade Speed"
 LANGUAGE.ragdoll_fade_time                  = "Time before fadeout"
 
 LANGUAGE.quality_settings					= "Quality Settings"
-LANGUAGE.zm_visionq_label					= "Zombie Master Vision Quality"
+LANGUAGE.zm_vision_quality				    = "Zombie Master Vision Quality"
 LANGUAGE.should_draw_itemhalo				= "Draw Item Halos"
+LANGUAGE.zm_spawntype_label					= "Spawn Effect Type"
 
 LANGUAGE.other_settings                     = "Other Settings"
 LANGUAGE.health_circle_brightness           = "Health Circle Brightness"

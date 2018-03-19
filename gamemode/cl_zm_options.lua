@@ -12,6 +12,7 @@ CreateClientConVar("zm_itemhalo_g", "0", true, false, "Item halo green color min
 CreateClientConVar("zm_itemhalo_b", "0", true, false, "Item halo blue color min. 0 max. 255")
 
 CreateClientConVar("zm_vision_quality", "2", true, false, "The quality of the zombie master vision drawing.")
+CreateClientConVar("zm_cl_spawntype", "1", true, false, "What type of spawn drawing should we use?")
 
 CreateClientConVar("zm_shouldragdollsfade", "1", true, false, "Should ragdolls spawned by zombies fade out?")
 CreateClientConVar("zm_cl_ragdoll_fadetime", "30", true, false, "How much time in seconds before the ragdolls fadeout.")
