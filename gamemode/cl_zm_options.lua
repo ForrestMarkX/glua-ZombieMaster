@@ -1,9 +1,17 @@
 CreateClientConVar("zm_preference", "0", true, true, "What is your Zombie Master preference? (0 = Survivor, 1 = Zombie Master)")
 CreateClientConVar("zm_nopreferredmenu", "0", true, true, "Toggles the preference menu to appear or not.")
 CreateClientConVar("zm_scrollwheelsensativity", "20", true, false, "How sensitive the mouse scroll is when moving with ZM.")
+CreateClientConVar("zm_drawitemhalos", "1", true, false, "Should Halos be drawn on weapons and ammo?")
 
 CreateClientConVar("zm_dropweaponkey", "12", true, false, "Key enum to use for dropping your currently held weapon.")
 CreateClientConVar("zm_dropammokey", "32", true, false, "Key enum to use for dropping your currently held weapons ammo.")
+CreateClientConVar("zm_killzombieskey", "73", true, false, "Key enum to use for killing all selected zombies.")
+
+CreateClientConVar("zm_itemhalo_r", "255", true, false, "Item halo red color min. 0 max. 255")
+CreateClientConVar("zm_itemhalo_g", "0", true, false, "Item halo green color min. 0 max. 255")
+CreateClientConVar("zm_itemhalo_b", "0", true, false, "Item halo blue color min. 0 max. 255")
+
+CreateClientConVar("zm_vision_quality", "2", true, false, "The quality of the zombie master vision drawing.")
 
 CreateClientConVar("zm_shouldragdollsfade", "1", true, false, "Should ragdolls spawned by zombies fade out?")
 CreateClientConVar("zm_cl_ragdoll_fadetime", "30", true, false, "How much time in seconds before the ragdolls fadeout.")

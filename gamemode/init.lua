@@ -241,6 +241,9 @@ function GM:CreateCustomAmmo(ent, bNoSpawn)
 	return ent
 end
 
+local function ShouldAlwaysBeInPVS(ent)
+	return ent:IsPlayer() or ent:IsNPC() or string.sub(ent:GetClass(), 1, 12) == "prop_physics" or string.sub(ent:GetClass(), 1, 12) == "func_physics"
+end
 function GM:OnEntityCreated(ent)
 	if string.sub(ent:GetClass(), 1, 12) == "prop_physics" or string.sub(ent:GetClass(), 1, 12) == "func_physics" then
 		local pos = ent:GetPos()
@@ -255,6 +258,10 @@ function GM:OnEntityCreated(ent)
 			SafeRemoveEntityDelayed(ent, 0)
 			return
 		end
+	end
+	
+	if ShouldAlwaysBeInPVS(ent) then
+		ent:AddEFlags(EFL_IN_SKYBOX)
 	end
 	
 	if (string.sub(ent:GetClass(), 1, 9) == "item_ammo" or string.sub(ent:GetClass(), 1, 8) == "item_box") and self.bMapWasInitilized then
@@ -538,6 +545,7 @@ function GM:OnPlayerChangedTeam(ply, oldTeam, newTeam)
 	if newTeam == TEAM_SPECTATOR then
 		ply:SetPos(ply:EyePos())
 	elseif newTeam == TEAM_ZOMBIEMASTER then
+		SetGlobalEntity("zm_zombiemaster_player", ply)
 		timer.Simple(0.1, function() ply:SendLua("GAMEMODE:CreateVGUI()") end)
 	end
 	
@@ -1324,6 +1332,7 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 		pZombie.SpawnedFromNode = true
 		pZombie:Spawn()
 		pZombie:Activate()
+		pZombie:AddEFlags(EFL_IN_SKYBOX)
 
 		self:CallZombieFunction(pZombie, "SetupModel")
 		self:CallZombieFunction(pZombie, "OnSpawned")

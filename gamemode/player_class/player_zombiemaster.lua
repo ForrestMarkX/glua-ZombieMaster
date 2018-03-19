@@ -1,5 +1,5 @@
 AddCSLuaFile()
-DEFINE_BASECLASS("player_zm")
+DEFINE_BASECLASS("player_basezm")
 
 local PLAYER = {}
 
@@ -63,6 +63,7 @@ end
 
 local healthcircleMaterial = Material("effects/zm_healthring")
 local healtheffect		   = Material("effects/yellowflare")
+local undovision		   = false
 function PLAYER:PreDraw(ply)
 	if ply:IsSurvivor() and ply:Alive() then
 		local plHealth, plMaxHealth = ply:Health(), ply:GetMaxHealth()
@@ -81,9 +82,50 @@ function PLAYER:PreDraw(ply)
 			render.SetMaterial(healtheffect)
 			render.DrawQuadEasy(pos + Vector(0, 0, 1), Vector(0, 0, 1), 40, 40, Color(255, 255, 255))
 		end
+		
+		local v_qual = GetConVar("zm_vision_quality"):GetInt()
+		if v_qual >= 2 then
+			render.ClearStencil()
+			render.SetStencilEnable(true)
+			
+				render.SetStencilWriteMask(255)
+				render.SetStencilTestMask(255)
+				render.SetStencilReferenceValue(15)
+				
+				render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+				render.SetStencilZFailOperation(STENCILOPERATION_REPLACE)
+				render.SetStencilPassOperation(STENCILOPERATION_KEEP)
+				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+				
+				ply:DrawModel()
+				
+				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+				cam.Start3D2D(npc:GetPos(), npc:GetAngles(), 1)
+					render.SetMaterial(ZM_Vision)
+					render.DrawScreenQuad()
+				cam.End3D2D()
+				
+			render.SetStencilEnable(false)
+		elseif v_qual == 1 and not self.Player:IsLineOfSightClear(ply:GetPos()) then
+			undovision = true
+			
+			render.ModelMaterialOverride(ZM_Vision_Low)
+			render.SetColorModulation(1, 0, 0, 1)
+		end
 	end
 	
 	return BaseClass.PreDraw(self, ply)
+end
+
+function PLAYER:PostDraw(ply)
+	if undovision then
+		undovision = false
+		
+		render.ModelMaterialOverride()
+		render.SetColorModulation(1, 1, 1)
+	end
+	
+	return BaseClass.PostDraw(self, ply)
 end
 
 if CLIENT then
@@ -256,4 +298,12 @@ function PLAYER:CanSuicide()
 	return false
 end
 
-player_manager.RegisterClass("player_zombiemaster", PLAYER, "player_zm")
+function PLAYER:ButtonDown(button)
+	if SERVER then return end
+	
+	if button == cvars.Number("zm_killzombieskey", 0) then
+		RunConsoleCommand("zm_power_killzombies")
+	end
+end
+
+player_manager.RegisterClass("player_zombiemaster", PLAYER, "player_basezm")

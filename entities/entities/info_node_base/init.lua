@@ -77,3 +77,7 @@ function ENT:Trigger(activator)
 		self:Remove()
 	end
 end
+
+function ENT:UpdateTransmitState()
+	return TRANSMIT_ALWAYS
+end

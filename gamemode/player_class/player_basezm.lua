@@ -294,4 +294,4 @@ end
 function PLAYER:DrawHUD()
 end
 
-player_manager.RegisterClass("player_zm", PLAYER, "player_default")
+player_manager.RegisterClass("player_basezm", PLAYER, "player_default")

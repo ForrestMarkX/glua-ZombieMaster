@@ -1,5 +1,5 @@
 AddCSLuaFile()
-DEFINE_BASECLASS("player_zm")
+DEFINE_BASECLASS("player_basezm")
 
 local PLAYER = {}
 
@@ -59,7 +59,7 @@ function PLAYER:PostThink()
 	elseif self.Player:KeyPressed(IN_ATTACK) then
 		self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) + 1
 
-		local players = team.GetPlayers(TEAM_SURVIVOR)
+		local players = player.GetAll()
 		if self.Player.SpectatedPlayerKey > #players then
 			self.Player:Spectate(OBS_MODE_ROAMING)
 			self.Player:SpectateEntity(NULL)
@@ -80,7 +80,7 @@ function PLAYER:PostThink()
 	elseif self.Player:KeyPressed(IN_ATTACK2) then
 		self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 2) - 1
 
-		local players = team.GetPlayers(TEAM_SURVIVOR)
+		local players = player.GetAll()
 		if self.Player.SpectatedPlayerKey <= 0 then
 			self.Player:Spectate(OBS_MODE_ROAMING)
 			self.Player:SpectateEntity(NULL)
@@ -101,4 +101,4 @@ function PLAYER:PostThink()
 	end
 end
 
-player_manager.RegisterClass("player_spectator", PLAYER, "player_zm")
+player_manager.RegisterClass("player_spectator", PLAYER, "player_basezm")

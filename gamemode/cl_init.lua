@@ -20,6 +20,19 @@ include("vgui/dcrosshairinfo.lua")
 
 local zombieMenu	  = nil
 
+GM.ItemEnts = {}
+
+ZM_Vision = CreateMaterial("ZM_Vision_Material", "UnlitGeneric", {
+	[ "$basetexture" ] = "models/debug/debugwhite",
+    [ "$color" ] = "{ 255 0 0 }"
+})
+
+ZM_Vision_Low = CreateMaterial("ZM_Vision_Material_LD", "VertexLitGeneric", {
+	["$basetexture"] = "models/debug/debugwhite",
+	["$model"] = 1,
+	["$ignorez"] = 1
+})
+
 mouseX, mouseY  = 0, 0
 oldMousePos		= Vector(0, 0, 0)
 isDragging 	    = false
@@ -326,6 +339,10 @@ function GM:OnEntityCreated(ent)
 			ent.RenderOverride = FadeToDraw
 		end
 	end
+	
+	if ent:GetClass() == "item_zm_ammo" or ent:IsWeapon() then
+		self.ItemEnts[#self.ItemEnts + 1] = ent
+	end
 end
 
 function GM:SpawnMenuEnabled()
@@ -528,7 +545,14 @@ function GM:GUIMousePressed(mouseCode, aimVector)
 		end
 		
 		if mouseCode == MOUSE_LEFT and not placingShockwave and not placingZombie then
-			local ent = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, SelectionTrace).Entity
+			local trace = {}
+			
+			trace.start = LocalPlayer():GetShootPos()
+			trace.endpos = LocalPlayer():GetShootPos() + (aimVector * 10000)
+			trace.filter = SelectionTrace
+			trace.ignoreworld = true
+			
+			local ent = util.TraceLine(trace).Entity
 			if IsValid(ent) then
 				local class = ent:GetClass()
 				gamemode.Call("SpawnTrapMenu", class, ent)
@@ -680,27 +704,29 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 end
 
 function GM:PostDrawOpaqueRenderables()
-	if LocalPlayer():IsZM() and (zm_rightclicked or zm_placedrally or zm_placedpoweritem) then
-		local size = Either(zm_placedpoweritem, 1 * ((CurTime() - click_delta) * 350), 64 * (1 - (CurTime() - click_delta) * 4))
-		render.SuppressEngineLighting(true)
-		render.OverrideDepthEnable(true, true)
-		if zm_rightclicked or zm_placedpoweritem then
-			render.SetMaterial(selectringMaterial)
-		elseif zm_placedrally then
-			render.SetMaterial(rallyringMaterial)
-		end
-		
-		render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
+	if LocalPlayer():IsZM() then
+		if zm_rightclicked or zm_placedrally or zm_placedpoweritem then
+			local size = Either(zm_placedpoweritem, 1 * ((CurTime() - click_delta) * 350), 64 * (1 - (CurTime() - click_delta) * 4))
+			render.SuppressEngineLighting(true)
+			render.OverrideDepthEnable(true, true)
+			if zm_rightclicked or zm_placedpoweritem then
+				render.SetMaterial(selectringMaterial)
+			elseif zm_placedrally then
+				render.SetMaterial(rallyringMaterial)
+			end
 			
-		if (zm_placedpoweritem and size >= 128) or (not zm_placedpoweritem and size <= 0) then
-			zm_rightclicked = false
-			zm_placedrally = false
-			zm_placedpoweritem = false
-			didtrace = false
-		end			
-		
-		render.OverrideDepthEnable(false, false)
-		render.SuppressEngineLighting(false)
+			render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
+				
+			if (zm_placedpoweritem and size >= 128) or (not zm_placedpoweritem and size <= 0) then
+				zm_rightclicked = false
+				zm_placedrally = false
+				zm_placedpoweritem = false
+				didtrace = false
+			end			
+			
+			render.OverrideDepthEnable(false, false)
+			render.SuppressEngineLighting(false)
+		end
 	end
 end
 
@@ -768,6 +794,12 @@ function GM:RemoveZMPanels()
 	
 	if IsValid(self.ToolLab_Center_Tip) then
 		self.ToolLab_Center_Tip:Remove()
+	end
+end
+
+function GM:PreDrawHalos()
+	if LocalPlayer():IsSurvivor() and GetConVar("zm_drawitemhalos"):GetBool() then
+		halo.Add(self.ItemEnts, Color(cvars.Number("zm_itemhalo_r", 0), cvars.Number("zm_itemhalo_g", 0), cvars.Number("zm_itemhalo_b", 0)), 1, 1, 2)
 	end
 end
 

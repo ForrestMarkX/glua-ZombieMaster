@@ -17,7 +17,7 @@ include("sh_players.lua")
 include("sh_entites.lua")
 include("sh_zombies.lua")
 
-include("player_class/player_zm.lua")
+include("player_class/player_basezm.lua")
 include("player_class/player_survivor.lua")
 include("player_class/player_zombiemaster.lua")
 include("player_class/player_spectator.lua")
@@ -69,7 +69,7 @@ function GM:CreateTeams()
 end
 
 function GM:FindZM()
-	return team.GetPlayers(TEAM_ZOMBIEMASTER)[1]
+	return GetGlobalEntity("zm_zombiemaster_player")
 end
 
 function GM:PlayerShouldTakeDamage(pl, attacker)

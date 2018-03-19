@@ -1,5 +1,5 @@
 AddCSLuaFile()
-DEFINE_BASECLASS("player_zm")
+DEFINE_BASECLASS("player_basezm")
 
 local PLAYER = {}
 
@@ -139,7 +139,7 @@ function PLAYER:AllowPickup(ent)
 end
 
 function PLAYER:CanPickupWeapon(ent)
-	if self.Player.DelayPickup and self.Player.DelayPickup > CurTime() then 
+	if SERVER and self.Player.DelayPickup and self.Player.DelayPickup > CurTime() then 
 		self.Player.DelayPickup = 0
 		return false 
 	end
@@ -165,7 +165,7 @@ function PLAYER:CanPickupWeapon(ent)
 			end
 		end
 		
-		if ent:CreatedByMap() or ent.Dropped then
+		if SERVER and (ent:CreatedByMap() or ent.Dropped) then
 			local class = ent:GetClass()
 			
 			self.Player:Give(class)
@@ -338,4 +338,4 @@ function PLAYER:ShouldTakeDamage(attacker)
 	return true
 end
 
-player_manager.RegisterClass("player_survivor", PLAYER, "player_zm")
+player_manager.RegisterClass("player_survivor", PLAYER, "player_basezm")
