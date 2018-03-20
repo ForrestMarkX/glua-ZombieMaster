@@ -20,6 +20,8 @@ function ENT:KeyValue(key, value)
 		self.HoldTime = self.HoldTime or tonumber(value)
 	elseif key == "message" then
 		self.Message = self.Message or value
+	elseif string.Left(key, 2) == "on" then
+		self:StoreOutput(key, value)
 	end
 end
 
@@ -28,6 +30,8 @@ function ENT:AcceptInput(name, caller, activator, arg)
 	if name == "display" then
 		self:InputDisplay(activator)
 		return true
+	elseif string.Left(name, 2) == "on" then
+		self:TriggerOutput(name, activator, args)
 	end
 end
 
