@@ -66,7 +66,7 @@ CreateConVar("zm_maxammo_smg1", "60", FCVAR_REPLICATED, "Max smg1 ammo that play
 CreateConVar("zm_maxammo_357", "20", FCVAR_REPLICATED, "Max 357 ammo that players can hold.")
 CreateConVar("zm_maxammo_buckshot", "24", FCVAR_REPLICATED, "Max buckshot ammo that players can hold.")
 CreateConVar("zm_maxammo_revolver", "24", FCVAR_REPLICATED, "Max revolver ammo that players can hold.")
-CreateConVar("zm_maxammo_molotov", "3", FCVAR_REPLICATED, "Max molotov ammo that players can hold.")
+CreateConVar("zm_maxammo_molotov", "1", FCVAR_REPLICATED, "Max molotov ammo that players can hold.")
 
 CreateConVar("zm_zombie_health", "55", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Shambler.")
 CreateConVar("zm_fastzombie_health", "40", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets the health used on the Banshee.")

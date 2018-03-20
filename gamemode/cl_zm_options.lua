@@ -12,7 +12,8 @@ CreateClientConVar("zm_itemhalo_g", "0", true, false, "Item halo green color min
 CreateClientConVar("zm_itemhalo_b", "0", true, false, "Item halo blue color min. 0 max. 255")
 
 CreateClientConVar("zm_vision_quality", "2", true, false, "The quality of the zombie master vision drawing.")
-CreateClientConVar("zm_cl_spawntype", "1", true, false, "What type of spawn drawing should we use?")
+CreateClientConVar("zm_cl_spawntype", "1", true, false, "Set the spawn effect type of zombies.")
+CreateClientConVar("zm_cl_nightvision_type", "0", true, false, "Sets the type of nightvision the ZM uses.")
 
 CreateClientConVar("zm_shouldragdollsfade", "1", true, false, "Should ragdolls spawned by zombies fade out?")
 CreateClientConVar("zm_cl_ragdoll_fadetime", "30", true, false, "How much time in seconds before the ragdolls fadeout.")
@@ -74,14 +75,16 @@ local function ZM_Power_NightVision(ply)
 	if ply:IsZM() then
 		GAMEMODE.nightVision = not GAMEMODE.nightVision
 		
-		if GAMEMODE.nightVision then
-			hook.Add("PreRender", "PreRender.Fullbright", StartOfLightingMod)
-			hook.Add("PostRender", "PostRender.Fullbright", EndOfLightingMod)
-			hook.Add("PreDrawHUD", "PreDrawHUD.Fullbright", EndOfLightingMod)
-		else
-			hook.Remove("PreRender", "PreRender.Fullbright")
-			hook.Remove("PostRender", "PostRender.Fullbright")
-			hook.Remove("PreDrawHUD", "PreDrawHUD.Fullbright")
+		if cvars.Number("zm_cl_nightvision_type") == 0 then
+			if GAMEMODE.nightVision then
+				hook.Add("PreRender", "PreRender.Fullbright", StartOfLightingMod)
+				hook.Add("PostRender", "PostRender.Fullbright", EndOfLightingMod)
+				hook.Add("PreDrawHUD", "PreDrawHUD.Fullbright", EndOfLightingMod)
+			else
+				hook.Remove("PreRender", "PreRender.Fullbright")
+				hook.Remove("PostRender", "PostRender.Fullbright")
+				hook.Remove("PreDrawHUD", "PreDrawHUD.Fullbright")
+			end
 		end
 		
 		ply:PrintTranslatedMessage(HUD_PRINTTALK, "toggled_nightvision")

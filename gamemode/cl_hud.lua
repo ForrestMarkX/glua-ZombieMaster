@@ -245,6 +245,7 @@ function MakepOptions()
 	catagory:SetLabel(translate.Get("volunteer_settings"))
 	
 	local catagorylist = vgui.Create("DScrollPanel", list)
+	catagorylist:GetCanvas():DockPadding(0, 8, 0, 8)
 	catagory:SetContents(catagorylist)
 	
 	local check = vgui.Create("DCheckBoxLabel")
@@ -394,6 +395,26 @@ function MakepOptions()
 		RunConsoleCommand("zm_vision_quality", value == "HD" and 2 or value == "LD" and 1 or 0)
 	end
 	dropdown:SetText(qualitynum == 2 and "HD" or qualitynum == 1 and "LD" or "Off")
+	catagorylist:AddItem(dropdown)
+	
+	local qualitylab = vgui.Create("DLabel", list)
+	qualitylab:Dock(TOP)
+	qualitylab:SetFont("OptionsHelp")
+	qualitylab:SetText(translate.Get("zm_nightvision_type"))
+	qualitylab:SetTextColor(color_white)
+	qualitylab:SizeToContents()
+	catagorylist:AddItem(qualitylab)
+	
+	local qualitynum = cvars.Number("zm_cl_nightvision_type", 0)
+	local dropdown = vgui.Create("DComboBox", list)
+	dropdown:Dock(TOP)
+	dropdown:SetMouseInputEnabled(true)
+	dropdown:AddChoice("Dynamic Light")
+	dropdown:AddChoice("Full Bright")
+	dropdown.OnSelect = function(me, index, value, data)
+		RunConsoleCommand("zm_cl_nightvision_type", value == "Dynamic Light" and 1 or 0)
+	end
+	dropdown:SetText(qualitynum == 1 and "Dynamic Light" or "Full Bright")
 	catagorylist:AddItem(dropdown)
 	
 	local qualitylab = vgui.Create("DLabel", list)
@@ -648,7 +669,9 @@ function GM:MakePreferredMenu()
 	frame.btnMaxim:SetVisible(false)
 	
 	frame.Close = function(self)
-		gui.EnableScreenClicker((LocalPlayer():IsZM() and GAMEMODE.powerMenu:IsVisible()) or not GAMEMODE:GetRoundActive())
+		if not LocalPlayer():IsZM() then
+			gui.EnableScreenClicker(false)
+		end
 		self:Remove()
 	end
 	

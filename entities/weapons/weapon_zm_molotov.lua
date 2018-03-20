@@ -222,3 +222,9 @@ function SWEP:DrawJiggeringSprite(vecAttach)
 
 	render.DrawSprite(vecAttach, self.m_iLastJiggerX, self.m_iLastJiggerY, flamecolor)
 end
+
+function SWEP:DrawHUD()
+	if cvars.Number("zm_maxammo_molotov") > 1 then
+		BaseClass.DrawHUD(self)
+	end
+end

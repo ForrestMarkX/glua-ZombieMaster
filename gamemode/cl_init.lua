@@ -316,6 +316,8 @@ function GM:SetupFonts()
 	surface.CreateFont("zm_hud_font_normal", {font = "Verdana RU", size = ScreenScale(14), weight = 1000})
 	surface.CreateFont("zm_hud_font_big", {font = "Verdana RU", size = ScreenScale(24), weight = 1000})
 	
+	surface.CreateFont("zm_game_text_small", {font = "Dead Font Walking", size = ScreenScale(9), weight = 1000})
+	
 	surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana RU", size = ScreenScale(11)})
 	surface.CreateFont("ZMScoreBoardTitleSub", {font = "Verdana RU", size = ScreenScale(5), weight = 1000})
 	surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana RU", size = ScreenScale(5)})
@@ -394,7 +396,7 @@ function GM:OnEntityCreated(ent)
 		end
 	end
 	
-	if ent:GetClass() == "item_zm_ammo" or ent:IsWeapon() then
+	if ent:GetClass() == "item_zm_ammo" or ent:GetClass() == "item_ammo_revolver" or ent:IsWeapon() then
 		self.ItemEnts[#self.ItemEnts + 1] = ent
 	end
 end
@@ -791,17 +793,31 @@ function GM:RenderScreenspaceEffects()
 		render.DrawScreenQuad()
 	elseif LocalPlayer():IsZM() then
 		if self.nightVision then
-			self.nightVisionCur = self.nightVisionCur or 0.5
+			if cvars.Number("zm_cl_nightvision_type") == 0 then
+				self.nightVisionCur = self.nightVisionCur or 0.5
+				
+				if self.nightVisionCur < 0.995 then 
+					self.nightVisionCur = self.nightVisionCur + 0.02 *(1 - self.nightVisionCur)
+				end
 			
-			if self.nightVisionCur < 0.995 then 
-				self.nightVisionCur = self.nightVisionCur + 0.02 *(1 - self.nightVisionCur)
+				nightVision_ColorMod["$pp_colour_brightness"] = self.nightVisionCur * 0.8
+				nightVision_ColorMod["$pp_colour_contrast"]   = self.nightVisionCur * 1.1
+			
+				DrawColorModify(nightVision_ColorMod)
+				DrawBloom(0, self.nightVisionCur * 3.6, 0.1, 0.1, 1, self.nightVisionCur * 0.5, 0, 1, 0)
+			else
+				local dlight = DynamicLight(LocalPlayer():EntIndex())
+				if dlight then
+					dlight.pos = EyePos()
+					dlight.r = 255
+					dlight.g = 25
+					dlight.b = 8
+					dlight.brightness = 6
+					dlight.Decay = 1000
+					dlight.Size = 2048
+					dlight.DieTime = CurTime() + 5
+				end
 			end
-		
-			nightVision_ColorMod["$pp_colour_brightness"] = self.nightVisionCur * 0.8
-			nightVision_ColorMod["$pp_colour_contrast"]   = self.nightVisionCur * 1.1
-		
-			DrawColorModify(nightVision_ColorMod)
-			DrawBloom(0, self.nightVisionCur * 3.6, 0.1, 0.1, 1, self.nightVisionCur * 0.5, 0, 1, 0)
 		end
 	end
 end
@@ -905,12 +921,7 @@ net.Receive("PlayerKilled", function(length)
 end)
 
 net.Receive("zm_coloredprintmessage", function(length)
-	local msg = net.ReadString()
-	local color = net.ReadColor()
-	local dur =	net.ReadUInt(32)
-	local fade = net.ReadFloat()
-	
-	util.PrintMessageC(nil, msg, color, dur, fade)
+	util.PrintMessage(net.ReadString(), LocalPlayer(), net.ReadTable())
 end)
 
 net.Receive("zm_sendlua", function(length)

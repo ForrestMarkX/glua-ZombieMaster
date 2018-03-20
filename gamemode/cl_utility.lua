@@ -45,24 +45,38 @@ function draw.RoundedBoxHollow(bordersize, x, y, w, h, color)
 end
 
 local colBlur = Color(0, 0, 0)
-function draw.SimpleTextBlurry(text, font, x, y, col, xalign, yalign)
+function draw.SimpleTextBlurry(text, font, x, y, col, xalign, yalign, fadestart, fadetime)
 	colBlur.r = col.r
 	colBlur.g = col.g
 	colBlur.b = col.b
 	colBlur.a = col.a * math.Rand(0.35, 0.6)
-
-	draw.SimpleText(text, font.."_blur", x, y, colBlur, xalign, yalign)
+	
+	draw.SimpleText(text, font.."_blur3", x, y, colBlur, xalign, yalign)
 	draw.SimpleTextOutlined(text, font, x, y, col, xalign, yalign, 1, color_black)
+	
+	if fadetime and fadetime > CurTime() then
+		local dur = (fadetime - CurTime()) * 0.5
+		local hurttime = CurTime() - fadestart
+		local blurpoint = 10
+		if dur - hurttime < (dur * 0.5) then
+			blurpoint = (dur - hurttime) / (dur * 0.25)
+			blurpoint = math.Clamp(math.floor(blurpoint * 6), 1, 10)
+		end
+		
+		draw.SimpleText(text, font.."_blur"..blurpoint, x, y, colBlur, xalign, yalign)
+	end
 end
 
 surface.OldCreateFont = surface.OldCreateFont or surface.CreateFont
 function surface.CreateFont(fontName, fontData)
 	surface.OldCreateFont(fontName, fontData)
 	
-	local blurfont = fontData
-	local blurname = fontName.."_blur"
-	blurfont.blursize = 6
-	surface.OldCreateFont(blurname, blurfont)
+	for i=1, 10 do 
+		local blurfont = fontData
+		local blurname = fontName.."_blur"..i
+		blurfont.blursize = i
+		surface.OldCreateFont(blurname, blurfont)
+	end
 end
 
 function ScaleNumberByResolution(res, num)

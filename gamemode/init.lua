@@ -1118,7 +1118,7 @@ function GM:SetPlayerToZombieMaster(pl)
 	self.ZombieMasterPriorities[pl] = 0
 
 	PrintTranslatedMessage(HUD_PRINTTALK, "x_has_become_the_zombiemaster", pl:Name())
-	util.PrintMessageC(pl, translate.ClientGet(pl, "zm_move_instructions"), Color(255, 0, 0))
+	--util.PrintMessageC(pl, translate.ClientGet(pl, "zm_move_instructions"), Color(255, 0, 0))
 
 	pl:SetZMPoints(425)
 	hook.Call("IncreaseResources", self, pl)
@@ -2127,7 +2127,7 @@ function GM:AddResources()
 	resource.AddFile( "models/zombie/zm_fast.mdl" )
 	resource.AddFile( "models/zombiespawner.mdl" )
 	resource.AddFile( "particles/zm_blood.pcf" )
-	resource.AddFile( "resource/fonts/typenoksidi.ttf" )
+	resource.AddFile( "resource/fonts/deadfontwalking.ttf" )
 	resource.AddFile( "resource/fonts/verdanaru.ttf" )
 	resource.AddFile( "resource/fonts/zombiemaster.ttf" )
 	resource.AddFile( "sound/ambient/lightning.wav" )
