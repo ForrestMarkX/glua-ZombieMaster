@@ -34,7 +34,7 @@ function util.PrintMessage(uname, pl, tab)
 		msg = msg .. "</font>"
 	elseif type(tab.Message) == "string" then
 		if tab.Font then msg = "<font=" .. tab.Font .. ">" end
-		msg = tab.Message
+		msg = msg .. tab.Message
 		if tab.Font then msg = msg .. "</font>" end
 	else
 		error("The message was not a string or a table!")
@@ -110,7 +110,7 @@ if not CLIENT then return end
 local function ZoneSelect(x1, y1, x2, y2)
 	local SelectedZombies = {}
 	for _, npc in pairs(ents.FindByClass("npc_*")) do
-		local npc_spos = npc:GetPos():ToScreen()
+		local npc_spos = npc:WorldSpaceCenter():ToScreen()
 		if (npc_spos.x > x1 and npc_spos.x < x2 and npc_spos.y > y1 and npc_spos.y < y2) then
 			SelectedZombies[#SelectedZombies + 1] = npc
 		end
