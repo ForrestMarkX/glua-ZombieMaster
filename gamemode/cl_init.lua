@@ -17,6 +17,7 @@ include("vgui/dpowerpanel.lua")
 include("vgui/dmodelselector.lua")
 include("vgui/dclickableavatar.lua")
 include("vgui/dcrosshairinfo.lua")
+include("vgui/dhintpanel.lua")
 
 local zombieMenu	  = nil
 
@@ -693,6 +694,27 @@ function GM:CreateVGUI()
 	self.ToolLab_Center_Tip = vgui.Create("DLabel", self.ToolPan_Center_Tip)
 	self.ToolLab_Center_Tip:SetTextColor(color_white)
 	self.ToolLab_Center_Tip:SetFont("OptionsHelpBig")
+	
+	if cvars.Bool("zm_cl_enablehints") then
+		self.ZM_Center_Hints = vgui.Create("zm_tippanel")
+		self.ZM_Center_Hints:SetSize(ScrW() * 0.1, ScrH() * 0.05)
+		self.ZM_Center_Hints:InvalidateLayout(true)
+		self.ZM_Center_Hints:AlignBottom(ScrH() * 0.25)
+		self.ZM_Center_Hints:ParentToHUD()
+		
+		self.ZM_Center_Hints:SetHint(translate.Get("zm_hint_intro"))
+		self.ZM_Center_Hints:SetActive(true, 3)
+		
+		timer.Simple(8, function()
+			self.ZM_Center_Hints:SetHint(translate.Format("zm_hint_movement", input.LookupBinding("+speed", true)))
+			self.ZM_Center_Hints:SetActive(true, 3)
+			
+			timer.Simple(8, function()
+				self.ZM_Center_Hints:SetHint(translate.Format("zm_hint_vision", input.LookupBinding("impulse 100", true)))
+				self.ZM_Center_Hints:SetActive(true, 3)
+			end)
+		end)
+	end
 				
 	timer.Simple(0.25, function()
 		if not IsValid(self.powerMenu) then

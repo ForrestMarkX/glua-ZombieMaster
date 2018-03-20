@@ -88,6 +88,12 @@ GM.Credits = {
 		SteamID = "STEAM_0:1:48113854", 
 		Website = "", 
 		Description = "HL2 Quick Info code"
+	},
+	{
+		Name = "Mehis", 
+		SteamID = "STEAM_0:1:30495520", 
+		Website = "", 
+		Description = "Zombie Master : Reborn"
 	}
 }
 

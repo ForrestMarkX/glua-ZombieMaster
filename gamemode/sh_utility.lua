@@ -111,7 +111,7 @@ local function ZoneSelect(x1, y1, x2, y2)
 	local SelectedZombies = {}
 	for _, npc in pairs(ents.FindByClass("npc_*")) do
 		local npc_spos = npc:GetPos():ToScreen()
-		if (npc_spos.x > x1 and npc_spos.x < x2 and npc_spos.y > y1 and npc_spos.y < y2) and npc_spos.visible then
+		if (npc_spos.x > x1 and npc_spos.x < x2 and npc_spos.y > y1 and npc_spos.y < y2) then
 			SelectedZombies[#SelectedZombies + 1] = npc
 		end
 	end

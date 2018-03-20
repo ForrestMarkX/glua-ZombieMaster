@@ -139,3 +139,8 @@ LANGUAGE.health_circle_brightness           = "Health Circle Brightness"
 LANGUAGE.zm_scrollspeed                     = "Zombie Master Scroll Speed"
 LANGUAGE.zm_playerfov                       = "Player FOV"
 LANGUAGE.zm_color_label                     = "Item Halo Color"
+LANGUAGE.enable_hints                       = "Enable Hints"
+
+LANGUAGE.zm_hint_intro                      = "You are the Zombie Master. Red Orbs spawn zombies and Yellow Orbs manipulate the world!"
+LANGUAGE.zm_hint_movement                   = "Pressing %s will toggle free-look mode."
+LANGUAGE.zm_hint_vision                     = "Activate special vision by pressing %s. See in the dark and track humans and your units through walls!"
