@@ -275,6 +275,7 @@ function MakepOptions()
 	catagory:SetLabel(translate.Get("keybind_settings"))
 	
 	local catagorylist = vgui.Create("DScrollPanel", list)
+	catagorylist:GetCanvas():DockPadding(0, 8, 0, 8)
 	catagory:SetContents(catagorylist)
 	
 	local label = Label(translate.Get("drop_wep_key"), list)
@@ -336,6 +337,7 @@ function MakepOptions()
 	catagory:SetLabel(translate.Get("ragdoll_settings"))
 	
 	local catagorylist = vgui.Create("DScrollPanel", list)
+	catagorylist:GetCanvas():DockPadding(0, 8, 0, 8)
 	catagory:SetContents(catagorylist)
 	
 	local check = vgui.Create("DCheckBoxLabel", list)
@@ -374,6 +376,7 @@ function MakepOptions()
 	catagory:SetLabel(translate.Get("quality_settings"))
 	
 	local catagorylist = vgui.Create("DScrollPanel", list)
+	catagorylist:GetCanvas():DockPadding(0, 8, 0, 8)
 	catagory:SetContents(catagorylist)
 	
 	local qualitylab = vgui.Create("DLabel", list)
@@ -453,6 +456,7 @@ function MakepOptions()
 	catagory:SetLabel(translate.Get("other_settings"))
 	
 	local catagorylist = vgui.Create("DScrollPanel", list)
+	catagorylist:GetCanvas():DockPadding(0, 8, 0, 8)
 	catagory:SetContents(catagorylist)
 	
 	local check = vgui.Create("DCheckBoxLabel", list)
