@@ -46,6 +46,18 @@ local nightVision_ColorMod = {
 	["$pp_colour_mulb"] 		= 0
 }
 
+local lobbyMenu_ColorMod = {
+	["$pp_colour_contrast"] = 1,
+	["$pp_colour_colour"] = 0,
+	["$pp_colour_addr"] = 0,
+	["$pp_colour_addg"] = 0,
+	["$pp_colour_addb"] = 0,
+	["$pp_colour_brightness"] = 0,
+	["$pp_colour_mulr"] = 0,
+	["$pp_colour_mulg"] = 0,
+	["$pp_colour_mulb"] = 0
+}
+
 local playerReadyList = {}
 function GM:PostClientInit()
 	net.Start("zm_player_ready")
@@ -861,6 +873,10 @@ function GM:RenderScreenspaceEffects()
 	if LocalPlayer():IsSpectator() then
 		render.SetMaterial(spec_overlay)
 		render.DrawScreenQuad()
+		
+		if not self:GetRoundActive() and IsValid(self.PlayerLobby) then
+			DrawColorModify(lobbyMenu_ColorMod)
+		end
 	elseif LocalPlayer():IsZM() then
 		if self.nightVision then
 			if cvars.Number("zm_cl_nightvision_type") == 0 then
