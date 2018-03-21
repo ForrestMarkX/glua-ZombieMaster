@@ -67,7 +67,7 @@ local undovision		   = false
 function PLAYER:PreDraw(ply)
 	if ply:IsSurvivor() and ply:Alive() then
 		local plHealth, plMaxHealth = ply:Health(), ply:GetMaxHealth()
-		if plHealth > 0 then
+		if not ply.DrawingSilhouette and plHealth > 0 then
 			local pos = ply:GetPos() + Vector(0, 0, 2)
 			local colour = Color(0, 0, 0, 125)
 			local healthfrac = math.max(plHealth, 0) / plMaxHealth
