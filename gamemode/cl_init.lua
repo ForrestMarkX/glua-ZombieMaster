@@ -353,6 +353,10 @@ local lastwarntim = -1
 function GM:Think()
 	player_manager.RunClass(LocalPlayer(), "Think")
 	
+	for index, npc in pairs(self.iZombieList) do
+		self:CallZombieFunction(npc, "Think")
+	end
+	
 	if IsValid(self.HiddenCSEnt) then
 		local tr = util.QuickTrace(LocalPlayer():GetShootPos(), gui.ScreenToVector(gui.MousePos()) * 10000, player.GetAll())
 		self.HiddenCSEnt:SetPos(tr.HitPos)
