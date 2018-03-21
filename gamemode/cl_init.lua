@@ -836,7 +836,7 @@ function GM:PostDrawOpaqueRenderables()
 				render.SetStencilCompareFunction(STENCIL_EQUAL)
 
 				cam.Start2D()
-					surface.SetDrawColor(Color(cvars.Number("zm_silhouette_r", 0), cvars.Number("zm_silhouette_g", 0), cvars.Number("zm_silhouette_b", 0)))
+					surface.SetDrawColor(self.SilhouetteColor)
 					surface.DrawRect(0, 0, ScrW(), ScrH())
 				cam.End2D()
 			render.SetStencilEnable(false)
@@ -927,7 +927,7 @@ end
 
 function GM:PreDrawHalos()
 	if LocalPlayer():IsSurvivor() and GetConVar("zm_drawitemhalos"):GetBool() then
-		halo.Add(self.ItemEnts, Color(cvars.Number("zm_itemhalo_r", 0), cvars.Number("zm_itemhalo_g", 0), cvars.Number("zm_itemhalo_b", 0)), 1, 1, 2)
+		halo.Add(self.ItemEnts, self.HaloColor, 1, 1, 1)
 	end
 end
 

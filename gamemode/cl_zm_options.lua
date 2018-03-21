@@ -7,14 +7,6 @@ CreateClientConVar("zm_dropweaponkey", "12", true, false, "Key enum to use for d
 CreateClientConVar("zm_dropammokey", "32", true, false, "Key enum to use for dropping your currently held weapons ammo.")
 CreateClientConVar("zm_killzombieskey", "73", true, false, "Key enum to use for killing all selected zombies.")
 
-CreateClientConVar("zm_itemhalo_r", "255", true, false, "Item halo red color min. 0 max. 255")
-CreateClientConVar("zm_itemhalo_g", "0", true, false, "Item halo green color min. 0 max. 255")
-CreateClientConVar("zm_itemhalo_b", "0", true, false, "Item halo blue color min. 0 max. 255")
-
-CreateClientConVar("zm_silhouette_r", "255", true, false, "NPC/Player Silhouette red color min. 0 max. 255")
-CreateClientConVar("zm_silhouette_g", "0", true, false, "NPC/Player Silhouette green color min. 0 max. 255")
-CreateClientConVar("zm_silhouette_b", "0", true, false, "NPC/Player Silhouette blue color min. 0 max. 255")
-
 CreateClientConVar("zm_vision_quality", "2", true, false, "The quality of the zombie master vision drawing.")
 CreateClientConVar("zm_cl_spawntype", "1", true, false, "Set the spawn effect type of zombies.")
 CreateClientConVar("zm_cl_nightvision_type", "0", true, false, "Sets the type of nightvision the ZM uses.")
@@ -124,3 +116,36 @@ local function ZM_Deselect()
 	net.SendToServer()
 end
 concommand.Add("zm_deselect", ZM_Deselect, nil, "Deselects all NPCs")
+
+GM.HaloColor = Color(CreateClientConVar("zm_itemhalo_r", "255", true, false, "Item halo red color min. 0 max. 255"):GetInt(), CreateClientConVar("zm_itemhalo_g", "0", true, false, "Item halo green color min. 0 max. 255"):GetInt(), CreateClientConVar("zm_itemhalo_b", "0", true, false, "Item halo blue color min. 0 max. 255"):GetInt())
+GM.SilhouetteColor = Color(CreateClientConVar("zm_silhouette_r", "255", true, false, "NPC/Player Silhouette red color min. 0 max. 255"):GetInt(), CreateClientConVar("zm_silhouette_g", "0", true, false, "NPC/Player Silhouette green color min. 0 max. 255"):GetInt(), CreateClientConVar("zm_silhouette_b", "0", true, false, "NPC/Player Silhouette blue color min. 0 max. 255"):GetInt())
+
+cvars.AddChangeCallback("zm_itemhalo_r", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.HaloColor.r = tonumber(value_new)
+end)
+
+cvars.AddChangeCallback("zm_itemhalo_g", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.HaloColor.g = tonumber(value_new)
+end)
+
+cvars.AddChangeCallback("zm_itemhalo_b", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.HaloColor.b = tonumber(value_new)
+end)
+
+cvars.AddChangeCallback("zm_silhouette_r", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.SilhouetteColor.r = tonumber(value_new)
+end)
+
+cvars.AddChangeCallback("zm_silhouette_g", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.SilhouetteColor.g = tonumber(value_new)
+end)
+
+cvars.AddChangeCallback("zm_silhouette_b", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.SilhouetteColor.b = tonumber(value_new)
+end)
