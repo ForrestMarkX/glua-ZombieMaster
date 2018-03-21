@@ -11,6 +11,10 @@ CreateClientConVar("zm_itemhalo_r", "255", true, false, "Item halo red color min
 CreateClientConVar("zm_itemhalo_g", "0", true, false, "Item halo green color min. 0 max. 255")
 CreateClientConVar("zm_itemhalo_b", "0", true, false, "Item halo blue color min. 0 max. 255")
 
+CreateClientConVar("zm_silhouette_r", "255", true, false, "NPC/Player Silhouette red color min. 0 max. 255")
+CreateClientConVar("zm_silhouette_g", "0", true, false, "NPC/Player Silhouette green color min. 0 max. 255")
+CreateClientConVar("zm_silhouette_b", "0", true, false, "NPC/Player Silhouette blue color min. 0 max. 255")
+
 CreateClientConVar("zm_vision_quality", "2", true, false, "The quality of the zombie master vision drawing.")
 CreateClientConVar("zm_cl_spawntype", "1", true, false, "Set the spawn effect type of zombies.")
 CreateClientConVar("zm_cl_nightvision_type", "0", true, false, "Sets the type of nightvision the ZM uses.")

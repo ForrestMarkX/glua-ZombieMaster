@@ -139,6 +139,7 @@ LANGUAGE.health_circle_brightness           = "Health Circle Brightness"
 LANGUAGE.zm_scrollspeed                     = "Zombie Master Scroll Speed"
 LANGUAGE.zm_playerfov                       = "Player FOV"
 LANGUAGE.zm_color_label                     = "Item Halo Color"
+LANGUAGE.zm_silhouette_label                = "Player/NPC Silhouette Color"
 LANGUAGE.enable_hints                       = "Enable Hints"
 
 LANGUAGE.zm_hint_intro                      = "You are the Zombie Master. Red Orbs spawn zombies and Yellow Orbs manipulate the world!"

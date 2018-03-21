@@ -32,32 +32,10 @@ function NPC:PreDraw(npc)
 		end
 		
 		local v_qual = GetConVar("zm_vision_quality"):GetInt()
-		if v_qual >= 2 then
-			render.ClearStencil()
-			render.SetStencilEnable(true)
-			
-				render.SetStencilWriteMask(255)
-				render.SetStencilTestMask(255)
-				render.SetStencilReferenceValue(15)
-				
-				render.SetStencilFailOperation(STENCILOPERATION_KEEP)
-				render.SetStencilZFailOperation(STENCILOPERATION_REPLACE)
-				render.SetStencilPassOperation(STENCILOPERATION_KEEP)
-				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
-				
-				npc:DrawModel()
-				
-				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
-				cam.Start3D2D(npc:GetPos(), npc:GetAngles(), 1)
-					render.SetMaterial(ZM_Vision)
-					render.DrawScreenQuad()
-				cam.End3D2D()
-				
-			render.SetStencilEnable(false)
-		elseif v_qual == 1 and not LocalPlayer():IsLineOfSightClear(npc) then
+		if v_qual == 1 and not LocalPlayer():IsLineOfSightClear(npc) then
 			undovision = true
 			
-			render.ModelMaterialOverride(ZM_Vision_Low)
+			render.ModelMaterialOverride(ZM_Vision)
 			render.SetColorModulation(1, 0, 0, 1)
 		end
 	end

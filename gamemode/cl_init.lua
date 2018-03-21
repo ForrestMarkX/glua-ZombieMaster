@@ -22,13 +22,9 @@ include("vgui/dhintpanel.lua")
 local zombieMenu	  = nil
 
 GM.ItemEnts = {}
+GM.SilhouetteEnts = {}
 
-ZM_Vision = CreateMaterial("ZM_Vision_Material", "UnlitGeneric", {
-	[ "$basetexture" ] = "models/debug/debugwhite",
-    [ "$color" ] = "{ 255 0 0 }"
-})
-
-ZM_Vision_Low = CreateMaterial("ZM_Vision_Material_LD", "VertexLitGeneric", {
+ZM_Vision = CreateMaterial("ZM_Vision_Material_LD", "VertexLitGeneric", {
 	["$basetexture"] = "models/debug/debugwhite",
 	["$model"] = 1,
 	["$ignorez"] = 1
@@ -247,6 +243,11 @@ local function FadeToDraw(self)
 	end
 end
 local function OverrideDraw(self)
+	if self.DrawingSilhouette then
+		self:DrawModel()
+		return
+	end
+	
 	if GAMEMODE:CallZombieFunction(self, "PreDraw") then return end
 	FadeToDraw(self)
 	GAMEMODE:CallZombieFunction(self, "PostDraw")
@@ -281,7 +282,7 @@ function GM:InitPostEntity()
 	}:ParentToHUD()
 end
 
-function GM:NetworkEntityCreated( ent )
+function GM:NetworkEntityCreated(ent)
 	-- Used from Sandbox cause I'm too lazy to port my version from ZS
 	if ent:GetSpawnEffect() and ent:GetCreationTime() > (CurTime() - 1.0) then
 		-- Okay so it seems scripted ents set all variables to nil on spawn and can't be set until 1 frame after spawn probably when Initialize is called
@@ -390,15 +391,25 @@ function GM:OnEntityCreated(ent)
 		if zombietab ~= nil then
 			self.iZombieList[ent:EntIndex()] = ent
 		end
+		
+		table.insert(self.SilhouetteEnts, ent)
 
 		if not ent:IsScripted() then
 			ent.fadeAlpha = 0
 			ent.RenderOverride = OverrideDraw
 		end
+	elseif ent:IsPlayer() then
+		table.insert(self.SilhouetteEnts, ent)
 	end
 	
 	if ent:GetClass() == "item_zm_ammo" or ent:GetClass() == "item_ammo_revolver" or ent:IsWeapon() then
 		self.ItemEnts[#self.ItemEnts + 1] = ent
+	end
+end
+
+function GM:EntityRemoved(ent)
+	if ent:IsPlayer() or ent:IsNPC() then
+		table.RemoveByValue(self.SilhouetteEnts, ent)
 	end
 end
 
@@ -804,6 +815,31 @@ function GM:PostDrawOpaqueRenderables()
 			
 			render.OverrideDepthEnable(false, false)
 			render.SuppressEngineLighting(false)
+		end
+		
+		if cvars.Number("zm_vision_quality", 0) >= 2 then
+			render.ClearStencil()
+			render.SetStencilEnable(true)
+				render.SetStencilWriteMask(255)
+				render.SetStencilTestMask(255)
+				render.SetStencilReferenceValue(57)
+
+				render.SetStencilCompareFunction(STENCIL_ALWAYS)
+				render.SetStencilZFailOperation(STENCIL_REPLACE)
+				
+				for k, v in pairs(self.SilhouetteEnts) do
+					v.DrawingSilhouette = true
+					v:DrawModel()
+					v.DrawingSilhouette = false
+				end
+
+				render.SetStencilCompareFunction(STENCIL_EQUAL)
+
+				cam.Start2D()
+					surface.SetDrawColor(Color(cvars.Number("zm_silhouette_r", 0), cvars.Number("zm_silhouette_g", 0), cvars.Number("zm_silhouette_b", 0)))
+					surface.DrawRect(0, 0, ScrW(), ScrH())
+				cam.End2D()
+			render.SetStencilEnable(false)
 		end
 	end
 end
