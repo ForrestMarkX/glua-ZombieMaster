@@ -73,8 +73,15 @@ local path = GM.FolderName.."/gamemode/zombies/"
 local files, directories = file.Find(path.."*", "LUA")
 for i, directory in ipairs(directories) do
 	NPC = {}
+	if file.Exists(path..directory.."/shared.lua", "LUA") then
+		local shf = "zombies/"..directory.."/shared.lua"
+		AddCSLuaFile(shf)
+		include(shf)
+	end
 	for i, filename in ipairs(file.Find(path..directory.."/*.lua", "LUA")) do
-		AddZombieTypes(filename, "zombies/"..directory.."/"..filename, true)
+		if filename ~= "shared.lua" then
+			AddZombieTypes(filename, "zombies/"..directory.."/"..filename, true)
+		end
 	end
 	GM:AddZombieType(directory, NPC)
 	NPC = nil

@@ -39,6 +39,8 @@ include("sv_entites.lua")
 include("sv_npc.lua")
 include("shared.lua")
 
+include("modules/ai/sv_bot.lua")
+
 DEFINE_BASECLASS("gamemode_base")
 
 GM.DeadPlayers = {}

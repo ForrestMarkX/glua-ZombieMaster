@@ -1,7 +1,7 @@
 CreateClientConVar("zm_preference", "0", true, true, "What is your Zombie Master preference? (0 = Survivor, 1 = Zombie Master)")
 CreateClientConVar("zm_nopreferredmenu", "0", true, true, "Toggles the preference menu to appear or not.")
 CreateClientConVar("zm_scrollwheelsensativity", "20", true, false, "How sensitive the mouse scroll is when moving with ZM.")
-CreateClientConVar("zm_drawitemhalos", "1", true, false, "Should Halos be drawn on weapons and ammo?")
+CreateClientConVar("zm_drawitemhalos", "0", true, false, "Should Halos be drawn on weapons and ammo?")
 
 CreateClientConVar("zm_dropweaponkey", "12", true, false, "Key enum to use for dropping your currently held weapon.")
 CreateClientConVar("zm_dropammokey", "32", true, false, "Key enum to use for dropping your currently held weapons ammo.")

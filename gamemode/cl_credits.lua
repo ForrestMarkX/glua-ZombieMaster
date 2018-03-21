@@ -94,6 +94,12 @@ GM.Credits = {
 		SteamID = "STEAM_0:1:30495520", 
 		Website = "", 
 		Description = "Zombie Master : Reborn"
+	},
+	{
+		Name = "Bradenm1", 
+		SteamID = "STEAM_0:1:21894293", 
+		Website = "", 
+		Description = "Zombie Master AI"
 	}
 }
 

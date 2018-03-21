@@ -191,7 +191,7 @@ local endVal = 1
 local fadeSpeed = 1.6
 local function FadeToDraw(self)
 	if cvars.Number("zm_cl_spawntype", 0) == 1 then
-		if self.LifeTime > CurTime() then
+		if self.LifeTime and self.LifeTime > CurTime() then
 			local mn, mx = self:GetRenderBounds()
 			local Down = -self:GetUp()
 			local Bottom = self:GetPos() + mn
