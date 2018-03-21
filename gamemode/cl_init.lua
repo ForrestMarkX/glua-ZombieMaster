@@ -334,11 +334,19 @@ function GM:SetupFonts()
 end
 
 function GM:PrePlayerDraw(ply)
-	if not player_manager.RunClass(LocalPlayer(), "PreDraw", ply) then return true end
+	if LocalPlayer() == ply then
+		if not player_manager.RunClass(ply, "PreDraw") then return true end
+	else
+		if not player_manager.RunClass(LocalPlayer(), "PreDrawOther", ply) then return true end
+	end
 end
 
 function GM:PostPlayerDraw(pl)
-	if not player_manager.RunClass(LocalPlayer(), "PostDraw", pl) then return true end
+	if LocalPlayer() == ply then
+		player_manager.RunClass(ply, "PostDraw")
+	else
+		player_manager.RunClass(LocalPlayer(), "PostDrawOther", ply)
+	end
 end
 
 local lastwarntim = -1

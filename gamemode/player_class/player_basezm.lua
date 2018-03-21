@@ -262,12 +262,18 @@ function PLAYER:CanPickupItem(item)
 	return false
 end
 
-function PLAYER:PreDraw(ply)
+function PLAYER:PreDraw()
 	return true
 end
 
-function PLAYER:PostDraw(ply)
+function PLAYER:PostDraw()
+end
+
+function PLAYER:PreDrawOther(ply)
 	return true
+end
+
+function PLAYER:PostDrawOther(ply)
 end
 
 function PLAYER:ShouldTaunt(act)

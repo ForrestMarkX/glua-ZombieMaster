@@ -64,7 +64,7 @@ end
 local healthcircleMaterial = Material("effects/zm_healthring")
 local healtheffect		   = Material("effects/yellowflare")
 local undovision		   = false
-function PLAYER:PreDraw(ply)
+function PLAYER:PreDrawOther(ply)
 	if ply:IsSurvivor() and ply:Alive() then
 		local plHealth, plMaxHealth = ply:Health(), ply:GetMaxHealth()
 		if not ply.DrawingSilhouette and plHealth > 0 then
@@ -95,7 +95,7 @@ function PLAYER:PreDraw(ply)
 	return BaseClass.PreDraw(self, ply)
 end
 
-function PLAYER:PostDraw(ply)
+function PLAYER:PostDrawOther(ply)
 	if undovision then
 		undovision = false
 		
