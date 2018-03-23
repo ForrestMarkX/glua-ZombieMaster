@@ -67,7 +67,7 @@ local undovision		   = false
 function PLAYER:PreDrawOther(ply)
 	if ply:IsSurvivor() and ply:Alive() then
 		local plHealth, plMaxHealth = ply:Health(), ply:GetMaxHealth()
-		if not ply.DrawingSilhouette and plHealth > 0 then
+		if plHealth > 0 then 
 			local pos = ply:GetPos() + Vector(0, 0, 2)
 			local colour = Color(0, 0, 0, 125)
 			local healthfrac = math.max(plHealth, 0) / plMaxHealth
@@ -85,6 +85,8 @@ function PLAYER:PreDrawOther(ply)
 		
 		local v_qual = GetConVar("zm_vision_quality"):GetInt()
 		if v_qual == 1 and not self.Player:IsLineOfSightClear(ply) then
+			if cvars.Bool("zm_silhouette_zmvision_only") and not GAMEMODE.nightVision then return true end
+			
 			undovision = true
 			
 			render.ModelMaterialOverride(ZM_Vision)

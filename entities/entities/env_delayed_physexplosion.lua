@@ -66,6 +66,7 @@ function ENT:Think()
 
 		//TGB: clean ourselves up, else we stay around til round end
 		timer.Simple(10, function()
+			if not IsValid(self) then return end
 			self:Remove()
 		end)
 		

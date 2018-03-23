@@ -194,13 +194,13 @@ function PLAYER:CanPickupItem(item)
 		return false 
 	end
 	
-	if self.Player:Alive() and item.ClassName ~= nil then
+	if self.Player:Alive() and item:GetClassName() ~= nil then
 		if item.ThrowTime and item.ThrowTime > CurTime() then return false end
 		
 		for _, wep in pairs(self.Player:GetWeapons()) do
 			local primaryammo = wep.Primary and wep.Primary.Ammo or ""
 			local secondaryammo = wep.Secondary and wep.Secondary.Ammo or ""
-			local ammotype = GAMEMODE.AmmoClass[item.ClassName] or ""
+			local ammotype = GAMEMODE.AmmoClass[item:GetClassName()] or ""
 			
 			if string.lower(primaryammo) == string.lower(ammotype) or string.lower(secondaryammo) == string.lower(ammotype) then
 				local ammovar = GetConVar("zm_maxammo_"..primaryammo or secondaryammo)

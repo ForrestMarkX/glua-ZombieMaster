@@ -32,6 +32,8 @@ AddCSLuaFile("vgui/dclickableavatar.lua")
 AddCSLuaFile("vgui/dcrosshairinfo.lua")
 AddCSLuaFile("vgui/dhintpanel.lua")
 
+AddCSLuaFile("modules/glow_effect/cl_glow.lua")
+
 include("sv_zm_options.lua")
 include("sh_players.lua")
 include("sv_players.lua")
@@ -131,7 +133,7 @@ function GM:SetupAmmo()
 				ent:SetPos(ammo:GetPos())
 				ent:SetAngles(ammo:GetAngles())
 				
-				ent.ClassName = ammo:GetClass()
+				ent:SetClassName(ammo:GetClass())
 				ent.Model = ammo:GetModel()
 				ent.AmmoAmount = self.AmmoCache[ammotype]
 				ent.AmmoType = ammotype
@@ -163,7 +165,7 @@ function GM:ConvertAmmo(ammo)
 			ent:SetPos(ammo:GetPos())
 			ent:SetAngles(ammo:GetAngles())
 			
-			ent.ClassName = ammo:GetClass()
+			ent:SetClassName(ammo:GetClass())
 			ent.Model = self.AmmoModels[ammo:GetClass()]
 			ent.AmmoAmount = self.AmmoCache[ammotype]
 			ent.AmmoType = ammotype
@@ -1239,14 +1241,6 @@ end
 
 function GM:PlayerSwitchFlashlight(pl, newstate)
 	return pl:IsSurvivor()
-end
-
-function GM:PlayerCanPickupWeapon(pl, ent)
-	return player_manager.RunClass(pl, "CanPickupWeapon", ent)
-end
-
-function GM:PlayerCanPickupItem(pl, item)
-	return player_manager.RunClass(pl, "CanPickupItem", item)
 end
 
 function GM:SetZMSelection(value)

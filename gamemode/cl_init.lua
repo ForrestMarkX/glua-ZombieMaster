@@ -19,6 +19,8 @@ include("vgui/dclickableavatar.lua")
 include("vgui/dcrosshairinfo.lua")
 include("vgui/dhintpanel.lua")
 
+include("modules/glow_effect/cl_glow.lua")
+
 local zombieMenu	  = nil
 
 GM.ItemEnts = {}
@@ -422,8 +424,6 @@ function GM:OnEntityCreated(ent)
 			ent.fadeAlpha = 0
 			ent.RenderOverride = OverrideDraw
 		end
-	elseif ent:IsPlayer() then
-		table.insert(self.SilhouetteEnts, ent)
 	end
 	
 	if ent:GetClass() == "item_zm_ammo" or ent:GetClass() == "item_ammo_revolver" or ent:IsWeapon() then
@@ -432,7 +432,7 @@ function GM:OnEntityCreated(ent)
 end
 
 function GM:EntityRemoved(ent)
-	if ent:IsPlayer() or ent:IsNPC() then
+	if ent:IsNPC() then
 		table.RemoveByValue(self.SilhouetteEnts, ent)
 	end
 end
@@ -842,6 +842,8 @@ function GM:PostDrawOpaqueRenderables()
 		end
 		
 		if cvars.Number("zm_vision_quality", 0) >= 2 then
+			if cvars.Bool("zm_silhouette_zmvision_only") and not self.nightVision then return end
+			
 			render.ClearStencil()
 			render.SetStencilEnable(true)
 				render.SetStencilWriteMask(255)
@@ -951,11 +953,15 @@ function GM:RemoveZMPanels()
 	if IsValid(self.ToolLab_Center_Tip) then
 		self.ToolLab_Center_Tip:Remove()
 	end
+	
+	if IsValid(self.ZM_Center_Hints) then
+		self.ZM_Center_Hints:Remove()
+	end
 end
 
-function GM:PreDrawHalos()
+function GM:PreDrawOutline()
 	if LocalPlayer():IsSurvivor() and GetConVar("zm_drawitemhalos"):GetBool() then
-		halo.Add(self.ItemEnts, self.HaloColor, 1, 1, 1)
+		outline.Add(self.ItemEnts, self.HaloColor)
 	end
 end
 

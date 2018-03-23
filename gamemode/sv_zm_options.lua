@@ -230,7 +230,7 @@ local function ZM_Drop_Ammo(len, ply)
 		ent.Model = GAMEMODE.AmmoModels[ammoclass]
 		ent.AmmoAmount = amount
 		ent.AmmoType = GAMEMODE.AmmoClass[ammoclass]
-		ent.ClassName = ammoclass
+		ent:SetClassName(ammoclass)
 		
 		local pObj = ent:GetPhysicsObject()
 		local vecVelocity = ply:GetAimVector() * 200

@@ -71,6 +71,7 @@ function meta:DropAllAmmo()
 			
 			local ammoclass = Either(ammotype == "buckshot", "item_box_"..ammotype, "item_ammo_"..ammotype)
 			
+			ent:SetClassName(ammoclass)
 			ent.ClassName = ammoclass
 			ent.Model = GAMEMODE.AmmoModels[ammoclass]
 			ent.AmmoAmount = ammoamount

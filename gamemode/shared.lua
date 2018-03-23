@@ -174,3 +174,11 @@ end
 function GM:PlayerButtonUp(ply, button)
 	player_manager.RunClass(ply, "ButtonUp", button)
 end
+
+function GM:PlayerCanPickupWeapon(pl, ent)
+	return player_manager.RunClass(pl, "CanPickupWeapon", ent)
+end
+
+function GM:PlayerCanPickupItem(pl, item)
+	return player_manager.RunClass(pl, "CanPickupItem", item)
+end

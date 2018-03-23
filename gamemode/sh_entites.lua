@@ -19,3 +19,11 @@ function meta:RandomPointInBounds(vecNormalizedMins, vecNormalizedMaxs)
 	local vecNormalizedSpace = Vector(math.Rand(vecNormalizedMins.x, vecNormalizedMaxs.x), math.Rand(vecNormalizedMins.y, vecNormalizedMaxs.y), math.Rand(vecNormalizedMins.z, vecNormalizedMaxs.z))
 	return self:LocalToWorld(vecNormalizedSpace)
 end
+
+function meta:SetClassName(name)
+	self:SetDTString(0, name)
+end
+
+function meta:GetClassName()
+	return self:GetDTString(0)
+end

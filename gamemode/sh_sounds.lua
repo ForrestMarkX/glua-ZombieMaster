@@ -2,7 +2,7 @@ sound.Add( {
 	name = "ZMPower.PhysExplode_Buildup",
 	channel = CHAN_STATIC,
 	volume = 1.0,
-	level = 130,
+	level = 100,
 	sound = "powers/explosion_3.wav"
 } )
 
@@ -10,7 +10,7 @@ sound.Add( {
 	name = "ZMPower.PhysExplode_Boom",
 	channel = CHAN_STATIC,
 	volume = 1.0,
-	level = 135,
+	level = 100,
 	sound = "powers/explosion_3_boom.wav"
 } )
 
@@ -43,7 +43,7 @@ sound.Add( {
 	name = "Weapon_Shotgun_ZM.Single",
 	channel = CHAN_WEAPON,
 	volume = 1.0,
-	level = 135,
+	level = 95,
 	sound = {"weapons/shotgun_zm/shotgun_fire6_zm.wav", "weapons/shotgun_zm/shotgun_fire7_zm.wav"}
 } )
 
@@ -51,7 +51,7 @@ sound.Add( {
 	name = "Weapon_Shotgun_ZM.Double",
 	channel = CHAN_WEAPON,
 	volume = 1.0,
-	level = 135,
+	level = 95,
 	pitch = { 90, 95 },
 	sound = {"weapons/shotgun_zm/shotgun_fire6_zm.wav", "weapons/shotgun_zm/shotgun_fire7_zm.wav"}
 } )
@@ -102,7 +102,7 @@ sound.Add( {
 	name = "Weapon_Rifle_ZM.Single",
 	channel = CHAN_WEAPON,
 	volume = 0.75,
-	level = 135,
+	level = 95,
 	pitch = { 98, 101 },
 	sound = "weapons/rifle_zm/zm_rifle_fire2.wav"
 } )
@@ -119,7 +119,7 @@ sound.Add( {
 	name = "Weapon_Rifle_ZM.NPC_Single",
 	channel = CHAN_WEAPON,
 	volume = 0.5,
-	level = 135,
+	level = 95,
 	pitch = { 98, 101 },
 	sound = "weapons/rifle_zm/zm_rifle_fire2.wav"
 } )
@@ -160,7 +160,7 @@ sound.Add( {
 	name = "Weapon_SMG_ZM.Single",
 	channel = CHAN_WEAPON,
 	volume = 0.55,
-	level = 135,
+	level = 95,
 	pitch = { 95, 105 },
 	sound = "weapons/smg_zm/smg_fire.wav"
 } )
@@ -169,7 +169,7 @@ sound.Add( {
 	name = "Weapon_SMG_ZM.Double",
 	channel = CHAN_WEAPON,
 	volume = 0.61,
-	level = 135,
+	level = 95,
 	sound = "weapons/smg_zm/smg_fire.wav"
 } )
 
@@ -177,7 +177,7 @@ sound.Add( {
 	name = "Weapon_SMG_ZM.NPC_Single",
 	channel = CHAN_WEAPON,
 	volume = 0.8,
-	level = 135,
+	level = 95,
 	sound = "weapons/smg_zm/smg_fire.wav"
 } )
 
@@ -185,7 +185,7 @@ sound.Add( {
 	name = "Weapon_SMG_ZM.Burst",
 	channel = CHAN_WEAPON,
 	volume = 0.7,
-	level = 135,
+	level = 95,
 	pitch = { 98, 105 },
 	sound = "weapons/smg_zm/smg_fire.wav"
 } )
@@ -226,7 +226,7 @@ sound.Add( {
 	name = "Weapon_pistol_zm.Single",
 	channel = CHAN_WEAPON,
 	volume = 0.8,
-	level = 135,
+	level = 95,
 	pitch = { 98, 101 },
 	sound = { "weapons/pistol_zm/pistol_zm_fire1.wav", "weapons/pistol_zm/pistol_zm_fire2.wav" }
 } )
@@ -235,7 +235,7 @@ sound.Add( {
 	name = "Weapon_pistol_zm.NPC_Single",
 	channel = CHAN_WEAPON,
 	volume = 0.9,
-	level = 135,
+	level = 95,
 	pitch = { 98, 120 },
 	sound = { "weapons/pistol_zm/pistol_zm_fire1.wav", "weapons/pistol_zm/pistol_zm_fire2.wav" }
 } )
