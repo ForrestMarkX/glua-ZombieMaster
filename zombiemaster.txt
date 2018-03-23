@@ -29,8 +29,17 @@
 			"type"		"CheckBox"
 			"default"	"0"
 		}
-		
+				
 		3
+		{
+			"name"		"zm_debug_nolobby"
+			"text"		"[Debug] No Lobby"
+			"help"		"Do not open the lobby menu when the map starts (Used for debugging)"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
+		
+		4
 		{
 			"name"		"zm_roundlimit"
 			"text"		"Round Limit"
@@ -280,6 +289,15 @@
 			"help"		"Disables the sounds players use when taking damage or dieing"
 			"type"		"CheckBox"
 			"default"	"0"
+		}
+		
+		32
+		{
+			"name"		"zm_readytimerlength"
+			"text"		"Ready Timer Length"
+			"help"		"How long the ready timer is in seconds"
+			"type"		"Numeric"
+			"default"	"90"
 		}
 	}
 }
