@@ -1,8 +1,6 @@
 CreateClientConVar("zm_preference", "0", true, true, "What is your Zombie Master preference? (0 = Survivor, 1 = Zombie Master)")
 CreateClientConVar("zm_nopreferredmenu", "0", true, true, "Toggles the preference menu to appear or not.")
 CreateClientConVar("zm_scrollwheelsensativity", "20", true, false, "How sensitive the mouse scroll is when moving with ZM.")
-CreateClientConVar("zm_drawitemhalos", "1", true, false, "Should Halos be drawn on ammo?")
-CreateClientConVar("zm_drawweaponhalos", "1", true, false, "Should Halos be drawn on weapons?")
 
 CreateClientConVar("zm_dropweaponkey", "12", true, false, "Key enum to use for dropping your currently held weapon.")
 CreateClientConVar("zm_dropammokey", "32", true, false, "Key enum to use for dropping your currently held weapons ammo.")
@@ -118,6 +116,24 @@ local function ZM_Deselect()
 	net.SendToServer()
 end
 concommand.Add("zm_deselect", ZM_Deselect, nil, "Deselects all NPCs")
+
+GM.bUseItemHalos = CreateClientConVar("zm_drawitemhalos", "1", true, false, "Should Halos be drawn on ammo?"):GetBool()
+cvars.AddChangeCallback("zm_drawitemhalos", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.bUseItemHalos = tobool(value_new)
+end)
+
+GM.bUseWeaponHalos = CreateClientConVar("zm_drawweaponhalos", "1", true, false, "Should Halos be drawn on weapons?"):GetBool()
+cvars.AddChangeCallback("zm_drawweaponhalos", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.bUseWeaponHalos = tobool(value_new)
+end)
+
+GM.bDisableHalos = CreateClientConVar("zm_nohalos", "0", true, false, "Fully disables the weapon/item halos."):GetBool()
+cvars.AddChangeCallback("zm_nohalos", function( convar_name, value_old, value_new )
+	if not GAMEMODE then return end
+	GAMEMODE.bDisableHalos = tobool(value_new)
+end)
 
 GM.HaloColor = Color(CreateClientConVar("zm_itemhalo_r", "255", true, false, "Item halo red color min. 0 max. 255"):GetInt(), CreateClientConVar("zm_itemhalo_g", "0", true, false, "Item halo green color min. 0 max. 255"):GetInt(), CreateClientConVar("zm_itemhalo_b", "0", true, false, "Item halo blue color min. 0 max. 255"):GetInt())
 GM.SilhouetteColor = Color(CreateClientConVar("zm_silhouette_r", "255", true, false, "NPC/Player Silhouette red color min. 0 max. 255"):GetInt(), CreateClientConVar("zm_silhouette_g", "0", true, false, "NPC/Player Silhouette green color min. 0 max. 255"):GetInt(), CreateClientConVar("zm_silhouette_b", "0", true, false, "NPC/Player Silhouette blue color min. 0 max. 255"):GetInt())

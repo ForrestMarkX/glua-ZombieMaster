@@ -32,8 +32,6 @@ AddCSLuaFile("vgui/dclickableavatar.lua")
 AddCSLuaFile("vgui/dcrosshairinfo.lua")
 AddCSLuaFile("vgui/dhintpanel.lua")
 
-AddCSLuaFile("modules/glow_effect/cl_glow.lua")
-
 include("sv_zm_options.lua")
 include("sh_players.lua")
 include("sv_players.lua")
@@ -41,7 +39,7 @@ include("sv_entites.lua")
 include("sv_npc.lua")
 include("shared.lua")
 
-include("modules/ai/sv_bot.lua")
+include("modules/zombie_master_ai/sv_bot.lua")
 
 DEFINE_BASECLASS("gamemode_base")
 

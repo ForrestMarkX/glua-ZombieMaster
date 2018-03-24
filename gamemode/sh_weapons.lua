@@ -12,5 +12,5 @@ end
 if not CLIENT then return end
 
 function meta:ShouldDrawOutline()
-	return self:GetPos():DistToSqr(LocalPlayer():GetPos()) < 42000 and gamemode.Call("PlayerCanPickupWeapon", LocalPlayer(), self)
+	return GAMEMODE.bUseWeaponHalos and self:GetPos():DistToSqr(LocalPlayer():GetPos()) < 42000 and gamemode.Call("PlayerCanPickupWeapon", LocalPlayer(), self)
 end

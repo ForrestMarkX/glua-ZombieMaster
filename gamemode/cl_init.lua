@@ -19,8 +19,6 @@ include("vgui/dclickableavatar.lua")
 include("vgui/dcrosshairinfo.lua")
 include("vgui/dhintpanel.lua")
 
-include("modules/glow_effect/cl_glow.lua")
-
 local zombieMenu	  = nil
 
 GM.ItemEnts = {}
@@ -816,6 +814,10 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 	end
 end
 
+local mat_Copy		= Material( "pp/copy" )
+local mat_Add		= Material( "pp/add" )
+local rt_Store		= render.GetScreenEffectTexture( 0 )
+local rt_Buffer		= render.GetScreenEffectTexture( 1 )
 function GM:PostDrawOpaqueRenderables()
 	if LocalPlayer():IsZM() then
 		if zm_rightclicked or zm_placedrally or zm_placedpoweritem then
@@ -867,6 +869,59 @@ function GM:PostDrawOpaqueRenderables()
 				cam.End2D()
 			render.SetStencilEnable(false)
 		end
+	elseif LocalPlayer():IsSurvivor() and not self.bDisableHalos then
+		local rt_Scene = render.GetRenderTarget()
+		render.CopyRenderTargetToTexture(rt_Store)
+
+		render.Clear(0, 0, 0, 255, false, true)
+
+		render.SetStencilEnable(true)
+			render.SuppressEngineLighting(true)
+				render.SetStencilWriteMask(1)
+				render.SetStencilTestMask(1)
+				render.SetStencilReferenceValue(1)
+
+				render.SetStencilCompareFunction(STENCIL_ALWAYS)
+				render.SetStencilPassOperation(STENCIL_REPLACE)
+				render.SetStencilFailOperation(STENCIL_KEEP)
+				render.SetStencilZFailOperation(STENCIL_KEEP)
+				
+				for k, v in pairs(self.ItemEnts) do
+					if not IsValid(v) or not v:ShouldDrawOutline() then continue end
+					v:DrawModel()
+				end
+
+				render.SetStencilCompareFunction(STENCIL_EQUAL)
+				render.SetStencilPassOperation(STENCIL_KEEP)
+
+				cam.Start2D()
+					surface.SetDrawColor(self.HaloColor)
+					surface.DrawRect(0, 0, ScrW(), ScrH())
+				cam.End2D()
+			render.SuppressEngineLighting(false)
+		render.SetStencilEnable(false)
+
+		render.CopyRenderTargetToTexture(rt_Buffer)
+		render.SetRenderTarget(rt_Scene)
+		
+		mat_Copy:SetTexture("$basetexture", rt_Store)
+		render.SetMaterial(mat_Copy)
+		
+		render.DrawScreenQuad()
+
+		render.SetStencilEnable(true)
+			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_NOTEQUAL)
+
+			mat_Add:SetTexture("$basetexture", rt_Buffer)
+			render.SetMaterial(mat_Add)
+
+			render.DrawScreenQuadEx(0, 0, ScrW() + 2, ScrH() + 2)
+			render.DrawScreenQuadEx(0, 0, ScrW() - 2, ScrH() - 2)
+		render.SetStencilEnable(false)
+
+		render.SetStencilTestMask(0)
+		render.SetStencilWriteMask(0)
+		render.SetStencilReferenceValue(0)
 	end
 end
 
@@ -956,12 +1011,6 @@ function GM:RemoveZMPanels()
 	
 	if IsValid(self.ZM_Center_Hints) then
 		self.ZM_Center_Hints:Remove()
-	end
-end
-
-function GM:PreDrawOutline()
-	if LocalPlayer():IsSurvivor() and GetConVar("zm_drawitemhalos"):GetBool() then
-		outline.Add(self.ItemEnts, self.HaloColor)
 	end
 end
 
