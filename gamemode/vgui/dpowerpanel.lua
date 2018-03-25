@@ -17,7 +17,8 @@ function PANEL:Init()
 	self.last = nil
 	
 	self:SetSize(128, 128)
-	self:SetPos(ScrW() - 130, ScrH() - 130)
+	self:AlignBottom(4)
+	self:AlignRight(4)
 	
 	self.list = vgui.Create("DIconLayout", self)
 	self.list:SetSize(self:GetWide() - 4, self:GetTall() - 37)
@@ -152,7 +153,8 @@ function PANEL:Paint(w, h)
 end
 
 function PANEL:PerformLayout(w, h)
-	self:SetPos(ScrW() - 130, ScrH() - 130)
+	self:AlignBottom(4)
+	self:AlignRight(4)
 end
 
 vgui.Register("zm_powerpanel", PANEL, "DPanel")
