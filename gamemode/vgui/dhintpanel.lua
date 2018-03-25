@@ -2,7 +2,7 @@ local PANEL = {}
 
 function PANEL:Init()
 	local hinticon = vgui.Create("DImage", self)
-	hinticon:SetSize(32, 32)
+	hinticon:SetSize(ScreenScale(11), ScreenScale(11))
 	hinticon:SetImage("vgui/tt_icon_light.png")
 	hinticon:SetImageColor(Color(255, 0, 0))
 	hinticon:AlignLeft(2)
@@ -75,6 +75,9 @@ function PANEL:PerformLayout(w, h)
 	self:SetSize(self:GetWide() + 8, self:GetTall() + 8)
 	self:Center()
 	self:AlignBottom(ScrH() * 0.25)
+	
+	self.HintIcon:AlignLeft(2)
+	self.HintLabel:MoveRightOf(self.HintIcon)
 	
 	self.HintIcon:CenterVertical()
 	self.HintLabel:CenterVertical()

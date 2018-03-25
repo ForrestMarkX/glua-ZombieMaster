@@ -1,160 +1,157 @@
 local PANEL = {}
 
-local image1 = surface.GetTextureID("VGUI/minicrosshair")
-local image2 = surface.GetTextureID("VGUI/minishockwave")
-local image3 = surface.GetTextureID("VGUI/minigroupadd")
+AccessorFunc(PANEL, "m_Tooltip", "Tip")
+
+function PANEL:OnCursorEntered()
+	GAMEMODE.DrawingPowerTooltip = true
+	GAMEMODE.ToolPan_Center_Tip:SetVisible(true)
+
+	GAMEMODE.ToolLab_Center_Tip:SetText(self:GetTip())
+	GAMEMODE.ToolLab_Center_Tip:SizeToContents()
 	
-local function ButtonPaint(self, w, h)
-	draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, self.alpha))
-	
-	surface.SetDrawColor(255, 255, 255, self.alpha)
-	surface.SetTexture(self.Image)
-	surface.DrawTexturedRect(2, 0, 32, 32)
-	
-	draw.DrawSimpleOutlined(0, 0, w, h -1, color_black)
+	GAMEMODE.ToolPan_Center_Tip:InvalidateLayout(true)
+	GAMEMODE.ToolPan_Center_Tip:SizeToChildren(true, false)
+	GAMEMODE.ToolPan_Center_Tip:SetSize(GAMEMODE.ToolPan_Center_Tip:GetWide() + 15, GAMEMODE.ToolPan_Center_Tip:GetTall())
+	GAMEMODE.ToolLab_Center_Tip:Center()
+	GAMEMODE.ToolPan_Center_Tip:Center()
+	GAMEMODE.ToolPan_Center_Tip:AlignBottom(10)
 end
-function PANEL:Init()
-	self.last = nil
+
+function PANEL:OnCursorExited()
+	GAMEMODE.DrawingPowerTooltip = false
+	GAMEMODE.ToolPan_Center_Tip:SetVisible(false)
+end
+
+function PANEL:Think()
+	self:SetSize(ScreenScale(11), ScreenScale(11))
+end
 	
-	self:SetSize(128, 128)
+vgui.Register("zm_powerbutton", PANEL, "DImageButton")
+
+local PANEL = {}
+
+function PANEL:Paint(w, h)
+	draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, self:IsActive() and 255 or 100))
+	draw.DrawSimpleOutlined(0, 0, w, h - 1, color_black)
+end
+
+function PANEL:PerformLayout()
+	self:ApplySchemeSettings()
+
+	if not self.Image then return end
+
+	self.Image:Center()
+
+	if not self:IsActive() then
+		self.Image:SetImageColor(Color(255, 255, 255, 155))
+	else
+		self.Image:SetImageColor(Color(255, 255, 255, 255))
+	end
+end
+
+function PANEL:ApplySchemeSettings()
+	local ExtraInset = 10
+
+	if self.Image then
+		ExtraInset = ExtraInset + self.Image:GetWide()
+	end
+	
+	self:SetTextInset(ExtraInset, 4)
+	self.Image:SetSize(ScreenScale(8), ScreenScale(8))
+	
+	local w, h = self:GetContentSize()
+	self:SetSize(w, h + self.Image:GetTall())
+
+	DLabel.ApplySchemeSettings(self)
+end
+
+vgui.Register("zm_powertab", PANEL, "DTab")
+
+local PANEL = {}
+
+local image1 = "VGUI/minicrosshair"
+local image2 = "VGUI/minishockwave"
+local image3 = "VGUI/minigroupadd"
+
+local panellist = {}
+	
+function PANEL:Init()
+	self:SetSize(ScrW() * 0.075, ScrH() * 0.15)
 	self:AlignBottom(4)
 	self:AlignRight(4)
 	
-	self.list = vgui.Create("DIconLayout", self)
-	self.list:SetSize(self:GetWide() - 4, self:GetTall() - 37)
-	self.list:SetPos(2, 34)
-	self.list:SetBorder(4)
-	self.list:SetSpaceX(8)
-	self.list:SetSpaceY(8)
-	self.list.Paint = function() end
-	
-	self.button1 = vgui.Create("DPanel", self)
-	self.button1:SetPos(1, 0)
-	self.button1:SetSize(34, 34)
-	self.button1.alpha = 100
-	
-	self.button1.buttons = {
-		{image = "VGUI/miniselectall", func = function() net.Start("zm_selectall_zombies") net.SendToServer() end, tooltip = translate.Get("tooltip_select_all")},
-		{image = "VGUI/minishield", func = function() net.Start("zm_switch_to_defense") net.SendToServer() end, tooltip = translate.Get("tooltip_defend")},
-		{image = "VGUI/minicrosshair", func = function() net.Start("zm_switch_to_offense") net.SendToServer() end, tooltip = translate.Get("tooltip_attack")},
-		{image = "VGUI/miniarrows", func = function() RunConsoleCommand("zm_power_ambushpoint") end, tooltip = translate.Get("tooltip_ambush")},
-		{image = "VGUI/miniceiling", func = function() net.Start("zm_cling_ceiling") net.SendToServer() end, tooltip = translate.Get("tooltip_ceiling")}
-	}
-	
-	self.button1.Image = image1
-	self.button1.Paint = ButtonPaint
-	
-	self.button1.OnMousePressed = function(_self, code)
-		if self.last then
-			self.last.alpha = 100
-		end
-		
-		_self.alpha = 255
-		self.last = _self
-		
-		self.list:Clear()
-		
-		for k, v in ipairs(_self.buttons) do
-			local button = vgui.Create("DImageButton")
-			button:SetSize(32, 32)
-			button:SetImage(v.image)
-			button.DoClick = function()
-				v.func()
-			end
-			
-			button.OnCursorEntered = function(self)
-				GAMEMODE.DrawingPowerTooltip = true
-				GAMEMODE.ToolPan_Center_Tip:SetVisible(true)
+	self.tabScroller:SetOverlap(-4)
+end
 
-				GAMEMODE.ToolLab_Center_Tip:SetText(v.tooltip)
-				GAMEMODE.ToolLab_Center_Tip:SizeToContents()
-				
-				GAMEMODE.ToolPan_Center_Tip:InvalidateLayout(true)
-				GAMEMODE.ToolPan_Center_Tip:SizeToChildren(true, false)
-				GAMEMODE.ToolPan_Center_Tip:SetSize(GAMEMODE.ToolPan_Center_Tip:GetWide() + 15, GAMEMODE.ToolPan_Center_Tip:GetTall())
-				GAMEMODE.ToolLab_Center_Tip:Center()
-				GAMEMODE.ToolPan_Center_Tip:Center()
-				GAMEMODE.ToolPan_Center_Tip:AlignBottom(10)
+function PANEL:AddItem(name, panel, category)
+	for _, tab in pairs(self:GetItems()) do
+		if tab.Name == "PowerTab"..category then
+			tab.Panel.LayoutPan:Add(panel)
+			
+			if not panellist[name] then
+				panellist[name] = {}
 			end
 			
-			button.OnCursorExited = function(self)
-				GAMEMODE.DrawingPowerTooltip = false
-				GAMEMODE.ToolPan_Center_Tip:SetVisible(false)
-			end
-			
-			self.list:Add(button)
-		end
-		
-		if _self.GroupButton then
-			local dropdown = vgui.Create("DComboBox", self.button3)
-			dropdown:SetMouseInputEnabled(true)
-			dropdown:SetPos(0, 10)
-			dropdown:SetText("None")
-			dropdown.OnSelect = function(me, index, value, data)
-				net.Start("zm_setselectedgroup")
-					net.WriteString(string.Replace(tostring(value), "Group ", ""))
-				net.SendToServer()
-			end
-			dropdown.Think = function(self)
-				self.BaseClass.Think(self)
-				
-				if GAMEMODE.bUpdateGroups then
-					local groups = gamemode.Call("GetCurrentZombieGroups")
-					if groups then
-						for i, group in pairs(groups) do
-							self:AddChoice("Group "..i)
-						end
-					end
-					dropdown:SetText(groups and "Group "..gamemode.Call("GetCurrentZombieGroup") or "None")
-					GAMEMODE.bUpdateGroups = false
-				end
-			end
-			self.list:Add(dropdown)
+			panellist[name][tab.Panel] = panel
 		end
 	end
-	self.button1:OnMousePressed()
-	
-	self.button2 = vgui.Create("DPanel", self)
-	self.button2:SetPos(self:GetWide() /2 - 17, 0)
-	self.button2:SetSize(34, 34)
-	self.button2.alpha = 100
-	
-	self.button2.buttons = {
-		{image = "VGUI/minieye", func = function() RunConsoleCommand("zm_power_nightvision") end, tooltip = translate.Get("tooltip_nightvision")},
-		{image = "VGUI/minishockwave", func = function() RunConsoleCommand("zm_power_physexplode") end, tooltip = translate.Format("tooltip_explosion_cost_x", GetConVar("zm_physexp_cost"):GetInt())},
-		{image = "VGUI/minideletezombies", func = function() RunConsoleCommand("zm_power_killzombies") end, tooltip = translate.Get("tooltip_expire_zombies")},
-		{image = "VGUI/minispotcreate", func = function() RunConsoleCommand("zm_power_spotcreate") end, tooltip = translate.Format("tooltip_hidden_zombie_cost_x", GetConVar("zm_spotcreate_cost"):GetInt())}
-	}
-	
-	self.button2.Image = image2
-	self.button2.Paint = ButtonPaint
-	
-	self.button2.OnMousePressed = self.button1.OnMousePressed
-	
-	self.button3 = vgui.Create("DPanel", self)
-	self.button3:SetPos(self:GetWide() - 35, 0)
-	self.button3:SetSize(34, 34)
-	self.button3.GroupButton = true
-	self.button3.alpha = 100
-	self.button3.OnMousePressed = self.button1.OnMousePressed
-	
-	self.button3.buttons = {
-		{image = "VGUI/minigroupadd", func = function() net.Start("zm_creategroup") net.SendToServer() end, tooltip = translate.Get("tooltip_create_squad")},
-		{image = "VGUI/minigroupselect", func = function() net.Start("zm_selectgroup") net.SendToServer() end, tooltip = translate.Get("tooltip_select_squad")}
-	}
-	
-	self.button3.Image = image3
-	self.button3.Paint = ButtonPaint
+end
+
+function PANEL:RemoveItem(name, category)
+	for _, tab in pairs(self:GetItems()) do
+		if tab == "PowerTab"..category and IsValid(panellist[name][tab.Panel]) then
+			panellist[name][tab.Panel]:Remove()
+			panellist[name] = nil
+		end
+	end
+end
+
+function PANEL:AddSheet(label, panel, material, NoStretchX, NoStretchY, Tooltip )
+	if not IsValid(panel) then
+		ErrorNoHalt( "DPropertySheet:AddSheet tried to add invalid panel!" )
+		debug.Trace()
+		return
+	end
+
+	local Sheet = {}
+
+	Sheet.Name = label
+
+	Sheet.Tab = vgui.Create("zm_powertab", self)
+	Sheet.Tab:SetTooltip(Tooltip)
+	Sheet.Tab:Setup("", self, panel, material)
+
+	Sheet.Panel = panel
+	Sheet.Panel.NoStretchX = NoStretchX
+	Sheet.Panel.NoStretchY = NoStretchY
+	Sheet.Panel:SetPos(self:GetPadding(), 20 + self:GetPadding())
+	Sheet.Panel:SetVisible(false)
+
+	panel:SetParent(self)
+
+	table.insert(self.Items, Sheet)
+
+	if not self:GetActiveTab() then
+		self:SetActiveTab(Sheet.Tab)
+		Sheet.Panel:SetVisible(true)
+	end
+
+	self.tabScroller:AddPanel(Sheet.Tab)
+
+	return Sheet
 end
 
 function PANEL:Paint(w, h)
-	draw.DrawSimpleRect(0, 32, w, h - 32, Color(60, 0, 0, 200))
-	draw.DrawSimpleOutlined(0, 32, w, h - 32, color_black)
-end
+	draw.DrawSimpleRect(0, self.tabScroller:GetTall(), w, h - self.tabScroller:GetTall(), Color(60, 0, 0, 200))
+	draw.DrawSimpleOutlined(0, self.tabScroller:GetTall(), w, h - self.tabScroller:GetTall(), color_black)
+end 
 
-function PANEL:PerformLayout(w, h)
+function PANEL:PerformLayout()
+	self.BaseClass.PerformLayout(self)
+	
+	self:SetSize(ScrW() * 0.075, ScrH() * 0.15)
 	self:AlignBottom(4)
-	self:AlignRight(4)
+	self:AlignRight(4)	
 end
 
-vgui.Register("zm_powerpanel", PANEL, "DPanel")
+vgui.Register("zm_powerpanel", PANEL, "DPropertySheet")

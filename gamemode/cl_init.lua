@@ -10,7 +10,9 @@ include("cl_zm_options.lua")
 include("cl_targetid.lua")
 include("cl_hud.lua")
 include("cl_zombie.lua")
+include("cl_powers.lua")
 
+include("vgui/dmainhud.lua")
 include("vgui/dteamheading.lua")
 include("vgui/dzombiepanel.lua")
 include("vgui/dpowerpanel.lua")
@@ -185,13 +187,22 @@ function GM:RefreshReadyPanel()
 end
 
 function GM:OnReloaded()
+	self.bLUARefresh = true
+	
 	if IsValid(g_Scoreboard) then
 		g_Scoreboard:Remove()
+	end
+	
+	if LocalPlayer():IsZM() then
+		gamemode.Call("RemoveZMPanels")
+		gamemode.Call("CreateVGUI")
 	end
 	
 	hook.Call("BuildZombieDataTable", self)
 	hook.Call("SetupNetworkingCallbacks", self)
 	hook.Call("SetupCustomItems", self)
+	
+	self.bLUARefresh = false
 end
 
 local startVal = 0
@@ -285,13 +296,13 @@ function GM:InitPostEntity()
 		ENT.Draw = OverrideDraw
 	end
 	
-	vgui.CreateFromTable{
+	vgui.CreateFromTable({
 		Base = "Panel",
 		Paint = function() return true end,
 		PerformLayout = function()
 			hook.Run("OnScreenSizeChange", ScrW(), ScrH())
 		end
-	}:ParentToHUD()
+	}):ParentToHUD()
 end
 
 function GM:NetworkEntityCreated(ent)
@@ -318,8 +329,8 @@ function GM:PostGamemodeLoaded()
 end
 
 function GM:SetupFonts()
-	surface.CreateFont("zm_powerhud_smaller", {font = "Consolas", size = ScreenScale(5)})
-	surface.CreateFont("zm_powerhud_small", {font = "Consolas", size = ScreenScale(6)})
+	surface.CreateFont("zm_powerhud_smaller", {font = "Consolas", size = ScreenScale(6)})
+	surface.CreateFont("zm_powerhud_small", {font = "Consolas", size = ScreenScale(7)})
 	
 	surface.CreateFont("OptionsHelp", {font = "Verdana RU", size = ScreenScale(7), weight = 450})
 	surface.CreateFont("OptionsHelpBig", {font = "Verdana RU", size = ScreenScale(8), weight = 450})
@@ -342,7 +353,6 @@ function GM:SetupFonts()
 	surface.CreateFont("ZMScoreBoardPlayerSmallBold", {font = "arial", size = ScreenScale(7), weight = 1000, outline = true, antialias = false})
 	
 	surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = ScreenScale(40), weight = 500})
-	surface.CreateFont("ZMCrosshair", {font = "Crosshairs", extended = false, size = ScreenScale(40)})
 end
 
 function GM:PrePlayerDraw(ply)
@@ -716,6 +726,11 @@ function GM:CreateVGUI()
 	gui.EnableScreenClicker(true)
 	self.powerMenu = vgui.Create("zm_powerpanel")
 	
+	self.InfoHUD = vgui.Create("zm_mainhud")
+	self.InfoHUD:SetSize(ScrW() * 0.15, ScrH() * 0.1)
+	self.InfoHUD:AlignBottom(3)
+	self.InfoHUD:ParentToHUD()
+	
 	self.ToolPan_Center_Tip = vgui.Create("DPanel")
 	self.ToolPan_Center_Tip:SetVisible(false)
 	self.ToolPan_Center_Tip:SetSize(ScrW() * 0.1, ScrH() * 0.03)
@@ -728,13 +743,13 @@ function GM:CreateVGUI()
 	self.ToolLab_Center_Tip:SetTextColor(color_white)
 	self.ToolLab_Center_Tip:SetFont("OptionsHelpBig")
 	
-	if cvars.Bool("zm_cl_enablehints") then
-		self.ZM_Center_Hints = vgui.Create("zm_tippanel")
-		self.ZM_Center_Hints:SetSize(ScrW() * 0.1, ScrH() * 0.05)
-		self.ZM_Center_Hints:InvalidateLayout(true)
-		self.ZM_Center_Hints:AlignBottom(ScrH() * 0.25)
-		self.ZM_Center_Hints:ParentToHUD()
-		
+	self.ZM_Center_Hints = vgui.Create("zm_tippanel")
+	self.ZM_Center_Hints:SetSize(ScrW() * 0.1, ScrH() * 0.05)
+	self.ZM_Center_Hints:InvalidateLayout(true)
+	self.ZM_Center_Hints:AlignBottom(ScrH() * 0.25)
+	self.ZM_Center_Hints:ParentToHUD()
+	
+	if not self.bLUARefresh and cvars.Bool("zm_cl_enablehints") then
 		self.ZM_Center_Hints:SetHint(translate.Get("zm_hint_intro"))
 		self.ZM_Center_Hints:SetActive(true, 3)
 		
@@ -756,6 +771,8 @@ function GM:CreateVGUI()
 			self.powerMenu:SetVisible(true)
 		end
 	end)
+	
+	gamemode.Call("SetupZMPowers")
 end
 
 function GM:SetDragging(b)
@@ -1012,11 +1029,23 @@ function GM:RemoveZMPanels()
 	if IsValid(self.ZM_Center_Hints) then
 		self.ZM_Center_Hints:Remove()
 	end
+	
+	if IsValid(self.InfoHUD) then
+		self.InfoHUD:Remove()
+	end
 end
-
+	
 function GM:OnScreenSizeChange(new_w, new_h)
 	-- This could be unwise but it seems to be the only way to fresh font sizes
 	hook.Call("SetupFonts", GAMEMODE)
+	
+	-- Couldn't figure out how to fix the panel sizing getting screwed up when changing to a lower res, recreating the panel fixes it
+	if LocalPlayer():IsZM() and IsValid(self.powerMenu) then
+		self.powerMenu:Remove()
+		self.powerMenu = vgui.Create("zm_powerpanel")
+		
+		gamemode.Call("SetupZMPowers")
+	end
 end
 
 net.Receive("zm_infostrings", function(length)

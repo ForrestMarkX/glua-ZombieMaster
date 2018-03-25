@@ -114,32 +114,6 @@ if CLIENT then
 	local selection_color_outline = Color(255, 0, 0, 255)
 	local selection_color_box 	  = Color(120, 0, 0, 80)
 	function PLAYER:DrawHUD()
-		local h, w = ScrH(), ScrW()
-		
-		-- Resources + Income.
-		draw.DrawSimpleRect(5, h - 43, 150, 38, Color(60, 0, 0, 200))
-		draw.DrawSimpleOutlined(5, h - 43, 150, 38, color_black)
-		
-		surface.SetDrawColor(color_white)
-		surface.SetTexture(skullMaterial)
-		surface.DrawTexturedRect(7, h - 41, 32, 32)
-		
-		draw.DrawText(tostring(LocalPlayer():GetZMPoints()), "zm_powerhud_small", 60, h - 42, color_white, 1)
-		
-		if LocalPlayer():GetZMPointIncome() then
-			draw.DrawText("+ " .. LocalPlayer():GetZMPointIncome(), "zm_powerhud_smaller", 90, h - 24, color_white, 1)
-		end
-		
-		-- Population.
-		draw.DrawSimpleRect(5, h - 62, 100, 18, Color(60, 0, 0, 200))
-		draw.DrawSimpleOutlined(5, h - 62, 100, 18, color_black)
-		
-		surface.SetDrawColor(color_white)
-		surface.SetTexture(popMaterial)
-		surface.DrawTexturedRect(6, h - 61, 16, 16)
-		
-		draw.DrawText(GAMEMODE:GetCurZombiePop() .. "/" .. GAMEMODE:GetMaxZombiePop(), "zm_powerhud_smaller", 60, h - 62, color_white, 1)
-
 		if isDragging then
 			local x, y = gui.MousePos()
 			if mouseX < x then

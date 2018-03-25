@@ -9,6 +9,7 @@ AddCSLuaFile("cl_dermaskin.lua")
 
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_zombie.lua")
+AddCSLuaFile("cl_powers.lua")
 
 AddCSLuaFile("sh_weapons.lua")
 AddCSLuaFile("sh_players.lua")
@@ -24,6 +25,7 @@ AddCSLuaFile("cl_zm_options.lua")
 AddCSLuaFile("cl_targetid.lua")
 AddCSLuaFile("cl_entites.lua")
 
+AddCSLuaFile("vgui/dmainhud.lua")
 AddCSLuaFile("vgui/dteamheading.lua")
 AddCSLuaFile("vgui/dzombiepanel.lua")
 AddCSLuaFile("vgui/dpowerpanel.lua")
