@@ -228,6 +228,27 @@ function PLAYER:CanPickupItem(item)
 	return false
 end
 
+function PLAYER:SetupMove(mv, cmd)
+	if IsValid(self.Player.HeldObject) and bit.band(cmd:GetButtons(), IN_ATTACK) ~= 0 then
+		local ent = self.Player.HeldObject
+		if ent:IsPlayerHolding() then 
+			DropEntityIfHeld(ent)
+			
+			local ang = Angle(util.SharedRandom("physpax", 0.2, 1.0), util.SharedRandom("physpay", -0.5, 0.5), 0.0)
+			self.Player:ViewPunch(ang)
+			
+			local phys = ent:GetPhysicsObject()
+			if IsValid(phys) then
+				local massFactor = math.Remap(math.Clamp(phys:GetMass(), 0.5, 15), 0.5, 15, 0.5, 4)
+				phys:ApplyForceCenter(self.Player:GetAimVector() * (2000 * massFactor))
+				ent:SetPhysicsAttacker(self.Player)
+			end
+			
+			return true
+		end
+	end
+end
+
 function PLAYER:ButtonDown(button)
 	if SERVER then return end
 	

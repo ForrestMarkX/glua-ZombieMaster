@@ -21,6 +21,8 @@ function GM:GetZombieData(class)
 end
 
 function GM:CallZombieFunction(npc, func, ...)
+	if not (npc and npc:IsValid()) then return end
+	
 	local zombie = self:GetZombieData(npc:GetClass())
 	if not zombie then return end
 	

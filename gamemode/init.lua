@@ -315,6 +315,12 @@ function GM:OnEntityCreated(ent)
 	end
 end
 
+function GM:EntityRemoved(ent)
+	if ent:IsNPC() then
+		table.RemoveByValue(self.iZombieList, ent)
+	end
+end
+
 function GM:ReplaceItemWithCrate(ent, class)
 	local playercount = player.GetCount()
 	if playercount <= 16 then return end
@@ -338,6 +344,8 @@ function GM:ReplaceItemWithCrate(ent, class)
 end
 
 function GM:AddNPCFriends(npc, ent)
+	if not (npc and npc:IsValid()) then return end
+	
 	local zombie = self:GetZombieData(npc:GetClass())
 	if not zombie or not zombie.Friends then return end
 	

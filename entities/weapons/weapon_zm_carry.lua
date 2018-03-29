@@ -17,8 +17,8 @@ SWEP.SlotPos 				= 0
 
 SWEP.HoldType				= "normal"
 	
-SWEP.PuntForce				= 300
-SWEP.PullForce				= 300
+SWEP.PuntForce				= 3500
+SWEP.PullForce				= 3500
 SWEP.MaxMass				= 300
 	
 SWEP.Primary.ClipSize	 	= -1
@@ -67,7 +67,11 @@ function SWEP:PrimaryAttack()
 			local mass = phys:GetMass()
 			if mass >= self.MaxMass then return end
 			
-			phys:ApplyForceOffset(owner:GetAimVector() * math.max(mass * 0.15, 1) * self.PuntForce, position)
+			local ang = Angle(math.Rand(0.2, 1.0), math.Rand(-0.5, 0.5), 0)
+			owner:ViewPunch(ang)
+			
+			phys:ApplyForceCenter(owner:GetAimVector() * self.PuntForce * 0.5)
+			phys:ApplyForceOffset(owner:GetAimVector() * 30 * 0.5, position)
 			tgt:SetPhysicsAttacker(owner)
 		end
 	end
@@ -109,12 +113,16 @@ function SWEP:SecondaryAttack()
 			if phys:IsMoveable() and not constraint.HasConstraints(tgt) then
 				local mass = phys:GetMass()
 				if mass >= self.MaxMass then return end
-			
+				
+				local ang = -Angle(math.Rand(0.2, 1.0), math.Rand(-0.5, 0.5), 0)
+				owner:ViewPunch(ang)
+				
 				--PickupObject doesn't seem to work here, he picks it and just instantly drops it
 				--if gamemode.Call("GravGunPickupAllowed", owner, tgt) then
 					--owner:PickupObject(tgt)
 				--else
-					phys:ApplyForceOffset(owner:GetAimVector() * math.max(mass * 0.15, 1) * -self.PullForce, position)
+					phys:ApplyForceCenter(owner:GetAimVector() * -self.PullForce * 0.5)
+					phys:ApplyForceOffset(owner:GetAimVector() * -30 * 0.5, position)
 					tgt:SetPhysicsAttacker(owner)
 				--end
 			end

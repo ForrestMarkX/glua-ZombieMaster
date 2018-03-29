@@ -238,6 +238,10 @@ local function FadeToDraw(self)
 			render.PopCustomClipPlane()
 			render.EnableClipping(bEnabled)
 		else
+			if not self.ShouldDrawSilhouette then
+				self.ShouldDrawSilhouette = true
+			end
+			
 			if self.OldDraw then	
 				self:OldDraw()
 			else 
@@ -257,6 +261,10 @@ local function FadeToDraw(self)
 				end 
 			render.SetBlend(1)
 		else
+			if not self.ShouldDrawSilhouette then
+				self.ShouldDrawSilhouette = true
+			end
+			
 			if self.OldDraw then	
 				self:OldDraw()
 			else 
@@ -441,6 +449,7 @@ end
 
 function GM:EntityRemoved(ent)
 	if ent:IsNPC() then
+		table.RemoveByValue(self.iZombieList, ent)
 		table.RemoveByValue(self.SilhouetteEnts, ent)
 	end
 end
@@ -813,6 +822,9 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
 	
 	if IsValid(ent) then
 		if ent:IsNPC() then
+			table.RemoveByValue(self.iZombieList, ent)
+			table.RemoveByValue(self.SilhouetteEnts, ent)
+			
 			if not GetConVar("zm_shouldragdollsfade"):GetBool() then return end
 			
 			local ragdollnum = #ents.FindByClass(ragdoll:GetClass())
@@ -873,6 +885,8 @@ function GM:PostDrawOpaqueRenderables()
 				render.SetStencilZFailOperation(STENCIL_REPLACE)
 				
 				for k, v in pairs(self.SilhouetteEnts) do
+					if not v.ShouldDrawSilhouette then continue end
+					
 					v.DrawingSilhouette = true
 					v:DrawModel()
 					v.DrawingSilhouette = false
