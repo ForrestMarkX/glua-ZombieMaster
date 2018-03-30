@@ -59,14 +59,9 @@ end
 
 function SWEP:CanPrimaryAttack()
 	if self:Clip1() <= 0 then
-		if self.bClickedOnce and self:GetOwner():GetAmmoCount(self.Primary.Ammo) > 0 then
-			self:Reload()
-			return false
-		end
-		
-		self.bClickedOnce = true
 		self:EmitSound(self.EmptySound or "Weapon_Pistol.Empty")
-		self:SetNextPrimaryFire(CurTime() + math.max(0.25, self.Primary.Delay))
+		self:SetNextPrimaryFire(CurTime() + 0.2)
+		self:Reload()
 		return false
 	end
 
@@ -102,7 +97,6 @@ end
 
 function SWEP:Reload()
 	if self:DefaultReload(ACT_VM_RELOAD) then
-		self.bClickedOnce = false
 		self:PlayReloadSound()
 		self:SetNextIdle(CurTime() + self:SequenceDuration())
 	end
