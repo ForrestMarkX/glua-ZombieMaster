@@ -68,11 +68,6 @@ end
 vgui.Register("zm_powertab", PANEL, "DTab")
 
 local PANEL = {}
-
-local image1 = "VGUI/minicrosshair"
-local image2 = "VGUI/minishockwave"
-local image3 = "VGUI/minigroupadd"
-
 local panellist = {}
 	
 function PANEL:Init()
