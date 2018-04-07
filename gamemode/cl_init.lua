@@ -754,7 +754,7 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
             
             if ent.LastHitPhysBone then
                 local phys = ragdoll:GetPhysicsObjectNum(ent.LastHitPhysBone)
-                phys:ApplyForceOffset((ent.LastDamageForce or vector_origin) * (ent.LastDamageAmount * 0.5 or 5), ent.LastHitPos or vector_origin)
+                phys:ApplyForceOffset((ent.LastDamageForce or vector_origin) * ((ent.LastDamageAmount or 10) * 0.5), ent.LastHitPos or vector_origin)
             else
                 for i=0, ragdoll:GetPhysicsObjectCount() - 1 do
                     local phys = ragdoll:GetPhysicsObjectNum(i)
