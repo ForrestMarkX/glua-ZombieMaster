@@ -5,40 +5,40 @@ if CLIENT then
     SWEP.PrintName             = "Molotovs"
 
     SWEP.ViewModelFlip         = false
-    SWEP.ViewModelFOV         = 55
+    SWEP.ViewModelFOV          = 55
     
-    SWEP.WeaponSelectIconLetter    = "k"
+    SWEP.WeaponSelectIconLetter = "k"
 end
 
-SWEP.Author                 = "Mka0207 & Forrest Mark X"
+SWEP.Author                    = "Mka0207 & Forrest Mark X"
 
-SWEP.Slot                     = 4
-SWEP.SlotPos                 = 0
+SWEP.Slot                      = 4
+SWEP.SlotPos                   = 0
 
-SWEP.ViewModel                = "models/weapons/c_molotov_zm.mdl"
+SWEP.ViewModel                 = "models/weapons/c_molotov_zm.mdl"
 SWEP.WorldModel                = Model( "models/weapons/molotov3rd_zm.mdl" )
-SWEP.UseHands                 = true
-SWEP.WeaponIsAmmo             = true
+SWEP.UseHands                  = true
+SWEP.WeaponIsAmmo              = true
 
-SWEP.HoldType                 = "grenade"
+SWEP.HoldType                  = "grenade"
 SWEP.DontDrawSpare             = true
 
 SWEP.Primary.Recoil            = 0
 SWEP.Primary.Delay             = 0
 SWEP.Primary.Damage            = 0
-SWEP.Primary.ClipSize        = 0
-SWEP.Primary.DefaultClip    = 1
-SWEP.Primary.Reload         = 0
-SWEP.Primary.Automatic       = false
-SWEP.Primary.Ammo             = "molotov"
+SWEP.Primary.ClipSize          = 0
+SWEP.Primary.DefaultClip       = 1
+SWEP.Primary.Reload            = 0
+SWEP.Primary.Automatic         = false
+SWEP.Primary.Ammo              = "molotov"
 
-SWEP.Secondary.Delay         = 0.3
-SWEP.Secondary.ClipSize     = 1
-SWEP.Secondary.DefaultClip  = 1
-SWEP.Secondary.Automatic     = false
-SWEP.Secondary.Ammo         = "dummy"
+SWEP.Secondary.Delay           = 0.3
+SWEP.Secondary.ClipSize        = 1
+SWEP.Secondary.DefaultClip     = 1
+SWEP.Secondary.Automatic       = false
+SWEP.Secondary.Ammo            = "dummy"
 
-SWEP.Undroppable            = true
+SWEP.Undroppable               = true
 SWEP.CantThrowAmmo             = true
 
 function SWEP:SetupDataTables()

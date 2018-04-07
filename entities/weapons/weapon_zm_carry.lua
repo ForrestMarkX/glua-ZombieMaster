@@ -2,36 +2,36 @@ AddCSLuaFile()
 DEFINE_BASECLASS("weapon_zm_basemelee")
 
 if CLIENT then 
-    SWEP.PrintName                 = "Carry"
-    SWEP.WeaponSelectIconLetter    = "m"    
+    SWEP.PrintName             = "Carry"
+    SWEP.WeaponSelectIconLetter = "m"    
 end
 
 SWEP.Author                    = "Î¤yler Blu, ErrolLiamP"
 
 SWEP.ViewModel                 = Model("models/weapons/invisible_vm.mdl")
-SWEP.WorldModel             = ""
-SWEP.UseHands                 = false
+SWEP.WorldModel                = ""
+SWEP.UseHands                  = false
 
-SWEP.Slot                    = 0
-SWEP.SlotPos                 = 0
+SWEP.Slot                      = 0
+SWEP.SlotPos                   = 0
 
-SWEP.HoldType                = "normal"
+SWEP.HoldType                  = "normal"
     
-SWEP.PuntForce                = 3500
-SWEP.PullForce                = 3500
-SWEP.MaxMass                = 300
+SWEP.PuntForce                 = 3500
+SWEP.PullForce                 = 3500
+SWEP.MaxMass                   = 300
     
-SWEP.Primary.ClipSize         = -1
-SWEP.Primary.DefaultClip     = -1
+SWEP.Primary.ClipSize          = -1
+SWEP.Primary.DefaultClip       = -1
 SWEP.Primary.Automatic         = true
-SWEP.Primary.Ammo             = ""
+SWEP.Primary.Ammo              = ""
     
-SWEP.Secondary.ClipSize       = -1
-SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic   = true
-SWEP.Secondary.Ammo           = ""
+SWEP.Secondary.ClipSize        = -1
+SWEP.Secondary.DefaultClip     = -1
+SWEP.Secondary.Automatic       = true
+SWEP.Secondary.Ammo            = ""
 
-SWEP.Undroppable            = true
+SWEP.Undroppable               = true
 
 function SWEP:Initialize()
     self:SetWeaponHoldType(self.HoldType)

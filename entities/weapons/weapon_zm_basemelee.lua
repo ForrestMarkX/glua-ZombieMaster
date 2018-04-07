@@ -1,27 +1,27 @@
 AddCSLuaFile()
 DEFINE_BASECLASS("weapon_zm_base")
 
-SWEP.ViewModel                = "models/weapons/v_crowbar.mdl"
+SWEP.ViewModel                 = "models/weapons/v_crowbar.mdl"
 SWEP.WorldModel                = "models/weapons/w_crowbar.mdl"
 
-SWEP.Primary.ClipSize         = -1
-SWEP.Primary.DefaultClip    = -1
-SWEP.Primary.Automatic        = true
-SWEP.Primary.Ammo            = "none"
+SWEP.Primary.ClipSize          = -1
+SWEP.Primary.DefaultClip       = -1
+SWEP.Primary.Automatic         = true
+SWEP.Primary.Ammo              = "none"
 
 SWEP.Secondary.ClipSize        = -1
-SWEP.Secondary.DefaultClip    = -1
-SWEP.Secondary.Automatic    = false
+SWEP.Secondary.DefaultClip     = -1
+SWEP.Secondary.Automatic       = false
 SWEP.Secondary.Ammo            = "none"
 
-SWEP.Slot                   = 0
-SWEP.SlotPos                = 4
+SWEP.Slot                      = 0
+SWEP.SlotPos                   = 4
 
-SWEP.DrawAmmo               = false
-SWEP.DrawCrosshair          = true
+SWEP.DrawAmmo                  = false
+SWEP.DrawCrosshair             = true
 
-SWEP.IsMelee                = true
-SWEP.HoldType                 = "melee"
+SWEP.IsMelee                   = true
+SWEP.HoldType                  = "melee"
 
 function SWEP:DefaultCallBack(tr, dmginfo)
     BaseClass.DefaultCallBack(self, tr, dmginfo)

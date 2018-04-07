@@ -1,57 +1,57 @@
 SWEP.Category                     = "Zombie Master SWEPs"
 
 SWEP.AutoSwitchTo                 = false
-SWEP.AutoSwitchFrom                = false
-SWEP.WeaponSelectIconLetter        = "c"
+SWEP.AutoSwitchFrom               = false
+SWEP.WeaponSelectIconLetter       = "c"
 SWEP.DrawAmmo                     = false
-SWEP.DrawWeaponInfoBox             = false
+SWEP.DrawWeaponInfoBox            = false
 SWEP.BounceWeaponIcon             = false
-SWEP.SwayScale                     = 1.0
+SWEP.SwayScale                    = 1.0
 SWEP.BobScale                     = 1.0
 SWEP.ViewModelFOV                 = 75
-SWEP.ViewModelFlip                 = false
-SWEP.CSMuzzleFlashes             = false
+SWEP.ViewModelFlip                = false
+SWEP.CSMuzzleFlashes              = false
 SWEP.UseHands                     = true
-SWEP.DrawCrosshair                 = true
+SWEP.DrawCrosshair                = true
 
-SWEP.Author                         = "???"
-SWEP.Contact                     = ""
-SWEP.Purpose                     = ""
+SWEP.Author                       = "???"
+SWEP.Contact                      = ""
+SWEP.Purpose                      = ""
 SWEP.Instructions                 = ""
 
 SWEP.Spawnable                    = false
-SWEP.AdminSpawnable                = false
+SWEP.AdminSpawnable               = false
 
 SWEP.UseCustomMuzzleFlash         = false
-SWEP.MuzzleEffect                  = "CSSMuzzleFlashX"
+SWEP.MuzzleEffect                 = "CSSMuzzleFlashX"
 SWEP.MuzzleAttachment             = "1"
 
 SWEP.ShakeWeaponSelectIcon        = false
 
-SWEP.TracerType                 = "Tracer"
+SWEP.TracerType                   = "Tracer"
 
-SWEP.InfiniteAmmo               = false
-SWEP.DeploySpeed                = 1
-SWEP.DoViewPunch                = false
+SWEP.InfiniteAmmo                 = false
+SWEP.DeploySpeed                  = 1
+SWEP.DoViewPunch                  = false
 
 SWEP.Primary.Sound                = ""
-SWEP.Primary.NumShots            = 1
-SWEP.Primary.Recoil                = 0
+SWEP.Primary.NumShots             = 1
+SWEP.Primary.Recoil               = 0
 
 SWEP.DrawSound                    = ""
-SWEP.IsMelee                    = false
+SWEP.IsMelee                      = false
 
-SWEP.Primary.ClipSize            = -1
-SWEP.Primary.DefaultClip        = -1
-SWEP.Primary.Ammo                = "none"
-SWEP.Primary.RandomPitch        = false
-SWEP.Primary.MinPitch            = 100
-SWEP.Primary.MaxPitch            = 100
+SWEP.Primary.ClipSize             = -1
+SWEP.Primary.DefaultClip          = -1
+SWEP.Primary.Ammo                 = "none"
+SWEP.Primary.RandomPitch          = false
+SWEP.Primary.MinPitch             = 100
+SWEP.Primary.MaxPitch             = 100
 
-SWEP.Secondary.ClipSize            = -1
+SWEP.Secondary.ClipSize           = -1
 SWEP.Secondary.DefaultClip        = -1
-SWEP.Secondary.Automatic        = false
-SWEP.Secondary.Ammo                = "none"
+SWEP.Secondary.Automatic          = false
+SWEP.Secondary.Ammo               = "none"
 
 function SWEP:SetupDataTables()
     self:NetworkVar("Float" , 0 , "NextIdle")
@@ -136,19 +136,19 @@ end
 function SWEP:ShootBullet(dmg, numbul, cone)
     local owner = self:GetOwner()
     
-    numbul     = numbul or 1
-    cone     = cone or 0.01
+    numbul = numbul or 1
+    cone   = cone or 0.01
 
     local bullet = {}
     bullet.Num         = numbul
     bullet.Src         = owner:GetShootPos()
     bullet.Dir         = owner:GetAimVector()
-    bullet.Spread     = self:GetBulletSpread(cone)
-    bullet.Tracer    = self.TracerFreq
-    bullet.TracerName = self.TracerType
-    bullet.Force    = dmg * 0.1
-    bullet.Damage    = dmg
-    bullet.Callback = self.DefaultCallBack
+    bullet.Spread      = self:GetBulletSpread(cone)
+    bullet.Tracer      = self.TracerFreq
+    bullet.TracerName  = self.TracerType
+    bullet.Force       = dmg * 0.1
+    bullet.Damage      = dmg
+    bullet.Callback    = self.DefaultCallBack
     
     if self.DoViewPunch then
         owner:ViewPunch(self:GetViewPunch())
@@ -210,22 +210,22 @@ end
 
 local ActIndex = {
     [ "pistol" ]         = ACT_HL2MP_IDLE_PISTOL,
-    [ "smg" ]             = ACT_HL2MP_IDLE_SMG1,
-    [ "grenade" ]         = ACT_HL2MP_IDLE_GRENADE,
-    [ "ar2" ]             = ACT_HL2MP_IDLE_AR2,
-    [ "shotgun" ]         = ACT_HL2MP_IDLE_SHOTGUN,
-    [ "rpg" ]             = ACT_HL2MP_IDLE_RPG,
-    [ "physgun" ]         = ACT_HL2MP_IDLE_PHYSGUN,
-    [ "crossbow" ]         = ACT_HL2MP_IDLE_CROSSBOW,
-    [ "melee" ]         = ACT_HL2MP_IDLE_MELEE,
-    [ "slam" ]             = ACT_HL2MP_IDLE_SLAM,
-    [ "normal" ]        = ACT_HL2MP_IDLE,
-    [ "fist" ]            = ACT_HL2MP_IDLE_FIST,
-    [ "melee2" ]        = ACT_HL2MP_IDLE_MELEE2,
+    [ "smg" ]            = ACT_HL2MP_IDLE_SMG1,
+    [ "grenade" ]        = ACT_HL2MP_IDLE_GRENADE,
+    [ "ar2" ]            = ACT_HL2MP_IDLE_AR2,
+    [ "shotgun" ]        = ACT_HL2MP_IDLE_SHOTGUN,
+    [ "rpg" ]            = ACT_HL2MP_IDLE_RPG,
+    [ "physgun" ]        = ACT_HL2MP_IDLE_PHYSGUN,
+    [ "crossbow" ]       = ACT_HL2MP_IDLE_CROSSBOW,
+    [ "melee" ]          = ACT_HL2MP_IDLE_MELEE,
+    [ "slam" ]           = ACT_HL2MP_IDLE_SLAM,
+    [ "normal" ]         = ACT_HL2MP_IDLE,
+    [ "fist" ]           = ACT_HL2MP_IDLE_FIST,
+    [ "melee2" ]         = ACT_HL2MP_IDLE_MELEE2,
     [ "passive" ]        = ACT_HL2MP_IDLE_PASSIVE,
-    [ "knife" ]            = ACT_HL2MP_IDLE_KNIFE,
-    [ "duel" ]      = ACT_HL2MP_IDLE_DUEL,
-    [ "revolver" ]        = ACT_HL2MP_IDLE_REVOLVER
+    [ "knife" ]          = ACT_HL2MP_IDLE_KNIFE,
+    [ "duel" ]           = ACT_HL2MP_IDLE_DUEL,
+    [ "revolver" ]       = ACT_HL2MP_IDLE_REVOLVER
 }
 function SWEP:SetWeaponHoldType(t)
     t = string.lower(t)
@@ -239,18 +239,18 @@ function SWEP:SetWeaponHoldType(t)
 
     self.ActivityTranslate = {}
     self.ActivityTranslate[ACT_MP_STAND_IDLE]                     = index
-    self.ActivityTranslate[ACT_MP_WALK]                         = index+1
-    self.ActivityTranslate[ACT_MP_RUN]                             = index+2
-    self.ActivityTranslate[ACT_MP_CROUCH_IDLE]                     = index+3
+    self.ActivityTranslate[ACT_MP_WALK]                           = index+1
+    self.ActivityTranslate[ACT_MP_RUN]                            = index+2
+    self.ActivityTranslate[ACT_MP_CROUCH_IDLE]                    = index+3
     self.ActivityTranslate[ACT_MP_CROUCHWALK]                     = index+4
-    self.ActivityTranslate[ACT_MP_ATTACK_STAND_PRIMARYFIRE]     = index+5
-    self.ActivityTranslate[ACT_MP_ATTACK_CROUCH_PRIMARYFIRE]    = index+5
-    self.ActivityTranslate[ACT_MP_RELOAD_STAND]                     = index+6
-    self.ActivityTranslate[ACT_MP_RELOAD_CROUCH]                 = index+6
-    self.ActivityTranslate[ACT_MP_JUMP]                         = index+7
+    self.ActivityTranslate[ACT_MP_ATTACK_STAND_PRIMARYFIRE]       = index+5
+    self.ActivityTranslate[ACT_MP_ATTACK_CROUCH_PRIMARYFIRE]      = index+5
+    self.ActivityTranslate[ACT_MP_RELOAD_STAND]                   = index+6
+    self.ActivityTranslate[ACT_MP_RELOAD_CROUCH]                  = index+6
+    self.ActivityTranslate[ACT_MP_JUMP]                           = index+7
     self.ActivityTranslate[ACT_RANGE_ATTACK1]                     = index+8
-    self.ActivityTranslate[ACT_MP_SWIM_IDLE]                     = index+8
-    self.ActivityTranslate[ACT_MP_SWIM]                         = index+9
+    self.ActivityTranslate[ACT_MP_SWIM_IDLE]                      = index+8
+    self.ActivityTranslate[ACT_MP_SWIM]                           = index+9
     
     if t == "normal" then
         self.ActivityTranslate [ ACT_MP_JUMP ] = ACT_HL2MP_JUMP_SLAM
@@ -269,11 +269,11 @@ end
 
 if not CLIENT then return end
 
-local colBG = Color(60, 0, 0, 200)
-local colRed = Color(220, 0, 0, 230)
+local colBG     = Color(60, 0, 0, 200)
+local colRed    = Color(220, 0, 0, 230)
 local colYellow = Color(220, 220, 0, 230)
-local colWhite = Color(220, 220, 220, 230)
-local colAmmo = Color(255, 255, 255, 230)
+local colWhite  = Color(220, 220, 220, 230)
+local colAmmo   = Color(255, 255, 255, 230)
 local function GetAmmoColor(clip, maxclip)
     if clip == 0 then
         colAmmo.r = 255 colAmmo.g = 0 colAmmo.b = 0

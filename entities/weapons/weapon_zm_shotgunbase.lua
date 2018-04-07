@@ -3,20 +3,20 @@ DEFINE_BASECLASS("weapon_zm_base")
 SWEP.Base             = "weapon_zm_base"
 SWEP.HoldType         = "shotgun"
 
-SWEP.Primary.Delay     = 0.8
-SWEP.ReloadDelay     = 1
-SWEP.ReloadSpeed     = 1.0
+SWEP.Primary.Delay    = 0.8
+SWEP.ReloadDelay      = 1
+SWEP.ReloadSpeed      = 1.0
 
-SWEP.ReloadSound     = Sound("Weapon_Shotgun_ZM.Reload")
-SWEP.Primary.Sound  = Sound("Weapon_Shotgun_ZM.Single")
-SWEP.PumpSound         = Sound("Weapon_Shotgun_ZM.Special1")
-SWEP.EmptySound     = Sound("Weapon_Shotgun_ZM.Empty")
+SWEP.ReloadSound      = Sound("Weapon_Shotgun_ZM.Reload")
+SWEP.Primary.Sound    = Sound("Weapon_Shotgun_ZM.Single")
+SWEP.PumpSound        = Sound("Weapon_Shotgun_ZM.Special1")
+SWEP.EmptySound       = Sound("Weapon_Shotgun_ZM.Empty")
 
 SWEP.Primary.Ammo     = "buckshot"
 
-SWEP.CurReload         = ACT_VM_RELOAD
-SWEP.EndReloadPump  = ACT_SHOTGUN_PUMP
-SWEP.BeginReload     = ACT_SHOTGUN_RELOAD_START
+SWEP.CurReload        = ACT_VM_RELOAD
+SWEP.EndReloadPump    = ACT_SHOTGUN_PUMP
+SWEP.BeginReload      = ACT_SHOTGUN_RELOAD_START
 
 function SWEP:SetupDataTables()
     BaseClass.SetupDataTables(self)

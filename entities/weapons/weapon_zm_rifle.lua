@@ -2,45 +2,45 @@ AddCSLuaFile()
 DEFINE_BASECLASS("weapon_zm_shotgunbase")
 
 if CLIENT then
-    SWEP.PrintName                 = "Rifle"
+    SWEP.PrintName             = "Rifle"
 
-    SWEP.ViewModelFlip             = false
-    SWEP.ViewModelFOV             = 50
+    SWEP.ViewModelFlip         = false
+    SWEP.ViewModelFOV          = 50
     
-    SWEP.WeaponSelectIconLetter    = "f"
+    SWEP.WeaponSelectIconLetter = "f"
 end
 
-SWEP.Author                     = "Mka0207 & Forrest Mark X"
+SWEP.Author                    = "Mka0207 & Forrest Mark X"
 
-SWEP.Slot                         = 3
-SWEP.SlotPos                     = 0
+SWEP.Slot                      = 3
+SWEP.SlotPos                   = 0
 
-SWEP.ViewModel                    = "models/weapons/c_rifle_zm.mdl"
-SWEP.WorldModel                    = Model( "models/weapons/rifle_zm_3rd.mdl" )
-SWEP.UseHands                     = true
+SWEP.ViewModel                 = "models/weapons/c_rifle_zm.mdl"
+SWEP.WorldModel                = Model( "models/weapons/rifle_zm_3rd.mdl" )
+SWEP.UseHands                  = true
 
-SWEP.ReloadSound                 = Sound("Weapon_Rifle_ZM.Reload")
-SWEP.Primary.Sound                 = Sound("Weapon_Rifle_ZM.Single")
-SWEP.EmptySound                 = Sound("Weapon_Rifle_ZM.Empty")
-SWEP.PumpSound                     = Sound("Weapon_Rifle_ZM.Special1")
+SWEP.ReloadSound               = Sound("Weapon_Rifle_ZM.Reload")
+SWEP.Primary.Sound             = Sound("Weapon_Rifle_ZM.Single")
+SWEP.EmptySound                = Sound("Weapon_Rifle_ZM.Empty")
+SWEP.PumpSound                 = Sound("Weapon_Rifle_ZM.Special1")
 
-SWEP.HoldType                     = "ar2"
+SWEP.HoldType                  = "ar2"
 
-SWEP.Primary.ClipSize            = 11
-SWEP.Primary.DefaultClip        = 11
-SWEP.Primary.MinDamage            = 55
-SWEP.Primary.MaxDamage            = 65
-SWEP.Primary.NumShots             = 1
-SWEP.Primary.Delay                 = 1.6
-SWEP.Primary.Cone                = 0
+SWEP.Primary.ClipSize          = 11
+SWEP.Primary.DefaultClip       = 11
+SWEP.Primary.MinDamage         = 55
+SWEP.Primary.MaxDamage         = 65
+SWEP.Primary.NumShots          = 1
+SWEP.Primary.Delay             = 1.6
+SWEP.Primary.Cone              = 0
 
-SWEP.ReloadDelay                 = 0.8
+SWEP.ReloadDelay               = 0.8
 
-SWEP.Primary.Automatic           = true
-SWEP.Primary.Ammo                 = "357"
+SWEP.Primary.Automatic         = true
+SWEP.Primary.Ammo              = "357"
 
-SWEP.Secondary.Delay             = 0.25
-SWEP.DoViewPunch                = true
+SWEP.Secondary.Delay           = 0.25
+SWEP.DoViewPunch               = true
 
 function SWEP:SetupDataTables()
     BaseClass.SetupDataTables(self)

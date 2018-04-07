@@ -3,32 +3,32 @@ DEFINE_BASECLASS("weapon_zm_basemelee")
 
 if CLIENT then
     SWEP.PrintName             = "Sledge"
-    SWEP.ViewModelFOV         = 65
+    SWEP.ViewModelFOV          = 65
     
-    SWEP.WeaponSelectIconLetter    = "i"
+    SWEP.WeaponSelectIconLetter = "i"
 end
 
 SWEP.ViewModel                 = "models/weapons/c_sledgehammer_zm.mdl"
-SWEP.WorldModel             = "models/weapons/sledgehammer3rd_zm.mdl"
-SWEP.UseHands                 = true
+SWEP.WorldModel                = "models/weapons/sledgehammer3rd_zm.mdl"
+SWEP.UseHands                  = true
 
-SWEP.Slot                     = 2
-SWEP.HoldType                 = "melee2"
+SWEP.Slot                      = 2
+SWEP.HoldType                  = "melee2"
 
 SWEP.Primary.MinDamage         = 45
 SWEP.Primary.MaxDamage         = 55
 SWEP.Primary.Force             = SWEP.Primary.Damage
 SWEP.Primary.Reach             = 85
-SWEP.Primary.HitSound         = Sound("physics/metal/metal_canister_impact_hard1.wav")
-SWEP.Primary.HitFleshSound  = Sound("physics/body/body_medium_break2.wav")
+SWEP.Primary.HitSound          = Sound("physics/metal/metal_canister_impact_hard1.wav")
+SWEP.Primary.HitFleshSound     = Sound("physics/body/body_medium_break2.wav")
 SWEP.Primary.MissSound         = Sound("weapons/iceaxe/iceaxe_swing1.wav")
 SWEP.Primary.Delay             = 2.8
 
-SWEP.Secondary.MinDamage    = 15
-SWEP.Secondary.MaxDamage     = 25
-SWEP.Secondary.HitSound     = "Weapon_Crowbar.Melee_Hit"
-SWEP.Secondary.HitFleshSound = "Weapon_Crowbar.Melee_Hit"
-SWEP.Secondary.MissSound     = "Weapon_Crowbar.Single"
+SWEP.Secondary.MinDamage       = 15
+SWEP.Secondary.MaxDamage       = 25
+SWEP.Secondary.HitSound        = "Weapon_Crowbar.Melee_Hit"
+SWEP.Secondary.HitFleshSound   = "Weapon_Crowbar.Melee_Hit"
+SWEP.Secondary.MissSound       = "Weapon_Crowbar.Single"
 
 function SWEP:SetupDataTables()
     BaseClass.SetupDataTables(self)
@@ -90,7 +90,7 @@ function SWEP:Swing(alt)
         filter = owner
     } )
     if trace.Hit then
-        bullet           = {}
+        bullet        = {}
         bullet.Num    = 1
         bullet.Src    = owner:GetShootPos()
         bullet.Dir    = owner:GetAimVector()
