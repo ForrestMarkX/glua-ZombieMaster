@@ -1,45 +1,45 @@
 local CustomWeapons = {}
 function GM:AddCustomWeapon(weaponclass, replacerclass, chance)
-	if CustomWeapons[weaponclass] and CustomWeapons[weaponclass].Class == replacerclass then return end
-	
-	chance = chance or 1
-	chance = math.Clamp(chance, 0, 1)
-	
-	CustomWeapons[weaponclass] = {Class = replacerclass, Chance = chance}
+    if CustomWeapons[weaponclass] and CustomWeapons[weaponclass].Class == replacerclass then return end
+    
+    chance = chance or 1
+    chance = math.Clamp(chance, 0, 1)
+    
+    CustomWeapons[weaponclass] = {Class = replacerclass, Chance = chance}
 end
 
 function GM:GetCustomWeapons()
-	return CustomWeapons
+    return CustomWeapons
 end
 
 local CustomAmmo = {}
 function GM:AddCustomAmmo(ammotype, replacerclass, model, replacertype, chance, maxcount, pickupamount, damagetype, tracerstyle)
-	if CustomAmmo[ammotype] and CustomAmmo[ammotype].Class == replacerclass then return end
-	
-	chance = chance or 1
-	chance = math.Clamp(chance, 0, 1)
-	maxcount = maxcount or 9999
-	pickupamount = pickupamount or 10
-	damagetype = damagetype or DMG_BULLET
-	tracerstyle = tracerstyle or TRACER_LINE_AND_WHIZ
-	
-	CustomAmmo[ammotype] = {Class = replacerclass, Chance = chance, Type = replacertype, MaxCarry = maxcount, DmgType = damagetype, TracerType = tracerstyle}
-	
-	if not GAMEMODE.AmmoClass[replacerclass] then
-		GAMEMODE.AmmoClass[replacerclass] = replacertype
-	end
-	
-	if not GAMEMODE.AmmoCache[replacertype] then
-		GAMEMODE.AmmoCache[replacertype] = pickupamount
-	end
-	
-	if not GAMEMODE.AmmoModels[replacerclass] then
-		GAMEMODE.AmmoModels[replacerclass] = model
-	end
+    if CustomAmmo[ammotype] and CustomAmmo[ammotype].Class == replacerclass then return end
+    
+    chance = chance or 1
+    chance = math.Clamp(chance, 0, 1)
+    maxcount = maxcount or 9999
+    pickupamount = pickupamount or 10
+    damagetype = damagetype or DMG_BULLET
+    tracerstyle = tracerstyle or TRACER_LINE_AND_WHIZ
+    
+    CustomAmmo[ammotype] = {Class = replacerclass, Chance = chance, Type = replacertype, MaxCarry = maxcount, DmgType = damagetype, TracerType = tracerstyle}
+    
+    if not GAMEMODE.AmmoClass[replacerclass] then
+        GAMEMODE.AmmoClass[replacerclass] = replacertype
+    end
+    
+    if not GAMEMODE.AmmoCache[replacertype] then
+        GAMEMODE.AmmoCache[replacertype] = pickupamount
+    end
+    
+    if not GAMEMODE.AmmoModels[replacerclass] then
+        GAMEMODE.AmmoModels[replacerclass] = model
+    end
 end
 
 function GM:GetCustomAmmo()
-	return CustomAmmo
+    return CustomAmmo
 end
 
 CreateConVar("zm_roundlimit", "2", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Sets the number of rounds before the server changes map\n" )

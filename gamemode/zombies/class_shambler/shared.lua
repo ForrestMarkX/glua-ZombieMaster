@@ -9,14 +9,14 @@ NPC.Health = GetConVar("zm_zombie_health"):GetInt()
 NPC.IsEngineNPC = true
 
 NPC.Model = {
-	"models/zombie/zm_classic.mdl",
-	"models/zombie/zm_classic_01.mdl",
-	"models/zombie/zm_classic_02.mdl",
-	"models/zombie/zm_classic_03.mdl",
-	"models/zombie/zm_classic_04.mdl",
-	"models/zombie/zm_classic_05.mdl",
-	"models/zombie/zm_classic_06.mdl",
-	"models/zombie/zm_classic_07.mdl",
-	"models/zombie/zm_classic_08.mdl",
-	"models/zombie/zm_classic_09.mdl"
+    "models/zombie/zm_classic.mdl",
+    "models/zombie/zm_classic_01.mdl",
+    "models/zombie/zm_classic_02.mdl",
+    "models/zombie/zm_classic_03.mdl",
+    "models/zombie/zm_classic_04.mdl",
+    "models/zombie/zm_classic_05.mdl",
+    "models/zombie/zm_classic_06.mdl",
+    "models/zombie/zm_classic_07.mdl",
+    "models/zombie/zm_classic_08.mdl",
+    "models/zombie/zm_classic_09.mdl"
 }

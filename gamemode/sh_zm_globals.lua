@@ -147,12 +147,12 @@ GM.AmmoModels["item_box_buckshot"] = "models/items/boxbuckshot.mdl"
 CARRY_MASS = 40
 
 GM.HumanGibs = {
-	Model("models/gibs/HGIBS.mdl"),
-	Model("models/gibs/HGIBS_spine.mdl"),
+    Model("models/gibs/HGIBS.mdl"),
+    Model("models/gibs/HGIBS_spine.mdl"),
 
-	Model("models/gibs/HGIBS_rib.mdl"),
-	Model("models/gibs/HGIBS_scapula.mdl"),
-	Model("models/gibs/antlion_gib_medium_2.mdl"),
-	Model("models/gibs/Antlion_gib_Large_1.mdl"),
-	Model("models/gibs/Strider_Gib4.mdl")
+    Model("models/gibs/HGIBS_rib.mdl"),
+    Model("models/gibs/HGIBS_scapula.mdl"),
+    Model("models/gibs/antlion_gib_medium_2.mdl"),
+    Model("models/gibs/Antlion_gib_Large_1.mdl"),
+    Model("models/gibs/Strider_Gib4.mdl")
 }

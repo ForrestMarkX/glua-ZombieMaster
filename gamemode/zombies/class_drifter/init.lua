@@ -1,3 +1,3 @@
 function NPC:OnScaledDamage(npc, hitgroup, dmginfo)
-	return false
+    return false
 end

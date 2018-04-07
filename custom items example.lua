@@ -15,6 +15,6 @@
 -- GAMEMODE:AddCustomAmmo(string ammotype, string replacerclass, string model, string replacertype, float chance, int maxcount, int pickupamount, int damagetype, int tracerstyle)
 
 hook.Add("SetupCustomItems", "SetupCustomItems.ExampleHook", function()
-	GAMEMODE:AddCustomWeapon("weapon_zm_example", "weapon_zm_shotgun", 0.75)
-	GAMEMODE:AddCustomAmmo("smg1", "item_ammo_smg1", "models/items/boxmrounds.mdl", "custom_smg", 0.35, 70, 12, DMG_BULLET, TRACER_LINE)
+    GAMEMODE:AddCustomWeapon("weapon_zm_example", "weapon_zm_shotgun", 0.75)
+    GAMEMODE:AddCustomAmmo("smg1", "item_ammo_smg1", "models/items/boxmrounds.mdl", "custom_smg", 0.35, 70, 12, DMG_BULLET, TRACER_LINE)
 end)
