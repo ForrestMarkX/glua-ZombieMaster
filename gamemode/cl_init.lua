@@ -295,6 +295,8 @@ function GM:SetupFonts()
     surface.CreateFont("zm_hud_font_small", {font = "Verdana RU", size = ScreenScale(9), weight = 1000})
     surface.CreateFont("zm_hud_font_normal", {font = "Verdana RU", size = ScreenScale(14), weight = 1000})
     surface.CreateFont("zm_hud_font_big", {font = "Verdana RU", size = ScreenScale(24), weight = 1000})
+    surface.CreateFont("zm_hud_font_bigger", {font = "Verdana RU", size = ScreenScale(30), weight = 1000})
+    surface.CreateFont("zm_hud_font_huge", {font = "Verdana RU", size = ScreenScale(42), weight = 1000})
     
     surface.CreateFont("zm_game_text_small", {font = "Dead Font Walking", size = ScreenScale(9), weight = 1000})
     
@@ -749,6 +751,16 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
         if ent:IsNPC() then
             table.RemoveByValue(self.iZombieList, ent)
             table.RemoveByValue(self.SilhouetteEnts, ent)
+            
+            if ent.LastHitPhysBone then
+                local phys = ragdoll:GetPhysicsObjectNum(ent.LastHitPhysBone)
+                phys:ApplyForceOffset((ent.LastDamageForce or vector_origin) * (ent.LastDamageAmount * 0.5 or 5), ent.LastHitPos or vector_origin)
+            else
+                for i=0, ragdoll:GetPhysicsObjectCount() - 1 do
+                    local phys = ragdoll:GetPhysicsObjectNum(i)
+                    phys:ApplyForceCenter((ent.LastDamageForce or vector_origin) * 0.5)
+                end
+            end
             
             if not GetConVar("zm_shouldragdollsfade"):GetBool() then return end
             

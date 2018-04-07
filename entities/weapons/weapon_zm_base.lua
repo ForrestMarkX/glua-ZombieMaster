@@ -47,6 +47,7 @@ SWEP.Primary.Ammo                 = "none"
 SWEP.Primary.RandomPitch          = false
 SWEP.Primary.MinPitch             = 100
 SWEP.Primary.MaxPitch             = 100
+SWEP.Primary.DamageType           = DMG_BULLET
 
 SWEP.Secondary.ClipSize           = -1
 SWEP.Secondary.DefaultClip        = -1
@@ -79,6 +80,10 @@ function SWEP:Initialize()
         self:SetNPCMinBurst(30)
         self:SetNPCMaxBurst(30)
         self:SetNPCFireRate(0.01)
+    end
+    
+    if cvars.Bool("zm_infiniteammo") then
+        self.InfiniteAmmo = true
     end
     
     self:SetWeaponHoldType(self.HoldType)
@@ -119,15 +124,30 @@ function SWEP:PrimaryAttack()
     end
 end
 
+-- Here self is not the SWEP and is instead the attacker from the Callback function
 function SWEP:DefaultCallBack(tr, dmginfo)
     local ent = tr.Entity
     if IsValid(ent) and not ent:IsPlayer() then
         local phys = ent:GetPhysicsObject()
         if ent:GetMoveType() == MOVETYPE_VPHYSICS and IsValid(phys) and phys:IsMoveable() then
-            ent:SetPhysicsAttacker(dmginfo:GetAttacker())
+            ent:SetPhysicsAttacker(self)
+        end
+        
+        ent.LastDamageAmount = dmginfo:GetDamage()
+        ent.LastDamageForce = dmginfo:GetDamageForce()
+        ent.LastHitPos = tr.HitPos
+        
+        local bone = ent:NearestBone(tr.HitPos)
+        if bone then
+            ent.LastHitPhysBone = ent:TranslateBoneToPhysBone(bone)
         end
     end
-end
+    
+    local wep = self:GetActiveWeapon()
+    if IsValid(wep) then
+        dmginfo:SetDamageType(wep.Primary.DamageType)
+    end
+end 
 
 function SWEP:GetBulletSpread(cone)
     return Vector(cone, cone, 0)
@@ -292,6 +312,12 @@ function SWEP:DrawHUD()
     local spare = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
     local maxclip = self.Primary.ClipSize
     
+    draw.RoundedBox(ScreenScale(5), x + 2, y + 2, wid, hei, colBG)
+    if self.InfiniteAmmo then
+        draw.SimpleTextBlurry("∞", "zm_hud_font_bigger", x + wid * 0.5, y + hei * 0.42, colAmmo, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        return
+    end
+    
     if self.CurrentSpare ~= spare then
         self.CurrentSpare = spare
         
@@ -305,8 +331,6 @@ function SWEP:DrawHUD()
         self.LastClipTaken = CurTime()
         self.ClipTimer = CurTime() + 5
     end
-
-    draw.RoundedBox(ScreenScale(5), x + 2, y + 2, wid, hei, colBG)
 
     local displayspare = maxclip > 0 and self.Primary.DefaultClip ~= 99999
     if displayspare or not self.DontDrawSpare then

@@ -33,6 +33,7 @@ SWEP.Primary.MaxDamage         = 65
 SWEP.Primary.NumShots          = 1
 SWEP.Primary.Delay             = 1.6
 SWEP.Primary.Cone              = 0
+SWEP.Primary.DamageType        = DMG_BULLET
 
 SWEP.ReloadDelay               = 0.8
 

@@ -298,6 +298,24 @@
 			"help"		"How long the ready timer is in seconds"
 			"type"		"Numeric"
 			"default"	"90"
+		}	
+
+        33
+		{
+			"name"		"zm_ai_enabled"
+			"text"		"Enable ZM AI system"
+			"help"		"Enables the AI system."
+			"type"		"CheckBox"
+			"default"	"0"
+		}        
+        
+        34
+		{
+			"name"		"zm_infiniteammo"
+			"text"		"[Cheat] Infinite Ammo"
+			"help"		"Enable infinite ammo for survivors"
+			"type"		"CheckBox"
+			"default"	"0"
 		}
 	}
 }

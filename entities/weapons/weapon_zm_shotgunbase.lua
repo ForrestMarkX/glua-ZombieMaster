@@ -13,6 +13,7 @@ SWEP.PumpSound        = Sound("Weapon_Shotgun_ZM.Special1")
 SWEP.EmptySound       = Sound("Weapon_Shotgun_ZM.Empty")
 
 SWEP.Primary.Ammo     = "buckshot"
+SWEP.Primary.DamageType = bit.bor(DMG_BULLET, DMG_BUCKSHOT)
 
 SWEP.CurReload        = ACT_VM_RELOAD
 SWEP.EndReloadPump    = ACT_SHOTGUN_PUMP
@@ -157,7 +158,14 @@ end
 
 function SWEP:DefaultCallBack(tr, dmginfo)
     BaseClass.DefaultCallBack(self, tr, dmginfo)
-    dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_BUCKSHOT))
+    
+    local ent = tr.Entity
+    if IsValid(ent) then
+        local wep = self:GetActiveWeapon()
+        if IsValid(wep) then
+            ent.LastDamageAmount = dmginfo:GetDamage() * wep.Primary.NumShots
+        end
+    end
 end
 
 function SWEP:PrimaryAttack()
