@@ -26,15 +26,15 @@ SWEP.DontDrawSpare             = true
 SWEP.Primary.Recoil            = 0
 SWEP.Primary.Delay             = 0
 SWEP.Primary.Damage            = 0
-SWEP.Primary.ClipSize          = 0
-SWEP.Primary.DefaultClip       = 1
+SWEP.Primary.ClipSize          = -1
+SWEP.Primary.DefaultClip       = -1
 SWEP.Primary.Reload            = 0
 SWEP.Primary.Automatic         = false
 SWEP.Primary.Ammo              = "molotov"
 
 SWEP.Secondary.Delay           = 0.3
-SWEP.Secondary.ClipSize        = 1
-SWEP.Secondary.DefaultClip     = 1
+SWEP.Secondary.ClipSize        = -1
+SWEP.Secondary.DefaultClip     = -1
 SWEP.Secondary.Automatic       = false
 SWEP.Secondary.Ammo            = "dummy"
 
@@ -64,18 +64,6 @@ function SWEP:Deploy()
     self:SetNextIdle(CurTime() + self:SequenceDuration())
     self:EmitSound(self.DrawSound)
     return true
-end
-
-function SWEP:PreDrawViewModel()
-    if self.noammo then
-        render.SetBlend(0)
-    end
-end
-
-function SWEP:PostDrawViewModel(vm)
-    if self.noammo then
-        render.SetBlend(1)
-    end
 end
 
 function SWEP:PrimaryAttack()
@@ -139,19 +127,21 @@ function SWEP:Think()
         owner:DoAttackEvent()
     end
     
-    if self.noammo and self.Owner:GetAmmoCount(self.Primary.Ammo) > 0 then
-        self:SendWeaponAnim(ACT_VM_DEPLOY)
-        self:SetNextIdle(CurTime() + self:SequenceDuration())
-        self.noammo = false
-    end
-    
-    if self.Owner:GetAmmoCount(self.Primary.Ammo) <= 0 and not self.noammo then
-        self.noammo = true
+    if self.Owner:GetAmmoCount(self.Primary.Ammo) <= 0 then
+        self:Remove()
     end
     
     if self:GetNextIdle() ~= 0 and self:GetNextIdle() < CurTime() then
         self:SendWeaponAnim(ACT_VM_IDLE)
         self:SetNextIdle(0)
+    end
+end
+
+function SWEP:Equip(NewOwner)
+    BaseClass:Equip(NewOwner)
+    
+    if SERVER then
+        NewOwner:GiveAmmo(1, self.Primary.Ammo, true)
     end
 end
 

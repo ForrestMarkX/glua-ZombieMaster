@@ -120,7 +120,7 @@ function GM:EntityKeyValue(ent, key, value)
     
     if ent:GetClass() == "game_text" then
         if key == "y" and value == "-1" then
-            return "0.7"
+            return "0.85"
         end
     end
 end

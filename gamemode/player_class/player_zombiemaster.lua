@@ -15,10 +15,14 @@ function PLAYER:Spawn()
             GAMEMODE.ZM_Center_Hints:SetActive(true, 3)
             
             timer.Simple(9, function()
+                if not IsValid(GAMEMODE.ZM_Center_Hints) then return end
+                
                 GAMEMODE.ZM_Center_Hints:SetHint(translate.Format("zm_hint_movement", input.LookupBinding("+speed", true)))
                 GAMEMODE.ZM_Center_Hints:SetActive(true, 3)
                 
                 timer.Simple(9, function()
+                    if not IsValid(GAMEMODE.ZM_Center_Hints) then return end
+                    
                     GAMEMODE.ZM_Center_Hints:SetHint(translate.Format("zm_hint_vision", input.LookupBinding("impulse 100", true)))
                     GAMEMODE.ZM_Center_Hints:SetActive(true, 3)
                 end)

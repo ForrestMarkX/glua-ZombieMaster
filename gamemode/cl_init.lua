@@ -299,6 +299,7 @@ function GM:SetupFonts()
     surface.CreateFont("zm_hud_font_huge", {font = "Verdana RU", size = ScreenScale(42), weight = 1000})
     
     surface.CreateFont("zm_game_text_small", {font = "Dead Font Walking", size = ScreenScale(9), weight = 1000})
+    surface.CreateFont("zm_game_text", {font = "Dead Font Walking", size = ScreenScale(11), weight = 1000})
     
     surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana RU", size = ScreenScale(11)})
     surface.CreateFont("ZMScoreBoardTitleSub", {font = "Verdana RU", size = ScreenScale(5), weight = 1000})
@@ -310,6 +311,12 @@ function GM:SetupFonts()
     surface.CreateFont("ZMScoreBoardPlayerSmallBold", {font = "arial", size = ScreenScale(7), weight = 1000, outline = true, antialias = false})
     
     surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = ScreenScale(40), weight = 500})
+end
+
+function GM:PreCleanupMap()
+    if GAMEMODE.ParsedTextObjects then
+        table.Empty(GAMEMODE.ParsedTextObjects)
+    end
 end
 
 function GM:PrePlayerDraw(ply)
@@ -988,6 +995,13 @@ end
 function GM:OnScreenSizeChange(new_w, new_h)
     -- This could be unwise but it seems to be the only way to fresh font sizes
     hook.Call("SetupFonts", GAMEMODE)
+    
+    if IsValid(LocalPlayer().QuickInfo) then
+        LocalPlayer().QuickInfo:Remove()
+        
+        LocalPlayer().QuickInfo = vgui.Create("CHudQuickInfo")
+        LocalPlayer().QuickInfo:Center()
+    end  
     
     -- Couldn't figure out how to fix the panel sizing getting screwed up when changing to a lower res, recreating the panel fixes it
     if LocalPlayer():IsZM() and IsValid(self.powerMenu) then

@@ -1,3 +1,43 @@
+local function GetXPosition(x, width, totalWidth)
+	local xPos
+	if x == -1 then
+		xPos = (ScrW() - width) / 2
+	else
+		if x < 0 then
+			xPos = (1.0 + x) * ScrW() - totalWidth
+		else
+			xPos = x * ScrW()
+        end
+	end
+
+	if xPos + width > ScrW() then
+		xPos = ScrW() - width
+	elseif xPos < 0 then
+		xPos = 0
+    end
+
+	return xPos
+end
+local function GetYPosition(y, height)
+	local yPos
+	if y == -1 then
+		yPos = (ScrH() - height) * 0.5
+	else
+		if y < 0 then
+			yPos = (1.0 + y) * ScrH() - height
+		else
+			yPos = y * ScrH()
+        end
+	end
+
+	if yPos + height > ScrH() then
+		yPos = ScrH() - height
+	elseif yPos < 0 then
+		yPos = 0
+    end
+
+	return yPos
+end
 function util.PrintMessage(uname, pl, tab)
     if type(tab) ~= "table" or tab.Message == nil then
         error("Argument #3 was not a table or the message was nil.")
@@ -13,45 +53,23 @@ function util.PrintMessage(uname, pl, tab)
     end
 
     if not tab.Font then
-        tab.Font = "zm_game_text_small"
-    end
-    
-    local msg = ""
-    if type(tab.Message) == "table" then
-        msg = "<font=" .. tab.Font .. ">"
-        local index = -1
-        for i, t in pairs(tab.Message) do
-            if IsColor(t) or (type(t) == "table" and t.r and t.g and t.b) then
-                msg = msg .. "<color=" .. t.r .. "," .. t.g .. "," .. t.b .. ">"
-                index = i
-            else
-                msg = msg .. tostring(t)
-                if index == (i - 1) then
-                    msg = msg .. "</color>"
-                end
-            end
-        end
-        msg = msg .. "</font>"
-    elseif type(tab.Message) == "string" then
-        if tab.Font then msg = "<font=" .. tab.Font .. ">" end
-        msg = msg .. tab.Message
-        if tab.Font then msg = msg .. "</font>" end
-    else
-        error("The message was not a string or a table!")
+        tab.Font = "zm_game_text"
     end
     
     if not GAMEMODE.ParsedTextObjects then
         GAMEMODE.ParsedTextObjects = {}
     end
     
-    local mParseMsg = markup.Parse(msg)
     GAMEMODE.ParsedTextObjects[uname] = {
-        Parsed = mParseMsg,
+        Message = tab.Message,
+        Font = tab.Font,
         Duration = (tab.HoldTime + tab.FadeInTime + tab.FadeOutTime) or 5,
-        FadeIn = tab.FadeInTime or 0.5,
-        FadeOut = tab.FadeOutTime or 0.5,
+        FadeIn = tab.FadeInTime or 0,
+        FadeOut = tab.FadeOutTime or 0,
         XFactor = tab.XPos or 0.5,
         YFactor = tab.YPos or 0.1,
+        Color1 = tab.Color1,
+        Color2 = tab.Color2,
         StartTime = CurTime()
     }
     
@@ -59,23 +77,23 @@ function util.PrintMessage(uname, pl, tab)
         if uname ~= HookName and Object.XFactor == tab.XPos and Object.YFactor == tab.YPos then
             GAMEMODE.ParsedTextObjects[HookName] = nil
             hook.Remove("HUDPaint", HookName)
+            
+            GAMEMODE.ParsedTextObjects[uname].FadeIn = 0
         end
     end
     
     local function drawToScreen()
         local tab = GAMEMODE.ParsedTextObjects[uname]
-        if not tab or tab.Parsed == nil then
+        if not tab then
             hook.Remove( "HUDPaint", uname )
             return
         end
         
         local alpha = 255
         local dtime = CurTime() - tab.StartTime
-        local x, y = tab.XFactor, tab.YFactor
         local dur = tab.Duration
         local fadein = tab.FadeIn
         local fadeout = tab.FadeOut
-        local flags = tab.Flags
 
         if dtime > dur then
             GAMEMODE.ParsedTextObjects[uname] = nil
@@ -94,7 +112,12 @@ function util.PrintMessage(uname, pl, tab)
             alpha = alpha * 255
         end
 
-        tab.Parsed:Draw(ScrW() * (x == -1 and 0.5 or x), ScrH() * (y == -1 and 0.7 or y), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, alpha)
+        surface.SetFont(tab.Font)
+        local w, h = surface.GetTextSize(tab.Message)
+        local x, y = GetXPosition(tab.XFactor, w, w), GetYPosition(tab.YFactor, h)
+        surface.SetTextColor(tab.Color1.r, tab.Color1.g, tab.Color1.b, alpha)
+        surface.SetTextPos(x, y)
+        surface.DrawText(tab.Message)
     end
     hook.Add("HUDPaint", uname, drawToScreen)
     

@@ -44,10 +44,14 @@ function PLAYER:Spawn()
             GAMEMODE.ZM_Center_Hints:SetActive(true, 2)
             
             timer.Simple(8, function()
+                if not IsValid(GAMEMODE.ZM_Center_Hints) then return end
+                
                 GAMEMODE.ZM_Center_Hints:SetHint(translate.Get("zm_hint_weapons"))
                 GAMEMODE.ZM_Center_Hints:SetActive(true, 2)
                 
                 timer.Simple(8, function()
+                    if not IsValid(GAMEMODE.ZM_Center_Hints) then return end
+                    
                     GAMEMODE.ZM_Center_Hints:SetHint(translate.Format("zm_hint_dropping", input.GetKeyName(cvars.Number("zm_dropweaponkey", 0)), input.GetKeyName(cvars.Number("zm_dropammokey", 0))))
                     GAMEMODE.ZM_Center_Hints:SetActive(true, 2)   
                 end)                
@@ -289,6 +293,11 @@ function PLAYER:DrawHUD()
     end
     
     local healthCol = health <= 10 and Color(185, 0, 0, 255) or health <= 30 and Color(150, 50, 0) or health <= 60 and Color(255, 200, 0) or color_white
+    if health <= 10 then
+        local sinScale = math.floor(math.abs(math.sin(CurTime() * 8)) * 128)
+        healthCol.a = math.Clamp(sinScale, 90, 230)
+    end
+    
     draw.SimpleTextBlurry(health, "zm_hud_font_big", x + wid * 0.72, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, self.Player.LastHurtTime, self.Player.HurtTimer)
     draw.SimpleTextBlurry("#Valve_Hud_HEALTH", "zm_hud_font_small", x + wid * 0.25, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end

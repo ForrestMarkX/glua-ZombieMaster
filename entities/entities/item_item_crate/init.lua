@@ -97,7 +97,7 @@ function ENT:SetObjectHealth(health)
                     pSpawn.Model = GAMEMODE.AmmoModels[class]
                     pSpawn.AmmoAmount = GAMEMODE.AmmoCache[GAMEMODE.AmmoClass[class]]
                     pSpawn.AmmoType = GAMEMODE.AmmoClass[class]
-                    pSpawn.ClassName = class
+                    pSpawn:SetClassName(class)
                     
                     pSpawn = hook.Call("CreateCustomAmmo", GAMEMODE, pSpawn, true)
                 else
