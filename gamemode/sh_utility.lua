@@ -138,8 +138,8 @@ function util.PrintMessage(uname, pl, tab)
                     end
                 end
                 
-                math.Clamp(blend, 0, 255)
-                math.Clamp(fadeBlend, 0, 255)
+                blend = math.Clamp(blend, 0, 255)
+                fadeBlend = math.Clamp(fadeBlend, 0, 255)
 
                 color.r = bit.rshift((srcRed * (255-blend)) + (destRed * blend), 8)
                 color.g = bit.rshift((srcGreen * (255-blend)) + (destGreen * blend), 8)
