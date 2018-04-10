@@ -63,13 +63,16 @@ function util.PrintMessage(uname, pl, tab)
     GAMEMODE.ParsedTextObjects[uname] = {
         Message = tab.Message,
         Font = tab.Font,
+        HoldTime = tab.HoldTime or 0.5,
         Duration = (tab.HoldTime + tab.FadeInTime + tab.FadeOutTime) or 5,
         FadeIn = tab.FadeInTime or 0,
         FadeOut = tab.FadeOutTime or 0,
         XFactor = tab.XPos or 0.5,
         YFactor = tab.YPos or 0.1,
-        Color1 = tab.Color1,
-        Color2 = tab.Color2,
+        Color1 = tab.Color1 or color_white,
+        Color2 = tab.Color2 or color_white,
+        EffectType = tab.Effect or 0,
+        FXTime = tab.FXTime or 0,
         StartTime = CurTime()
     }
     
@@ -89,9 +92,11 @@ function util.PrintMessage(uname, pl, tab)
             return
         end
         
+        local msg = tab.Message
+        local bScan = tab.EffectType >= 2
         local alpha = 255
         local dtime = CurTime() - tab.StartTime
-        local dur = tab.Duration
+        local dur = tab.Duration * (bScan and #msg or 1)
         local fadein = tab.FadeIn
         local fadeout = tab.FadeOut
 
@@ -115,13 +120,69 @@ function util.PrintMessage(uname, pl, tab)
         surface.SetFont(tab.Font)
         local w, h = surface.GetTextSize(tab.Message)
         local x, y = GetXPosition(tab.XFactor, w, w), GetYPosition(tab.YFactor, h)
-        surface.SetTextColor(tab.Color1.r, tab.Color1.g, tab.Color1.b, alpha)
-        surface.SetTextPos(x, y)
-        surface.DrawText(tab.Message)
+        
+        if bScan then
+            local fadeTime = (fadein * #msg) + tab.HoldTime
+            local fadeBlend = 0
+            
+            if dtime > fadeTime and fadeout > 0 then
+                fadeBlend = ((dtime - fadeTime) / fadeout) * 255
+            else
+                fadeBlend = 0
+            end
+            
+            local charTime = 0
+            local blend = 0
+            local srcRed, srcGreen, srcBlue = tab.Color1.r, tab.Color1.g, tab.Color1.b
+            local destRed, destGreen, destBlue = 0, 0, 0
+            local color = Color(0, 0, 0)
+            for i = 1, #msg do
+                charTime = charTime + fadein
+                if charTime > dtime then
+                    srcRed, srcGreen, srcBlue = 0, 0, 0 
+                    blend = 0
+                else
+                    local deltaTime = dtime - charTime
+
+                    destRed, destGreen, destBlue = 0, 0, 0
+                    if dtime > fadeTime then
+                        blend = fadeBlend
+                    elseif deltaTime > tab.FXTime then
+                        blend = 0
+                    else
+                        destRed = tab.Color2.r
+                        destGreen = tab.Color2.g
+                        destBlue = tab.Color2.b
+                        blend = 255 - (deltaTime * (1/tab.FXTime) * 255 + 0.5)
+                    end
+                end
+                
+                math.Clamp(blend, 0, 255)
+                math.Clamp(fadeBlend, 0, 255)
+
+                color.r = bit.rshift((srcRed * (255-blend)) + (destRed * blend), 8)
+                color.g = bit.rshift((srcGreen * (255-blend)) + (destGreen * blend), 8)
+                color.b = bit.rshift((srcBlue * (255-blend)) + (destBlue * blend), 8)
+                
+                surface.SetTextColor(color.r, color.g, color.b, color == color_black and 0 or 255 - fadeBlend)
+                local w = surface.GetTextSize(string.sub(msg, 1, i - 1))
+                surface.SetTextPos(x + w, y)
+                surface.DrawText(string.sub(msg, i, i))
+                
+                if fadeBlend == 255 then
+                    GAMEMODE.ParsedTextObjects[uname] = nil
+                    hook.Remove( "HUDPaint", uname )
+                end
+            end
+        else
+            surface.SetTextColor(tab.Color1.r, tab.Color1.g, tab.Color1.b, alpha)
+            surface.SetTextPos(x, y)
+            surface.DrawText(msg)
+        end
     end
     hook.Add("HUDPaint", uname, drawToScreen)
     
-    return mParseMsg
+    return GAMEMODE.ParsedTextObjects[uname]
 end
 
 function util.PrintMessageBold(uname, tab)

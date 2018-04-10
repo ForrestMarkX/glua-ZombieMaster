@@ -127,7 +127,7 @@ function SWEP:Think()
         owner:DoAttackEvent()
     end
     
-    if self.Owner:GetAmmoCount(self.Primary.Ammo) <= 0 then
+    if SERVER and self.Owner:GetAmmoCount(self.Primary.Ammo) <= 0 then
         self:Remove()
     end
     
@@ -138,11 +138,8 @@ function SWEP:Think()
 end
 
 function SWEP:Equip(NewOwner)
-    BaseClass:Equip(NewOwner)
-    
-    if SERVER then
-        NewOwner:GiveAmmo(1, self.Primary.Ammo, true)
-    end
+    BaseClass.Equip(self, NewOwner)
+    NewOwner:GiveAmmo(1, self.Primary.Ammo, true)
 end
 
 function SWEP:FireAnimationEvent(pos, ang, event, name)

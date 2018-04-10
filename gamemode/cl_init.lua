@@ -298,8 +298,8 @@ function GM:SetupFonts()
     surface.CreateFont("zm_hud_font_bigger", {font = "Verdana RU", size = ScreenScale(30), weight = 1000})
     surface.CreateFont("zm_hud_font_huge", {font = "Verdana RU", size = ScreenScale(42), weight = 1000})
     
-    surface.CreateFont("zm_game_text_small", {font = "Dead Font Walking", size = ScreenScale(9), weight = 1000})
-    surface.CreateFont("zm_game_text", {font = "Dead Font Walking", size = ScreenScale(11), weight = 1000})
+    surface.CreateFont("zm_game_text_small", {font = "Dead Font Walking", size = ScreenScale(9)})
+    surface.CreateFont("zm_game_text", {font = "Dead Font Walking", size = ScreenScale(11)})
     
     surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana RU", size = ScreenScale(11)})
     surface.CreateFont("ZMScoreBoardTitleSub", {font = "Verdana RU", size = ScreenScale(5), weight = 1000})

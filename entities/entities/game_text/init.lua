@@ -2,30 +2,34 @@ ENT.Type = "point"
 
 local SF_ENVTEXT_ALLPLAYERS = 0x0001
 
+function ENT:Initialize()
+
+end
+
 function ENT:KeyValue(key, value)
 	key = string.lower(key)
 	if key == "color" then
         local r, g, b = value:match("(%d+) (%d+) (%d+)")
-		self.Color1 = self.Color1 or Color(r, g, b)
+		self.Color1 = Color(r, g, b) or self.Color1
 	elseif key == "color2" then
         local r, g, b = value:match("(%d+) (%d+) (%d+)")
-		self.Color2 = self.Color2 or Color(r, g, b)
+		self.Color2 = Color(r, g, b) or self.Color2
 	elseif key == "x" then
-		self.XPos = self.XPos or tonumber(value)
+		self.XPos = tonumber(value) or self.XPos
 	elseif key == "y" then
-		self.YPos = self.YPos or tonumber(value)
+		self.YPos = tonumber(value) or self.YPos
 	elseif key == "fadein" then
-		self.FadeInTime = self.FadeInTime or tonumber(value)
+		self.FadeInTime = tonumber(value) or self.FadeInTime
 	elseif key == "fadeout" then
-		self.FadeOutTime = self.FadeOutTime or tonumber(value)
+		self.FadeOutTime = tonumber(value) or self.FadeOutTime
 	elseif key == "holdtime" then
-		self.HoldTime = self.HoldTime or tonumber(value)
+		self.HoldTime = tonumber(value) or self.HoldTime
 	elseif key == "effect" then
-		self.EffectType = self.EffectType or tonumber(value)	
+		self.EffectType = tonumber(value) or self.EffectType
 	elseif key == "fxtime" then
-		self.FXTime = self.FXTime or tonumber(value)
+		self.FXTime = tonumber(value) or self.FXTime
 	elseif key == "message" then
-		self.Message = self.Message or value
+		self.Message = value or self.Message
 	elseif string.Left(key, 2) == "on" then
 		self:StoreOutput(key, value)
 	end
@@ -36,6 +40,9 @@ function ENT:AcceptInput(name, caller, activator, arg)
 	if name == "display" then
 		self:InputDisplay(activator)
 		return true
+	elseif name == "addoutput" then
+        self:InputAddOutput(arg)
+		return true
 	elseif string.Left(name, 2) == "on" then
 		self:TriggerOutput(name, activator, args)
 	end
@@ -45,10 +52,13 @@ function ENT:InputDisplay(activator)
 	self:Display(activator)
 end
 
--- ToDo: Add support for m_textParms.effect from C++ game_text
 function ENT:Display(activator)
 	if not self:CanFireForActivator(activator) then
 		return
+	end
+    
+    if self.Message and self.Message[1] == "#" then
+		self.Message = language.GetPhrase(string.sub(self.Message, 2))
 	end
 
 	local messagetab = {
@@ -60,12 +70,14 @@ function ENT:Display(activator)
 		Font = "zm_game_text",
         Color1 = self.Color1,
         Color2 = self.Color2,
-		Message = self.Message
+        Effect = self.EffectType,
+        FXTime = self.FXTime,
+		Message = self.Message or ""
 	}
 	if self:MessageToAll() then
-		util.PrintMessageBold("GameText_"..self:EntIndex(), messagetab)
+		self.CurrentDisplayTab = util.PrintMessageBold("GameText_"..self:EntIndex(), messagetab)
 	else
-		util.PrintMessage("GameText_"..self:EntIndex(), activator, messagetab)
+		self.CurrentDisplayTab = util.PrintMessage("GameText_"..self:EntIndex(), activator, messagetab)
 	end
 end
 
@@ -75,4 +87,15 @@ end
 
 function ENT:MessageToAll()
 	return self:HasSpawnFlags(SF_ENVTEXT_ALLPLAYERS)
+end
+
+function ENT:InputAddOutput(data)
+    local sChar = string.find(data, " ")
+	if sChar then
+        local sOutputName = string.Left(data, sChar-1)
+        local params = string.Replace(string.sub(data, sChar+1, #data), ":", ",")
+		self:KeyValue(sOutputName, params)
+	else
+		error("AddOutput input fired with bad string. Format: <output name> <targetname>,<inputname>,<parameter>,<delay>,<max times to fire (-1 == infinite)>\n")
+	end
 end
