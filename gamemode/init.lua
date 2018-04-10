@@ -260,13 +260,21 @@ function GM:OnEntityCreated(ent)
         local pos = ent:GetPos()
         local blockers = 0
         for k, v in pairs(ents.FindInBox(pos + ent:OBBMins(), pos + ent:OBBMaxs())) do
-            if IsValid(v) and v:IsSolid() then
-                blockers = blockers + 1
+            if IsValid(v) then  
+                local phys = v:GetPhysicsObject()
+                if IsValid(phys) and phys:IsMotionEnabled() and v:IsSolid() and v:GetClass() == ent:GetClass() then
+                    blockers = blockers + 1
+                end
             end
         end
         
         if blockers > 0 then 
-            SafeRemoveEntityDelayed(ent, 0)
+            ent:SetNotSolid(true)
+            timer.Simple(1, function()
+                if not IsValid(ent) then return end
+                ent:SetNotSolid(false)
+            end)
+
             return
         end
     end
@@ -289,7 +297,7 @@ function GM:OnEntityCreated(ent)
         
         if string.sub(entclass, 1, 12) == "npc_headcrab" then
             ent:DrawShadow(false)
-            SafeRemoveEntityDelayed(ent, 0)
+            ent:Remove()
             return
         end
         
