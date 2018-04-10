@@ -94,28 +94,9 @@ function util.PrintMessage(uname, pl, tab)
         
         local msg = tab.Message
         local bScan = tab.EffectType >= 2
-        local alpha = 255
         local dtime = CurTime() - tab.StartTime
-        local dur = tab.Duration * (bScan and #msg or 1)
         local fadein = tab.FadeIn
         local fadeout = tab.FadeOut
-
-        if dtime > dur then
-            GAMEMODE.ParsedTextObjects[uname] = nil
-            hook.Remove( "HUDPaint", uname )
-            return
-        end
-
-        if fadein - dtime > 0 then
-            alpha = (fadein - dtime) / fadein
-            alpha = 1 - alpha
-            alpha = alpha * 255
-        end
-
-        if dur - dtime < fadeout then
-            alpha = (dur - dtime) / fadeout
-            alpha = alpha * 255
-        end
 
         surface.SetFont(tab.Font)
         local w, h = surface.GetTextSize(tab.Message)
@@ -175,6 +156,26 @@ function util.PrintMessage(uname, pl, tab)
                 end
             end
         else
+            local dur = tab.Duration
+            local alpha = 255
+            
+            if dtime > dur then
+                GAMEMODE.ParsedTextObjects[uname] = nil
+                hook.Remove( "HUDPaint", uname )
+                return
+            end
+
+            if fadein - dtime > 0 then
+                alpha = (fadein - dtime) / fadein
+                alpha = 1 - alpha
+                alpha = alpha * 255
+            end
+
+            if dur - dtime < fadeout then
+                alpha = (dur - dtime) / fadeout
+                alpha = alpha * 255
+            end
+            
             surface.SetTextColor(tab.Color1.r, tab.Color1.g, tab.Color1.b, alpha)
             surface.SetTextPos(x, y)
             surface.DrawText(msg)
