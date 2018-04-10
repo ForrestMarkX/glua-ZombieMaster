@@ -45,8 +45,8 @@ function NPC:SpawnDraw(npc)
 end
 
 local circleMaterial        = Material("effects/zombie_select")
-local healthcircleMaterial = Material("effects/zm_healthring")
-local undovision           = false
+local healthcircleMaterial  = Material("effects/zm_healthring")
+local undovision            = false
 function NPC:PreDraw(npc)
     if LocalPlayer():IsZM() then
         if npc:Health() > 0 then

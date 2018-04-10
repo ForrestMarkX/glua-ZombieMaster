@@ -313,8 +313,6 @@ function GM:OnEntityCreated(ent)
             ent:SetShouldServerRagdoll(false)
         end)
         
-        ent:SetSpawnEffect(true)
-        
         for index, npc in pairs(self.iZombieList) do
             hook.Call("AddNPCFriends", self, npc, ent)
         end

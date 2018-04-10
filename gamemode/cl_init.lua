@@ -21,7 +21,7 @@ include("vgui/dclickableavatar.lua")
 include("vgui/dcrosshairinfo.lua")
 include("vgui/dhintpanel.lua")
 
-local zombieMenu      = nil
+local zombieMenu = nil
 
 GM.ItemEnts = {}
 GM.SilhouetteEnts = {}
@@ -32,7 +32,7 @@ ZM_Vision = CreateMaterial("ZM_Vision_Material_LD", "VertexLitGeneric", {
     ["$ignorez"] = 1
 })
 
-mouseX, mouseY  = 0, 0
+mouseX, mouseY     = 0, 0
 oldMousePos        = Vector(0, 0, 0)
 isDragging         = false
 
@@ -242,34 +242,22 @@ local function NPCRenderOverride(self)
     GAMEMODE:CallZombieFunction(self, "PostDraw")
 end
 function GM:NetworkEntityCreated(ent)
-    -- Used from Sandbox cause I'm too lazy to port my version from ZS
-    if ent:GetSpawnEffect() and ent:GetCreationTime() > (CurTime() - 1.0) then
-        -- Okay so it seems scripted ents set all variables to nil on spawn and can't be set until 1 frame after spawn probably when Initialize is called
-        if ent:IsScripted() then
-            ent:SetNoDraw(true)
-            
-            timer.Simple(0, function()
-                ent:SetNoDraw(false)
-                
-                ent.Time = 0.55
-                ent.LifeTime = CurTime() + ent.Time
-            end)
-        else
-            ent.Time = 0.55
-            ent.LifeTime = CurTime() + ent.Time
-        end
-    end
-    
     if ent:IsNPC() then
         if ent:IsScripted() then
             ent:SetNoDraw(true)
             
             timer.Simple(0, function()
+                ent.Time = 0.55
+                ent.LifeTime = CurTime() + ent.Time
+                
                 ent:SetNoDraw(false)
                 ent.fadeAlpha = 0
                 ent.RenderOverride = NPCRenderOverride
             end)
         else
+            ent.Time = 0.55
+            ent.LifeTime = CurTime() + ent.Time
+            
             ent.fadeAlpha = 0
             ent.RenderOverride = NPCRenderOverride
         end
@@ -702,6 +690,12 @@ function GM:CreateVGUI()
     self.ToolPan_Center_Tip:Center()
     self.ToolPan_Center_Tip:AlignBottom(10)
     self.ToolPan_Center_Tip:ParentToHUD()
+    
+    function self.ToolPan_Center_Tip:Think()
+        if GAMEMODE.ToolPan_Center_Tip ~= self then
+            self:Remove()
+        end
+    end
     
     self.ToolLab_Center_Tip = vgui.Create("DLabel", self.ToolPan_Center_Tip)
     self.ToolLab_Center_Tip:SetTextColor(color_white)

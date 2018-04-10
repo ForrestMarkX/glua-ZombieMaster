@@ -9,37 +9,45 @@ GM.PowerCatImages[CATEGORY_GROUPS] = "VGUI/minigroupadd"
 
 GM.PowerCategorys = {}
 
-function GM:AddZMPower(cat, func)
+function GM:AddZMPower(cat, name, callback)
     if not self.PowerCategorys[cat] then
         self.PowerCategorys[cat] = {}
     end
     
-    table.insert(self.PowerCategorys[cat], func)
+    table.insert(self.PowerCategorys[cat], {name, callback})
 end
 
 function GM:SetupZMPowers()
     if not IsValid(self.powerMenu) then return end
     
-    for cat, functions in pairs(self.PowerCategorys) do
+    for cat, tab in pairs(self.PowerCategorys) do
         local Scroll = vgui.Create("DScrollPanel")
         Scroll:Dock(FILL)
     
-        local Tab = vgui.Create("DIconLayout", Scroll)
-        Tab:Dock(FILL)
-        Tab:SetBorder(4)
-        Tab:SetSpaceX(8)
-        Tab:SetSpaceY(8)
-        Scroll.LayoutPan = Tab
+        local IconTab = vgui.Create("DIconLayout", Scroll)
+        IconTab:Dock(FILL)
+        IconTab:SetBorder(4)
+        IconTab:SetSpaceX(8)
+        IconTab:SetSpaceY(8)
+        Scroll.LayoutPan = IconTab
         
         self.powerMenu:AddSheet("PowerTab"..cat, Scroll, self.PowerCatImages[cat], true, true)
         
-        for _, power in pairs(functions) do
-            pcall(power, cat)
+        for _, info in pairs(tab) do
+            local success, panel = pcall(info[2])
+            if not success then continue end
+            
+            if not ispanel(panel) then
+                ErrorNoHalt("The callback for the ZM power (" .. info[1] .. ") did not return a panel!")
+                continue
+            end
+            
+            GAMEMODE.powerMenu:AddItem(info[1], panel, cat)
         end
     end
 end
 
-GM:AddZMPower(CATEGORY_ACTIONS,    function(Cat)
+GM:AddZMPower(CATEGORY_ACTIONS, "ZM_Action_SelectAll", function()
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/miniselectall")
@@ -50,10 +58,10 @@ GM:AddZMPower(CATEGORY_ACTIONS,    function(Cat)
         net.SendToServer() 
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Action_SelectAll", button, Cat)
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_ACTIONS, function(Cat)  
+GM:AddZMPower(CATEGORY_ACTIONS, "ZM_Action_Defend", function()  
     local button = vgui.Create("zm_powerbutton") 
     button:SetSize(ScreenScale(11), ScreenScale(11)) 
     button:SetImage("VGUI/minishield") 
@@ -64,10 +72,10 @@ GM:AddZMPower(CATEGORY_ACTIONS, function(Cat)
         net.SendToServer()  
     end 
 
-    GAMEMODE.powerMenu:AddItem("ZM_Action_Defend", button, Cat) 
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_ACTIONS, function(Cat) 
+GM:AddZMPower(CATEGORY_ACTIONS, "ZM_Action_Offense", function() 
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/minicrosshair")
@@ -78,10 +86,10 @@ GM:AddZMPower(CATEGORY_ACTIONS, function(Cat)
         net.SendToServer() 
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Action_Offense", button, Cat)
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_ACTIONS, function(Cat) 
+GM:AddZMPower(CATEGORY_ACTIONS, "ZM_Action_Ambush", function() 
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/miniarrows")
@@ -91,10 +99,10 @@ GM:AddZMPower(CATEGORY_ACTIONS, function(Cat)
         RunConsoleCommand("zm_power_ambushpoint") 
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Action_Ambush", button, Cat)
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_ACTIONS, function(Cat) 
+GM:AddZMPower(CATEGORY_ACTIONS, "ZM_Action_Ceiling", function() 
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/miniceiling")
@@ -105,10 +113,10 @@ GM:AddZMPower(CATEGORY_ACTIONS, function(Cat)
         net.SendToServer()
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Action_Ceiling", button, Cat)
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_POWERS, function(Cat)
+GM:AddZMPower(CATEGORY_POWERS, "ZM_Power_Nightvision", function()
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/minieye")
@@ -118,10 +126,10 @@ GM:AddZMPower(CATEGORY_POWERS, function(Cat)
         RunConsoleCommand("zm_power_nightvision") 
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Power_Nightvision", button, Cat)    
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_POWERS, function(Cat) 
+GM:AddZMPower(CATEGORY_POWERS, "ZM_Power_Explosion", function() 
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/minishockwave")
@@ -131,10 +139,10 @@ GM:AddZMPower(CATEGORY_POWERS, function(Cat)
         RunConsoleCommand("zm_power_physexplode") 
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Power_Explosion", button, Cat)
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_POWERS, function(Cat) 
+GM:AddZMPower(CATEGORY_POWERS, "ZM_Power_KillZombies", function() 
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/minideletezombies")
@@ -144,10 +152,10 @@ GM:AddZMPower(CATEGORY_POWERS, function(Cat)
         RunConsoleCommand("zm_power_killzombies") 
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Power_KillZombies", button, Cat)
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_POWERS, function(Cat) 
+GM:AddZMPower(CATEGORY_POWERS, "ZM_Power_HiddenSpawn", function() 
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/minispotcreate")
@@ -157,10 +165,10 @@ GM:AddZMPower(CATEGORY_POWERS, function(Cat)
         RunConsoleCommand("zm_power_spotcreate") 
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Power_HiddenSpawn", button, Cat)
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_GROUPS, function(Cat)
+GM:AddZMPower(CATEGORY_GROUPS, "ZM_Group_Create", function()
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/minigroupadd")
@@ -171,10 +179,10 @@ GM:AddZMPower(CATEGORY_GROUPS, function(Cat)
         net.SendToServer() 
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Group_Create", button, Cat)    
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_GROUPS, function(Cat) 
+GM:AddZMPower(CATEGORY_GROUPS, "ZM_Group_Select", function() 
     local button = vgui.Create("zm_powerbutton")
     button:SetSize(ScreenScale(11), ScreenScale(11))
     button:SetImage("VGUI/minigroupselect")
@@ -185,10 +193,10 @@ GM:AddZMPower(CATEGORY_GROUPS, function(Cat)
         net.SendToServer()
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Group_Select", button, Cat)
+    return button
 end)
 
-GM:AddZMPower(CATEGORY_GROUPS, function(Cat) 
+GM:AddZMPower(CATEGORY_GROUPS, "ZM_Group_List", function() 
     local dropdown = vgui.Create("DComboBox")
     dropdown:SetMouseInputEnabled(true)
     dropdown:SetPos(0, 10)
@@ -213,5 +221,5 @@ GM:AddZMPower(CATEGORY_GROUPS, function(Cat)
         end
     end
     
-    GAMEMODE.powerMenu:AddItem("ZM_Group_List", dropdown, Cat)
+    return dropdown
 end)
