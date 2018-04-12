@@ -813,6 +813,8 @@ function GM:InitClient(pl)
                 net.WriteEntity(pl)
                 net.WriteBool(playerReadyList[pl])
             net.Broadcast()
+            
+            self:CheckPlayersReady()
         end
     end
     
@@ -820,6 +822,20 @@ function GM:InitClient(pl)
 end
 
 function GM:InitPostClient(pl)
+end
+
+function GM:CheckPlayersReady()
+    if player.GetCount() > 1 then
+        local bNotReady = false
+        for pl, b in pairs(playerReadyList) do
+            if not b then bNotReady = true break end
+        end
+        
+        if not bNotReady then
+            GAMEMODE:SetReadyCount(CurTime() + 5)
+            GAMEMODE:SetGameStarting(true)
+        end
+    end
 end
 
 function GM:ConvertEntTo(prop, convertto)
@@ -1413,17 +1429,7 @@ net.Receive("zm_playeready", function(len, pl)
         net.WriteBool(bReady)
     net.Broadcast()
     
-    if player.GetCount() > 1 then
-        local bNotReady = false
-        for pl, b in pairs(playerReadyList) do
-            if not b then bNotReady = true break end
-        end
-        
-        if not bNotReady then
-            GAMEMODE:SetReadyCount(CurTime() + 5)
-            GAMEMODE:SetGameStarting(true)
-        end
-    end
+    GAMEMODE:CheckPlayersReady()
 end)
 
 function GM:AddResources()

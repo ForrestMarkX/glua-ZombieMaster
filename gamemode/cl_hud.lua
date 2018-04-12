@@ -1,3 +1,12 @@
+gui.OldEnableScreenClicker = gui.OldEnableScreenClicker or gui.EnableScreenClicker
+function gui.EnableScreenClicker(b, bForce)
+    if not b and (IsValid(GAMEMODE.PlayerLobby) or (LocalPlayer():IsZM() and not bForce)) then 
+        return 
+    end
+    
+    gui.OldEnableScreenClicker(b)
+end
+
 function GM:HUDPaint()
     if player_manager.RunClass(LocalPlayer(), "DrawHUD") then return end
     

@@ -293,6 +293,12 @@ end
 function PLAYER:ButtonUp(button)
 end
 
+function PLAYER:KeyPress(key)
+end
+
+function PLAYER:KeyRelease(key)
+end
+
 function PLAYER:ShouldTakeDamage(attacker)
     return false
 end

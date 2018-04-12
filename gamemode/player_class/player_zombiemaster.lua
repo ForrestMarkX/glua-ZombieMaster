@@ -39,10 +39,10 @@ function PLAYER:SetupMove(mv, cmd)
     if CLIENT then
         if not hook.Call("IsMenuOpen", GAMEMODE) and (input.WasMousePressed(MOUSE_WHEEL_UP) or input.WasMousePressed(MOUSE_WHEEL_DOWN)) and vgui.CursorVisible() then
             RememberCursorPosition()
-            gui.EnableScreenClicker(false)
+            gui.EnableScreenClicker(false, true)
             
             timer.Simple(0, function() 
-                gui.EnableScreenClicker(true) 
+                gui.EnableScreenClicker(true, true) 
                 RestoreCursorPosition()
             end)
         end
@@ -174,7 +174,7 @@ function PLAYER:BindPress(bind, pressed)
         return true
     elseif bind == "+speed" and pressed then
         if not self.Player:KeyDown(IN_DUCK) then
-            gui.EnableScreenClicker(not vgui.CursorVisible())
+            gui.EnableScreenClicker(not vgui.CursorVisible(), true)
             
             if IsValid(GAMEMODE.powerMenu) then
                 if vgui.CursorVisible() then
@@ -208,12 +208,8 @@ function PLAYER:Think()
     end
 end
 
-function PLAYER:PostThink()
-    if self.Player:IsOnFire() then
-        self.Player:Extinguish()
-    end
-    
-    if self.Player:KeyPressed(IN_RELOAD) then
+function PLAYER:KeyPress(key)
+    if key == IN_RELOAD then
         self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) + 1
         local players = {}
 
@@ -234,28 +230,12 @@ function PLAYER:PostThink()
         if specplayer then
             self.Player:SetPos(specplayer:EyePos())
         end
-    elseif self.Player:KeyPressed(IN_USE) then
-        self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) - 1
+    end
+end
 
-        local players = {}
-
-        for k, v in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
-            if v:Alive() and v ~= self.Player then
-                table.insert(players, v)
-            end
-        end
-        
-        if self.Player.SpectatedPlayerKey <= 0 then
-            self.Player.SpectatedPlayerKey = #players
-            return
-        end
-
-        self.Player:StripWeapons()
-        local specplayer = players[self.Player.SpectatedPlayerKey]
-
-        if specplayer then
-            self.Player:SetPos(specplayer:EyePos())
-        end
+function PLAYER:PostThink()
+    if self.Player:IsOnFire() then
+        self.Player:Extinguish()
     end
 end
 

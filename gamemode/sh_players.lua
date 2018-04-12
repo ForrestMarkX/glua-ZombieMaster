@@ -15,7 +15,8 @@ end
 
 meta.OldSpectate = meta.OldSpectate or meta.Spectate
 function meta:Spectate(obsmode)
-    self:SetNoTarget(true)
+    if SERVER then self:SetNoTarget(true) end
+    
     if obsmode == OBS_MODE_ROAMING then
         self:SetMoveType(MOVETYPE_NOCLIP)
     end

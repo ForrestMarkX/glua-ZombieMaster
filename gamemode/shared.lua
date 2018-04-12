@@ -178,3 +178,11 @@ end
 function GM:PlayerCanPickupItem(pl, item)
     return player_manager.RunClass(pl, "CanPickupItem", item)
 end
+
+function GM:KeyPress(pl, key)
+    return player_manager.RunClass(pl, "KeyPress", key)
+end
+
+function GM:KeyRelease(pl, key)
+    return player_manager.RunClass(pl, "KeyRelease", key)
+end

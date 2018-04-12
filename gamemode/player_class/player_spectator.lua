@@ -27,6 +27,80 @@ function PLAYER:PostOnDeath(inflictor, attacker)
     end)
 end
 
+function PLAYER:KeyPress(key)
+    if key == IN_RELOAD then
+        if self.Player:GetObserverMode() ~= OBS_MODE_ROAMING then
+            self.Player:Spectate(OBS_MODE_ROAMING)
+            self.Player:SpectateEntity(NULL)
+            self.Player.SpectatedPlayerKey = nil
+        end
+    elseif key == IN_ATTACK then
+        local tr = util.GetPlayerTrace(self.Player)
+        tr.filter = function(ent)
+            return ent:IsNPC() or ent:IsPlayer()
+        end
+        
+        local trace = util.TraceLine(tr)
+        if IsValid(trace.Entity) then
+            self.Player:Spectate(OBS_MODE_CHASE)
+            self.Player:SpectateEntity(trace.Entity)
+            return
+        end
+        
+        self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) + 1
+
+        local players = {}
+        for _, pl in pairs(player.GetAll()) do
+            if pl:Team() ~= TEAM_SPECTATOR and pl:Alive() and pl ~= self.Player then
+                players[#players + 1] = pl
+            end
+        end
+        
+        if self.Player.SpectatedPlayerKey > #players then
+            self.Player:Spectate(OBS_MODE_ROAMING)
+            self.Player:SpectateEntity(NULL)
+            self.Player.SpectatedPlayerKey = 1
+        end
+
+        self.Player:StripWeapons()
+        local specplayer = players[self.Player.SpectatedPlayerKey]
+        if specplayer then
+            self.Player:Spectate(OBS_MODE_CHASE)
+            self.Player:SpectateEntity(specplayer)
+        else
+            self.Player:Spectate(OBS_MODE_ROAMING)
+            self.Player:SpectateEntity(NULL)
+            self.Player.SpectatedPlayerKey = nil
+        end
+    elseif key == IN_ATTACK2 then
+        self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 2) - 1
+
+        local players = {}
+        for _, pl in pairs(player.GetAll()) do
+            if pl:Team() ~= TEAM_SPECTATOR and pl:Alive() and pl ~= self.Player then
+                players[#players + 1] = pl
+            end
+        end
+        
+        if self.Player.SpectatedPlayerKey <= 0 then
+            self.Player:Spectate(OBS_MODE_ROAMING)
+            self.Player:SpectateEntity(NULL)
+            self.Player.SpectatedPlayerKey = #players
+        end
+
+        self.Player:StripWeapons()
+        local specplayer = players[self.Player.SpectatedPlayerKey]
+        if specplayer then
+            self.Player:Spectate(OBS_MODE_CHASE)
+            self.Player:SpectateEntity(specplayer)
+        else
+            self.Player:Spectate(OBS_MODE_ROAMING)
+            self.Player:SpectateEntity(NULL)
+            self.Player.SpectatedPlayerKey = nil
+        end
+    end
+end
+
 function PLAYER:PostThink()
     if self.Player:IsOnFire() then
         self.Player:Extinguish()
@@ -47,67 +121,6 @@ function PLAYER:PostThink()
         local target = self.Player:GetObserverTarget()
         if IsValid(target) then
             self.Player:SetPos(target:EyePos())
-        end
-    end
-
-    if self.Player:KeyPressed(IN_RELOAD) then
-        if self.Player:GetObserverMode() ~= OBS_MODE_ROAMING then
-            self.Player:Spectate(OBS_MODE_ROAMING)
-            self.Player:SpectateEntity(NULL)
-            self.Player.SpectatedPlayerKey = nil
-        end
-    elseif self.Player:KeyPressed(IN_ATTACK) then
-        self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) + 1
-
-        local players = player.GetAll()
-        if self.Player.SpectatedPlayerKey > #players then
-            self.Player:Spectate(OBS_MODE_ROAMING)
-            self.Player:SpectateEntity(NULL)
-            self.Player.SpectatedPlayerKey = 1
-        end
-
-        self.Player:StripWeapons()
-        local specplayer = players[self.Player.SpectatedPlayerKey]
-
-        if specplayer then
-            self.Player:Spectate(OBS_MODE_CHASE)
-            self.Player:SpectateEntity(specplayer)
-        else
-            self.Player:Spectate(OBS_MODE_ROAMING)
-            self.Player:SpectateEntity(NULL)
-            self.Player.SpectatedPlayerKey = nil
-        end
-    elseif self.Player:KeyPressed(IN_ATTACK2) then
-        self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 2) - 1
-
-        local players = player.GetAll()
-        if self.Player.SpectatedPlayerKey <= 0 then
-            self.Player:Spectate(OBS_MODE_ROAMING)
-            self.Player:SpectateEntity(NULL)
-            self.Player.SpectatedPlayerKey = #players
-        end
-
-        self.Player:StripWeapons()
-        local specplayer = players[self.Player.SpectatedPlayerKey]
-
-        if specplayer then
-            self.Player:Spectate(OBS_MODE_CHASE)
-            self.Player:SpectateEntity(specplayer)
-        else
-            self.Player:Spectate(OBS_MODE_ROAMING)
-            self.Player:SpectateEntity(NULL)
-            self.Player.SpectatedPlayerKey = nil
-        end
-    elseif self.Player:KeyPressed(IN_USE) then
-        local tr = util.GetPlayerTrace(self.Player)
-        tr.filter = function(ent)
-            return ent:IsNPC() or ent:IsPlayer()
-        end
-        
-        local trace = util.TraceLine(tr)
-        if IsValid(trace.Entity) then
-            self.Player:Spectate(OBS_MODE_CHASE)
-            self.Player:SpectateEntity(trace.Entity)
         end
     end
 end

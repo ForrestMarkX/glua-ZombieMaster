@@ -18,6 +18,8 @@ function GM:GetZombieData(class)
             return data
         end
     end
+    
+    return zombieData["class_default"]
 end
 
 function GM:CallZombieFunction(npc, func, ...)

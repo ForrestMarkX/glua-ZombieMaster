@@ -1,37 +1,46 @@
-function GM:HUDDrawTargetID()
-    if LocalPlayer():IsZM() then hook.Call("DrawZMTargetID", self) return end
+local function DrawTargetID(ent, text, fraction, x, y, xalign, yalign)
+    local green = fraction * 255
+    local healthCol = Color(255 - green, green, 0)
     
-    if LocalPlayer():IsSpectator() and IsValid(LocalPlayer():GetObserverTarget()) then
+    draw.SimpleTextOutlined(text, "DermaLarge", x, y, healthCol, xalign, yalign, 1, color_black)
+end
+
+function GM:HUDDrawTargetID()
+    if LocalPlayer():IsZM() then 
+        hook.Call("DrawZMTargetID", self) 
+        return 
+    elseif LocalPlayer():IsSpectator() and IsValid(LocalPlayer():GetObserverTarget()) then
         hook.Call("DrawSpectatorTargetID", self)
         return
     end
     
     local tr = util.GetPlayerTrace(LocalPlayer())
-    local trace = util.TraceLine(tr)
+    tr.mins = Vector(-12, -12, 0)
+    tr.maxs = Vector(12, 12, 72)
+    tr.filter = function(ent)
+        return ent:IsPlayer() and ent ~= LocalPlayer()
+    end
     
+    local trace = util.TraceHull(tr)
     if not trace.Hit or not trace.HitNonWorld then return end
     
     local ent = trace.Entity
     if not IsValid(ent) then return end
-    if not ent:IsPlayer() then return end
-    
-    local text = ent:Nick() or "ERROR"
-    local font = "TargetID"
     
     local health = ent:Health()
     local healthtext = health < 20 and "Critical" or health < 50 and "Wounded" or health < 75 and "Injured" or "Healthy"
-    local green = math.Clamp(ent:Health() / ent:GetMaxHealth(), 0, 1) * 255
-    local healthCol = Color(255 - green, green, 0)
-    
-    surface.SetFont(font)
-    draw.DrawText(text.." ("..healthtext..")", "DermaLarge", ScrW() / 96, ScrH() / 1.88, healthCol)
+    DrawTargetID(ent, ent:Nick() .. " (" .. healthtext .. ")", math.Clamp(health / ent:GetMaxHealth(), 0, 1), ScrW() * 0.01, ScrH() * 0.5, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
 
 function GM:DrawZMTargetID()
     local mousepos = gui.ScreenToVector(gui.MousePos())
-    local tr = util.TraceLine({
+    local tr = util.TraceHull({
+        filter = function(ent)
+            return ent:IsPlayer() or ent:IsNPC()
+        end,
         start = LocalPlayer():GetShootPos(),
-        endpos = LocalPlayer():GetShootPos() + (mousepos * 56756)
+        endpos = LocalPlayer():GetShootPos() + (mousepos * 56756),
+        mins = Vector(-18, -18, 0), maxs = Vector(18, 18, 72)
     })
     
     if not tr.Hit or not tr.HitNonWorld then 
@@ -78,16 +87,24 @@ end
 
 function GM:DrawSpectatorTargetID()
     local ent = LocalPlayer():GetObserverTarget()
-    if not ent:IsPlayer() then return end
+    local name = ""
+    local maxhealth = 0
+    local healthtext = ent:Health()
+    if ent:IsPlayer() then
+        name = ent:Name()
+        maxhealth = ent:GetMaxHealth()
+        
+        if ent:IsZM() then
+            healthtext = "Zombie Master"
+        end 
+    elseif ent:IsNPC() then
+        local tab = self:GetZombieData(ent:GetClass())
+        if tab then
+            name = tab.Name
+            maxhealth = tab.Health
+        end
+    end
     
-    local text = ent:Nick() or "ERROR"
-    local font = "TargetID"
-    
-    local health = ent:Health()
-    local healthtext = health < 20 and "Critical" or health < 50 and "Wounded" or health < 75 and "Injured" or "Healthy"
-    local green = math.Clamp(ent:Health() / ent:GetMaxHealth(), 0, 1) * 255
-    local healthCol = Color(255 - green, green, 0)
-    
-    surface.SetFont(font)
-    draw.DrawText(text.." ("..healthtext..")", "DermaLarge", ScrW() / 96, ScrH() / 1.88, healthCol)
+    local text = name .. " (" .. healthtext .. ")"
+    DrawTargetID(ent, text, math.Clamp(ent:Health() / maxhealth, 0, 1), ScrW() * 0.5, ScrH() * 0.95, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 end
