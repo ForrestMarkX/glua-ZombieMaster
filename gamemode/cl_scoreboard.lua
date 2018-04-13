@@ -86,14 +86,16 @@ function PANEL:Think()
     end
     
     if self.NumPing == nil or self.NumPing ~= self.Player:Ping() then
-        self.NumPing = self.Player:Ping()
+        self.NumPing = self.Player:IsBot() and "Bot" or self.Player:Ping()
         self.Ping:SetText( self.NumPing )
         
-        local ping = self.NumPing
-        local pingmul = 1 - math.Clamp((ping - 50) / 200, 0, 1)
-        
-        local colPing = Color((1 - pingmul) * 255, pingmul * 255, 60, 255)
-        self.Ping:SetTextColor(colPing)
+        if not self.Player:IsBot() then
+            local ping = self.NumPing
+            local pingmul = 1 - math.Clamp((ping - 50) / 200, 0, 1)
+            
+            local colPing = Color((1 - pingmul) * 255, pingmul * 255, 60, 255)
+            self.Ping:SetTextColor(colPing)
+        end
     end
 
     if self.Muted == nil or self.Muted ~= self.Player:IsMuted() then

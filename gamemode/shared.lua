@@ -16,6 +16,7 @@ include("sh_weapons.lua")
 include("sh_players.lua")
 include("sh_entites.lua")
 include("sh_zombies.lua")
+include("sh_npc.lua")
 
 include("player_class/player_basezm.lua")
 include("player_class/player_survivor.lua")
@@ -185,4 +186,8 @@ end
 
 function GM:KeyRelease(pl, key)
     return player_manager.RunClass(pl, "KeyRelease", key)
+end
+
+function GM:PlayerPostThink(pl)
+    player_manager.RunClass(pl, "PostThink")
 end

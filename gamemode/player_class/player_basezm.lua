@@ -270,7 +270,7 @@ function PLAYER:PostDraw()
 end
 
 function PLAYER:PreDrawOther(ply)
-    return true
+    return not ply:IsZM()
 end
 
 function PLAYER:PostDrawOther(ply)

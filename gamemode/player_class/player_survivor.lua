@@ -19,6 +19,8 @@ function PLAYER:Spawn()
     self.Player:ResetHull()
     self.Player:UnSpectate()
     
+    self.Player:GodDisable()
+    
     self.Player:StripWeapons()
     self.Player:SetColor(color_white)
 

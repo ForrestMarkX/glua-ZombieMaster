@@ -8,6 +8,9 @@ function PLAYER:Spawn()
     
     self.Player:Flashlight(false)
     self.Player:RemoveEffects(EF_DIMLIGHT)
+    self.Player:SetMoveType(MOVETYPE_NOCLIP)
+    self.Player:DrawShadow(false)
+    self.Player:GodEnable()
     
     self.Player:SendLua([[
         if cvars.Bool("zm_cl_enablehints") and IsValid(GAMEMODE.ZM_Center_Hints) then
@@ -209,7 +212,7 @@ function PLAYER:Think()
 end
 
 function PLAYER:KeyPress(key)
-    if key == IN_RELOAD then
+    if SERVER and key == IN_RELOAD then
         self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 0) + 1
         local players = {}
 
@@ -234,7 +237,7 @@ function PLAYER:KeyPress(key)
 end
 
 function PLAYER:PostThink()
-    if self.Player:IsOnFire() then
+    if SERVER and self.Player:IsOnFire() then
         self.Player:Extinguish()
     end
 end
@@ -257,6 +260,10 @@ function PLAYER:ButtonDown(button)
     if button == cvars.Number("zm_killzombieskey", 0) then
         RunConsoleCommand("zm_power_killzombies")
     end
+end
+
+function PLAYER:PreDraw()
+    return false
 end
 
 player_manager.RegisterClass("player_zombiemaster", PLAYER, "player_basezm")

@@ -15,6 +15,7 @@ AddCSLuaFile("sh_weapons.lua")
 AddCSLuaFile("sh_players.lua")
 AddCSLuaFile("sh_entites.lua")
 AddCSLuaFile("sh_zombies.lua")
+AddCSLuaFile("sh_npc.lua")
 
 AddCSLuaFile("sh_sounds.lua")
 AddCSLuaFile("sh_zm_globals.lua")
@@ -457,9 +458,11 @@ end
 function GM:PlayerSpawnAsSpectator(pl)
     pl:StripWeapons()
     pl:SetTeam(TEAM_SPECTATOR)
-    pl:Spectate(OBS_MODE_ROAMING)
+    pl:SetClass("player_spectator")
     pl:SendLua("gamemode.Call('RemoveZMPanels')")
     pl:SetClass("player_spectator")
+    
+    player_manager.RunClass(pl, "Spawn")
 end
 
 function GM:PlayerDeathThink(pl)
@@ -574,13 +577,6 @@ function GM:OnPlayerChangedTeam(ply, oldTeam, newTeam)
     elseif newTeam == TEAM_ZOMBIEMASTER then
         SetGlobalEntity("zm_zombiemaster_player", ply)
         timer.Simple(0.1, function() ply:SendLua("GAMEMODE:CreateVGUI()") end)
-    end
-    
-    if newteam ~= TEAM_SURVIVOR then
-        ply:Spectate(OBS_MODE_ROAMING)
-        ply:GodEnable()
-    else
-        ply:GodDisable()
     end
 end
 
@@ -729,9 +725,10 @@ function GM:IncrementRoundCount()
 end
 
 function GM:SetupPlayer(ply)
+    ply:Freeze(false)
+    
     if ply:GetInfoNum("zm_preference", 0) == 2 then return end
     
-    ply:Freeze(false)
     ply:SetTeam(TEAM_SURVIVOR)
     ply:SetClass("player_survivor")
     
@@ -985,10 +982,6 @@ function GM:GetRoundStartTime()
     return self.RoundStartTime or 2
 end
 
-function GM:PlayerPostThink(pl)
-    player_manager.RunClass(pl, "PostThink")
-end
-
 function GM:Tick()
     for index, npc in pairs(self.iZombieList) do
         self:CallZombieFunction(npc, "Think")
@@ -1145,10 +1138,10 @@ function GM:SetPlayerToZombieMaster(pl)
     pl:KillSilent()
     pl:SetFrags(0)
     pl:SetDeaths(0)
-    pl:Spectate(OBS_MODE_ROAMING)
     pl:Freeze(false)
     pl:SetTeam(TEAM_ZOMBIEMASTER)
     pl:SetClass("player_zombiemaster")
+    pl:Spawn()
     
     for _, pPlayer in pairs(player.GetAll()) do
         if pPlayer ~= pl then 
@@ -1159,18 +1152,11 @@ function GM:SetPlayerToZombieMaster(pl)
     self.ZombieMasterPriorities[pl] = 0
 
     PrintTranslatedMessage(HUD_PRINTTALK, "x_has_become_the_zombiemaster", pl:Name())
-    --util.PrintMessageC(pl, translate.ClientGet(pl, "zm_move_instructions"), Color(255, 0, 0))
 
     pl:SetZMPoints(425)
     hook.Call("IncreaseResources", self, pl)
 
     self.Income_Time = CurTime() + GetConVar("zm_incometime"):GetInt()
-
-    local spawn = hook.Call("PlayerSelectTeamSpawn", self, TEAM_ZOMBIEMASTER, pl)
-    if spawn then
-        pl:SetPos(spawn:GetPos())
-        pl:SetAngles(spawn:GetAngles())
-    end
     
     self:SetRoundActive(true)
 end
