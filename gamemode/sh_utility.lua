@@ -145,8 +145,20 @@ function util.PrintMessage(uname, pl, tab)
                 color.g = bit.rshift((srcGreen * (255-blend)) + (destGreen * blend), 8)
                 color.b = bit.rshift((srcBlue * (255-blend)) + (destBlue * blend), 8)
                 
+                local w, h = surface.GetTextSize(string.sub(msg, 1, i - 1))
+                
+                local steps = ( 1 * 2 ) / 3
+                if ( steps < 1 ) then steps = 1 end
+
+                surface.SetTextColor(0, 0, 0, color == color_black and 0 or 255 - fadeBlend)
+                for _x = -1, 1, steps do
+                    for _y = -1, 1, steps do
+                        surface.SetTextPos((x + _x) + w, y + _y)
+                        surface.DrawText(string.sub(msg, i, i))
+                    end
+                end
+                
                 surface.SetTextColor(color.r, color.g, color.b, color == color_black and 0 or 255 - fadeBlend)
-                local w = surface.GetTextSize(string.sub(msg, 1, i - 1))
                 surface.SetTextPos(x + w, y)
                 surface.DrawText(string.sub(msg, i, i))
                 
@@ -174,6 +186,17 @@ function util.PrintMessage(uname, pl, tab)
             if dur - dtime < fadeout then
                 alpha = (dur - dtime) / fadeout
                 alpha = alpha * 255
+            end
+           
+            local steps = ( 1 * 2 ) / 3
+            if ( steps < 1 ) then steps = 1 end
+
+            surface.SetTextColor(0, 0, 0, alpha)
+            for _x = -1, 1, steps do
+                for _y = -1, 1, steps do
+                    surface.SetTextPos(x + _x, y + _y)
+                    surface.DrawText(msg)
+                end
             end
             
             surface.SetTextColor(tab.Color1.r, tab.Color1.g, tab.Color1.b, alpha)

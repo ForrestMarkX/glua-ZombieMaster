@@ -726,6 +726,7 @@ end
 
 function GM:SetupPlayer(ply)
     ply:Freeze(false)
+    ply:SendLua("gui.EnableScreenClicker(false, true)")
     
     if ply:GetInfoNum("zm_preference", 0) == 2 then return end
     
