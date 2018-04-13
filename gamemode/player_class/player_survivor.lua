@@ -19,6 +19,7 @@ function PLAYER:Spawn()
     self.Player:ResetHull()
     self.Player:UnSpectate()
     
+    self.Player:DrawShadow(true)
     self.Player:GodDisable()
     
     self.Player:StripWeapons()

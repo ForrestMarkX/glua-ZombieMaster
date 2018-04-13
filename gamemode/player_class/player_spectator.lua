@@ -12,6 +12,7 @@ function PLAYER:Spawn()
     self.Player:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
     self.Player:RemoveEffects(EF_DIMLIGHT)
     
+    self.Player:DrawShadow(false)
     self.Player:GodEnable()
 end
 
