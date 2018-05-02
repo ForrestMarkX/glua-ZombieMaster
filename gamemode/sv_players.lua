@@ -101,3 +101,13 @@ function meta:SendLua(str)
         net.WriteString(str)
     net.Send(self)
 end
+
+meta.OldGetObserverTarget = meta.OldGetObserverTarget or meta.GetObserverTarget
+function meta:GetObserverTarget()
+    local ent = self:OldGetObserverTarget()
+    if self:GetObserverMode() == OBS_MODE_ROAMING then
+        return NULL
+    end
+    
+    return ent
+end

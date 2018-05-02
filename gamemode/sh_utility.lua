@@ -1,42 +1,42 @@
 local function GetXPosition(x, width, totalWidth)
-	local xPos
-	if x == -1 then
-		xPos = (ScrW() - width) / 2
-	else
-		if x < 0 then
-			xPos = (1.0 + x) * ScrW() - totalWidth
-		else
-			xPos = x * ScrW()
+    local xPos
+    if x == -1 then
+        xPos = (ScrW() - width) / 2
+    else
+        if x < 0 then
+            xPos = (1.0 + x) * ScrW() - totalWidth
+        else
+            xPos = x * ScrW()
         end
-	end
-
-	if xPos + width > ScrW() then
-		xPos = ScrW() - width
-	elseif xPos < 0 then
-		xPos = 0
     end
 
-	return xPos
+    if xPos + width > ScrW() then
+        xPos = ScrW() - width
+    elseif xPos < 0 then
+        xPos = 0
+    end
+
+    return xPos
 end
 local function GetYPosition(y, height)
-	local yPos
-	if y == -1 then
-		yPos = (ScrH() - height) * 0.5
-	else
-		if y < 0 then
-			yPos = (1.0 + y) * ScrH() - height
-		else
-			yPos = y * ScrH()
+    local yPos
+    if y == -1 then
+        yPos = (ScrH() - height) * 0.5
+    else
+        if y < 0 then
+            yPos = (1.0 + y) * ScrH() - height
+        else
+            yPos = y * ScrH()
         end
-	end
-
-	if yPos + height > ScrH() then
-		yPos = ScrH() - height
-	elseif yPos < 0 then
-		yPos = 0
     end
 
-	return yPos
+    if yPos + height > ScrH() then
+        yPos = ScrH() - height
+    elseif yPos < 0 then
+        yPos = 0
+    end
+
+    return yPos
 end
 function util.PrintMessage(uname, pl, tab)
     if type(tab) ~= "table" or tab.Message == nil then
@@ -146,13 +146,10 @@ function util.PrintMessage(uname, pl, tab)
                 color.b = bit.rshift((srcBlue * (255-blend)) + (destBlue * blend), 8)
                 
                 local w, h = surface.GetTextSize(string.sub(msg, 1, i - 1))
-                
-                local steps = ( 1 * 2 ) / 3
-                if ( steps < 1 ) then steps = 1 end
 
                 surface.SetTextColor(0, 0, 0, color == color_black and 0 or 255 - fadeBlend)
-                for _x = -1, 1, steps do
-                    for _y = -1, 1, steps do
+                for _x = -1, 1 do
+                    for _y = -1, 1 do
                         surface.SetTextPos((x + _x) + w, y + _y)
                         surface.DrawText(string.sub(msg, i, i))
                     end
@@ -187,13 +184,10 @@ function util.PrintMessage(uname, pl, tab)
                 alpha = (dur - dtime) / fadeout
                 alpha = alpha * 255
             end
-           
-            local steps = ( 1 * 2 ) / 3
-            if ( steps < 1 ) then steps = 1 end
 
             surface.SetTextColor(0, 0, 0, alpha)
-            for _x = -1, 1, steps do
-                for _y = -1, 1, steps do
+            for _x = -1, 1 do
+                for _y = -1, 1 do
                     surface.SetTextPos(x + _x, y + _y)
                     surface.DrawText(msg)
                 end

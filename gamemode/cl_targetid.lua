@@ -87,6 +87,8 @@ end
 
 function GM:DrawSpectatorTargetID()
     local ent = LocalPlayer():GetObserverTarget()
+    if ent:IsRagdoll() then return end
+    
     local name = ""
     local maxhealth = 0
     local healthtext = ent:Health()

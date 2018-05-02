@@ -16,6 +16,8 @@ function PLAYER:Spawn()
     self.Player:CrosshairEnable()
     self.Player:SetMoveType(MOVETYPE_WALK)
     self.Player:SetCollisionGroup(COLLISION_GROUP_PLAYER)
+    self.Player:SetSolid(SOLID_BBOX)
+    self.Player:SetSolidFlags(0)
     self.Player:ResetHull()
     self.Player:UnSpectate()
     
@@ -322,7 +324,31 @@ function PLAYER:PreDeath(inflictor, attacker)
 end
 
 function PLAYER:OnDeath(attacker, dmginfo)
-    BaseClass.OnDeath(self, attacker, dmginfo)
+    self.Player:Freeze(false)
+    self.Player:DropAllAmmo()
+    
+    GAMEMODE.DeadPlayers[self.Player:SteamID()] = true
+    
+    if IsValid(attacker) and attacker:IsPlayer() then
+        if attacker == self.Player then
+            attacker:AddFrags(-1)
+        else
+            attacker:AddFrags(1)
+        end
+    end
+    
+    if self.Player:Health() <= -70 and not dmginfo:IsDamageType(DMG_DISSOLVE) then
+        self.Player:Gib(dmginfo)
+    else
+        self.Player:CreateRagdoll()
+    end
+    
+    local hands = self.Player:GetHands()
+    if IsValid(hands) then
+        hands:Remove()
+    end
+    
+    self.Player:PlayDeathSound()
     
     local pZM = GAMEMODE:FindZM()
     if IsValid(pZM) then
@@ -334,9 +360,30 @@ function PLAYER:OnDeath(attacker, dmginfo)
     
     self.Player:Flashlight(false)
     self.Player:RemoveEffects(EF_DIMLIGHT)
+    
+    timer.Simple(0.1, function() 
+        if not IsValid(self.Player) then return end
+        hook.Call("PlayerSpawnAsSpectator", GAMEMODE, self.Player) 
+    end)
 end
 
 function PLAYER:PostOnDeath(inflictor, attacker)
+    self.Player:Spectate(OBS_MODE_CHASE)
+    self.Player:SpectateEntity(self.Player:GetRagdollEntity())
+    
+    self.Player.AllowKeyPress = false
+    timer.Simple(3.15, function()
+        if not IsValid(self.Player) or self.Player:Team() ~= TEAM_SPECTATOR then return end
+        
+        self.Player.AllowKeyPress = true
+        self.Player:Spectate(OBS_MODE_ROAMING)
+        self.Player:SpectateEntity(NULL)
+        
+        if IsValid(self.Player:GetRagdollEntity()) then
+            self.Player:SetPos(self.Player:GetRagdollEntity():WorldSpaceCenter())
+        end
+    end)
+    
     if player.GetCount() == 1 then return end
     
     timer.Simple(0.15, function()

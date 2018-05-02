@@ -799,6 +799,8 @@ function GM:MakePreferredMenu()
     check:SetConVar("zm_nopreferredmenu")
     check:SetTextColor(color_white)
     check:SizeToContents()
+    
+    GAMEMODE.PreferredMenu = frame
 end
 
 local boxColor = Color(115, 0, 0)

@@ -6,10 +6,7 @@ local PLAYER = {}
 function PLAYER:Spawn()
     BaseClass.Spawn(self)
     
-    self.Player:Spectate(OBS_MODE_ROAMING)
     self.Player:Flashlight(false)
-    self.Player:SetMoveType(MOVETYPE_NOCLIP)
-    self.Player:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
     self.Player:RemoveEffects(EF_DIMLIGHT)
     
     self.Player:DrawShadow(false)
@@ -31,7 +28,7 @@ function PLAYER:PostOnDeath(inflictor, attacker)
 end
 
 function PLAYER:KeyPress(key)
-    if SERVER then
+    if SERVER and self.Player.AllowKeyPress then
         if key == IN_RELOAD then
             self.Player:Spectate(OBS_MODE_ROAMING)
             self.Player:SpectateEntity(NULL)
@@ -53,10 +50,12 @@ function PLAYER:KeyPress(key)
             
             local players = {}
             for _, pl in pairs(player.GetAll()) do
-                if pl:Team() ~= TEAM_SPECTATOR and pl:Alive() and pl ~= self.Player then
+                if pl:Team() ~= TEAM_SPECTATOR and pl:Alive() and pl ~= self.Player and pl ~= self.Player:GetObserverTarget() then
                     players[#players + 1] = pl
                 end
             end
+            
+            if #players <= 0 then return end
             
             self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 1) + 1
             if self.Player.SpectatedPlayerKey > #players then
@@ -78,10 +77,12 @@ function PLAYER:KeyPress(key)
         elseif key == IN_ATTACK2 then
             local players = {}
             for _, pl in pairs(player.GetAll()) do
-                if pl:Team() ~= TEAM_SPECTATOR and pl:Alive() and pl ~= self.Player then
+                if pl:Team() ~= TEAM_SPECTATOR and pl:Alive() and pl ~= self.Player and pl ~= self.Player:GetObserverTarget() then
                     players[#players + 1] = pl
                 end
             end
+            
+            if #players <= 0 then return end
             
             self.Player.SpectatedPlayerKey = (self.Player.SpectatedPlayerKey or 2) - 1
             if self.Player.SpectatedPlayerKey <= 0 then
@@ -118,22 +119,19 @@ function PLAYER:CalcView(view)
     end
 end
 
-function PLAYER:PostThink()
-    -- This appears to fix PVS issues with sounds when using OBS_MODE_CHASE
-    local target = self.Player:GetObserverTarget()
-    if IsValid(target) and self.Player:GetObserverMode() ~= OBS_MODE_ROAMING then
-        self.Player:SetPos(target:GetPos())
-    end
-        
+function PLAYER:PostThink()  
     if SERVER then
         if self.Player:IsOnFire() then
             self.Player:Extinguish()
         end
         
-        if not IsValid(target) or not target:Alive() or target:Team() == TEAM_SPECTATOR then
-            self.Player:StripWeapons()
-            self.Player:Spectate(OBS_MODE_ROAMING)
-            self.Player:SpectateEntity(NULL)
+        if self.Player:GetObserverMode() ~= OBS_MODE_ROAMING then
+            local target = self.Player:GetObserverTarget()
+            if not IsValid(target) or (target.Alive and not target:Alive()) or (target.Team and target:Team() == TEAM_SPECTATOR) then
+                self.Player:StripWeapons()
+                self.Player:Spectate(OBS_MODE_ROAMING)
+                self.Player:SpectateEntity(NULL)
+            end
         end
     end
 end

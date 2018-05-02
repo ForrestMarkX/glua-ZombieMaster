@@ -201,40 +201,9 @@ function PLAYER:PreDeath(inflictor, attacker)
 end
 
 function PLAYER:OnDeath(attacker, dmginfo)
-    self.Player:Freeze(false)
-    self.Player:DropAllAmmo()
-    
-    GAMEMODE.DeadPlayers[self.Player:SteamID()] = true
-    
-    if IsValid(attacker) and attacker:IsPlayer() then
-        if attacker == self.Player then
-            attacker:AddFrags(-1)
-        else
-            attacker:AddFrags(1)
-        end
-    end
-    
-    if self.Player:Health() <= -70 and not dmginfo:IsDamageType(DMG_DISSOLVE) then
-        self.Player:Gib(dmginfo)
-    else
-        self.Player:CreateRagdoll()
-    end
-    
-    local hands = self.Player:GetHands()
-    if IsValid(hands) then
-        hands:Remove()
-    end
-    
-    self.Player:PlayDeathSound()
-    
-    timer.Simple(0.1, function() 
-        if not IsValid(self.Player) then return end
-        hook.Call("PlayerSpawnAsSpectator", GAMEMODE, self.Player) 
-    end)
 end
 
 function PLAYER:PostOnDeath(inflictor, attacker)
-    self.Player:Spectate(OBS_MODE_ROAMING)
 end
 
 function PLAYER:OnHurt(attacker, healthremaining, damage)

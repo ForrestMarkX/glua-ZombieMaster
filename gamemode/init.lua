@@ -457,10 +457,9 @@ end
 
 function GM:PlayerSpawnAsSpectator(pl)
     pl:StripWeapons()
+    pl:SetClass("player_spectator")
     pl:SetTeam(TEAM_SPECTATOR)
-    pl:SetClass("player_spectator")
     pl:SendLua("gamemode.Call('RemoveZMPanels')")
-    pl:SetClass("player_spectator")
     
     player_manager.RunClass(pl, "Spawn")
 end
@@ -572,9 +571,7 @@ function GM:OnPlayerClassChanged(pl, class)
 end
 
 function GM:OnPlayerChangedTeam(ply, oldTeam, newTeam)
-    if newTeam == TEAM_SPECTATOR then
-        ply:SetPos(ply:EyePos())
-    elseif newTeam == TEAM_ZOMBIEMASTER then
+    if newTeam == TEAM_ZOMBIEMASTER then
         SetGlobalEntity("zm_zombiemaster_player", ply)
         timer.Simple(0.1, function() ply:SendLua("GAMEMODE:CreateVGUI()") end)
     end
@@ -726,7 +723,13 @@ end
 
 function GM:SetupPlayer(ply)
     ply:Freeze(false)
-    ply:SendLua("gui.EnableScreenClicker(false, true)")
+    ply:SendLua([[
+        gui.EnableScreenClicker(false, true)
+        
+        if IsValid(GAMEMODE.PreferredMenu) then
+            GAMEMODE.PreferredMenu:Close()
+        end
+    ]])
     
     if ply:GetInfoNum("zm_preference", 0) == 2 then return end
     
@@ -1037,7 +1040,7 @@ function GM:Think()
             end
         end
         
-        if self:GetRoundActive() and not self:GetRoundEnd() and #team.GetPlayers(TEAM_ZOMBIEMASTER) == 0 then
+        if not GetConVar("zm_debug_nozombiemaster"):GetBool() and self:GetRoundActive() and not self:GetRoundEnd() and #team.GetPlayers(TEAM_ZOMBIEMASTER) == 0 then
             hook.Call("SetupZombieMasterVolunteers", self, true)
         end
         
@@ -1122,7 +1125,8 @@ function GM:SetupZombieMasterVolunteers(bSkipToSelection)
         
         game.CleanUpMap()
         
-        for _, ply in pairs(team.GetPlayers(TEAM_SPECTATOR)) do
+        for _, ply in pairs(player.GetAll()) do
+            if ply:Team() == TEAM_ZOMBIEMASTER then continue end
             hook.Call("SetupPlayer", self, ply)
         end
     end
