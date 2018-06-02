@@ -346,8 +346,8 @@ function GM:ReplaceItemWithCrate(ent, class)
             if IsValid(crate) then
                 crate:SetPos(ent:GetPos())
                 crate:SetAngles(ent:GetAngles())
-                crate:SetKeyValue("itemclass", class or ent:GetClass())
-                crate:SetKeyValue("itemcount", itemcount)
+                crate:SetKeyValue("itemclass", tostring(class) or ent:GetClass())
+                crate:SetKeyValue("itemcount", tostring(itemcount))
                 crate:Spawn()
                 
                 ent:Remove()
@@ -1329,10 +1329,10 @@ function GM:SpawnZombie(pZM, entname, origin, angles, cost, bHidden)
 
     if IsValid(pZombie) then
         if tab.SpawnFlags then
-            pZombie:SetKeyValue("spawnflags", tab.SpawnFlags)
+            pZombie:SetKeyValue("spawnflags", tostring(tab.SpawnFlags))
         end
         
-        pZombie:SetKeyValue("crabcount", 0)
+        pZombie:SetKeyValue("crabcount", "0")
         
         pZombie:SetPos(origin)
         pZombie:SetOwner(pZM)

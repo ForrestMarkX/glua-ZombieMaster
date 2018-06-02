@@ -87,7 +87,7 @@ function ENT:Detonate(hitpos, hitnormal)
     for i = 1, 10 do
         local fire = ents.Create("env_fire")
         fire:SetPos(hitpos + Vector(math.random(-80, 80), math.random(-80, 80), 0))
-        fire:SetKeyValue("health", 25)
+        fire:SetKeyValue("health", "25")
         fire:SetKeyValue("firesize", "60")
         fire:SetKeyValue("fireattack", "2")
         fire:SetKeyValue("damagescale", "4.0")
