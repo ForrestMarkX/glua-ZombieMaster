@@ -50,7 +50,7 @@ local undovision            = false
 function NPC:PreDraw(npc)
     if LocalPlayer():IsZM() then
         if npc:Health() > 0 then
-            local pos = npc:GetPos() + Vector(0, 0, 3)
+            local pos = npc:GetPos()
             local healthfrac = math.Clamp(npc:Health() / npc:GetMaxHealth(), 0, 1) * 255
             
             local brightness = math.Clamp(GetConVar("zm_healthcircle_brightness"):GetFloat(), 0, 1)
@@ -61,11 +61,11 @@ function NPC:PreDraw(npc)
             local colour = Color(redness * brightness, greenness * brightness, 0, 255)
             
             render.SetMaterial(healthcircleMaterial)
-            render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
+            render.DrawQuadEasy(pos + Vector(0, 0, 1), Vector(0, 0, 1), 40, 40, colour)
             
             if npc.bIsSelected then
                 render.SetMaterial(circleMaterial)
-                render.DrawQuadEasy(pos, Vector(0, 0, 1), 40, 40, colour)
+                render.DrawQuadEasy(pos + Vector(0, 0, 1), Vector(0, 0, 1), 40, 40, colour)
             end
         end
         

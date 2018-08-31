@@ -20,6 +20,7 @@ include("vgui/dmodelselector.lua")
 include("vgui/dclickableavatar.lua")
 include("vgui/dcrosshairinfo.lua")
 include("vgui/dhintpanel.lua")
+include("vgui/dlobby.lua")
 
 local zombieMenu = nil
 
@@ -60,7 +61,7 @@ local lobbyMenu_ColorMod = {
     ["$pp_colour_mulb"] = 0
 }
 
-local playerReadyList = {}
+GM.playerReadyList = {}
 function GM:PostClientInit()
     net.Start("zm_player_ready")
     net.SendToServer()
@@ -75,120 +76,7 @@ function GM:PostClientInit()
     
     local bRoundActive = self:GetRoundActive() or team.NumPlayers(TEAM_ZOMBIEMASTER) > 0
     if not bRoundActive then
-        timer.Simple(1, function()
-            gui.EnableScreenClicker(true)
-        end)
-        
-        local lobby = vgui.Create("DFrame")
-        lobby:SetSize(ScrW() * 0.3, ScrH() * 0.5)
-        lobby:Center()
-        lobby:ShowCloseButton(false)
-        lobby:SetTitle("")
-        self.PlayerLobby = lobby
-        
-        local lobbytext = vgui.Create("DLabel", lobby)
-        lobbytext:SetText("Ready Up!")
-        lobbytext:SetFont("zm_hud_font_small")
-        lobbytext:SizeToContents()
-        lobbytext:Center()
-        lobbytext:AlignTop(4)
-        self.PlayerLobby.LobbyText = lobbytext
-        
-        local lobbylist = vgui.Create("DScrollPanel", lobby)
-        lobbylist:Dock(FILL)
-        lobbylist:MoveBelow(lobbytext, 4)
-        lobbylist.PlayerPan = {}
-        self.PlayerLobby.PlayerList = lobbylist
-        
-        self.ReadyButton = vgui.Create("DButton")
-        self.ReadyButton:SetFont("zm_hud_font_small")
-        self.ReadyButton:SetSize(ScrW() * 0.09, ScrH() * 0.05)
-        self.ReadyButton:AlignBottom(ScrH() * 0.035)
-        self.ReadyButton:AlignRight(ScrW() * 0.025)
-        self.ReadyButton:SetText("Ready")
-        
-        function self.ReadyButton:DoClick()
-            if GAMEMODE:GetGameStarting() or (self.Cooldown or 0) > CurTime() then return end
-            
-            playerReadyList[LocalPlayer()] = not playerReadyList[LocalPlayer()]
-            
-            if playerReadyList[LocalPlayer()] then
-                surface.PlaySound("buttons/button17.wav")
-            else
-                surface.PlaySound("buttons/button18.wav")
-            end
-            
-            self:SetText(playerReadyList[LocalPlayer()] and "Un-Ready" or "Ready")
-            
-            net.Start("zm_playeready")
-                net.WriteBool(playerReadyList[LocalPlayer()])
-            net.SendToServer()
-            
-            self.Cooldown = CurTime() + 1
-        end
-    end
-end
-
--- Could probably use player.GetAll() in a custom panel but this will do for now
-function GM:RefreshReadyPanel()
-    if not IsValid(self.PlayerLobby) then return end
-    
-    for pl, ready in pairs(playerReadyList) do
-        if not IsValid(pl) then continue end
-        
-        if self.PlayerLobby.PlayerList.PlayerPan[pl] then
-            local tab = self.PlayerLobby.PlayerList.PlayerPan[pl]
-            tab.ReadyText:SetText(ready and "Ready" or "Not Ready")
-            tab.ReadyText:SetTextColor(ready and Color(0, 255, 0) or Color(255, 0, 0))
-            tab.ReadyText:SizeToContents()
-        else
-            local tab = self.PlayerLobby.PlayerList:Add("DPanel")
-            if tab then
-                self.PlayerLobby.PlayerList.PlayerPan[pl] = tab
-                
-                tab.PlayerOwner = pl
-                tab:Dock(TOP)
-                tab:DockMargin(5, 2, 5, 2)
-                
-                function tab:Think()
-                    if not IsValid(self.PlayerOwner) then
-                        self:Remove()
-                    end
-                end
-                
-                local avatar = tab:Add("DClickableAvatar")
-                avatar:SetSize(32, 32)
-                avatar:SetPlayer(pl, 32)
-                avatar.DoClick = function() pl:ShowProfile() end
-                tab.Avatar = avatar
-                
-                local name = tab:Add("DLabel")
-                name:SetText(pl:Nick())
-                name:SetFont("zm_hud_font_smaller")
-                tab.Name = name
-                
-                local readylab = vgui.Create("DLabel", tab)
-                readylab:SetText(ready and "Ready" or "Not Ready")
-                readylab:SetTextColor(ready and Color(0, 255, 0) or Color(255, 0, 0))
-                readylab:SetFont("zm_hud_font_smaller")
-                readylab:Dock(RIGHT)
-                readylab:DockMargin(5, 0, 5, 0)
-                tab.ReadyText = readylab
-                
-                tab:SizeToChildren(false, true)
-                tab:SetTall(tab:GetTall() + 4)
-                
-                avatar:AlignLeft(18)
-                avatar:CenterVertical()
-                
-                name:SizeToContents()
-                name:CenterVertical()
-                name:MoveRightOf(avatar, 8)    
-                
-                readylab:SizeToContents()
-                readylab:CenterVertical()
-            end
-        end
+        self:OpenLobbyMenu()
     end
 end
 
@@ -341,10 +229,8 @@ function GM:Think()
         self.HiddenCSEnt:SetAngles(ang)
     end
     
-    if IsValid(self.PlayerLobby) and (self:GetRoundActive() or self:GetGameStarting()) then 
-        self.PlayerLobby:Remove() 
-        self.ReadyButton:Remove()
-        gui.EnableScreenClicker(false)
+    if IsValid(self.PlayerLobby) and self:GetRoundActive() then 
+        self.PlayerLobby:Remove()
     end
     
     if not self:GetRoundActive() then
@@ -781,72 +667,18 @@ function GM:CreateClientsideRagdoll(ent, ragdoll)
     end
 end
 
-function GM:PreDrawOpaqueRenderables()
-    -- I don't like this because it won't draw the silhouette through props but sadly it's required because doing it anywhere else causes the red to be drawn on the model when visible, figured this was because the model is drawn twice and the second draw is tripping the zfail operation.
-    if LocalPlayer():IsZM() and cvars.Number("zm_vision_quality", 0) >= 2 then
-        if cvars.Bool("zm_silhouette_zmvision_only") and not self.nightVision then return end
-        
-        render.ClearStencil()
-        render.SetStencilEnable(true)
-            render.SetStencilWriteMask(255)
-            render.SetStencilTestMask(255)
-            render.SetStencilReferenceValue(57)
-
-            render.SetStencilCompareFunction(STENCIL_ALWAYS)
-            render.SetStencilZFailOperation(STENCIL_REPLACE)
-            
-            for k, v in pairs(self.SilhouetteEnts) do
-                if not v.ShouldDrawSilhouette then continue end
-                
-                v.DrawingSilhouette = true
-                v:DrawModel()
-                v.DrawingSilhouette = false
-            end
-
-            render.SetStencilCompareFunction(STENCIL_EQUAL)
-
-            cam.Start2D()
-                surface.SetDrawColor(self.SilhouetteColor)
-                surface.DrawRect(0, 0, ScrW(), ScrH())
-            cam.End2D()
-        render.SetStencilEnable(false)
-    end
-end
-
-local mat_Copy        = Material( "pp/copy" )
-local mat_Add        = Material( "pp/add" )
-local rt_Store        = render.GetScreenEffectTexture( 0 )
-local rt_Buffer        = render.GetScreenEffectTexture( 1 )
-function GM:PostDrawOpaqueRenderables()
-    if LocalPlayer():IsZM() then
-        if zm_rightclicked or zm_placedrally or zm_placedpoweritem then
-            local size = Either(zm_placedpoweritem, 1 * ((CurTime() - click_delta) * 350), 64 * (1 - (CurTime() - click_delta) * 4))
-            render.SuppressEngineLighting(true)
-            render.OverrideDepthEnable(true, true)
-            if zm_rightclicked or zm_placedpoweritem then
-                render.SetMaterial(selectringMaterial)
-            elseif zm_placedrally then
-                render.SetMaterial(rallyringMaterial)
-            end
-            
-            render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
-                
-            if (zm_placedpoweritem and size >= 128) or (not zm_placedpoweritem and size <= 0) then
-                zm_rightclicked = false
-                zm_placedrally = false
-                zm_placedpoweritem = false
-                didtrace = false
-            end            
-            
-            render.OverrideDepthEnable(false, false)
-            render.SuppressEngineLighting(false)
-        end
-    elseif LocalPlayer():IsSurvivor() and not self.bDisableHalos then
+local mat_Copy = Material( "pp/copy" )
+local mat_Add = Material( "pp/add" )
+local rt_Store = render.GetScreenEffectTexture( 0 )
+local rt_Buffer = render.GetScreenEffectTexture( 1 )
+function GM:PostDrawEffects()
+    if LocalPlayer():IsSurvivor() and not self.bDisableHalos then
         local rt_Scene = render.GetRenderTarget()
         render.CopyRenderTargetToTexture(rt_Store)
 
         render.Clear(0, 0, 0, 255, false, true)
 
+        cam.Start3D()
         render.SetStencilEnable(true)
             render.SuppressEngineLighting(true)
                 render.SetStencilWriteMask(1)
@@ -872,6 +704,7 @@ function GM:PostDrawOpaqueRenderables()
                 cam.End2D()
             render.SuppressEngineLighting(false)
         render.SetStencilEnable(false)
+        cam.End3D()
 
         render.CopyRenderTargetToTexture(rt_Buffer)
         render.SetRenderTarget(rt_Scene)
@@ -897,14 +730,70 @@ function GM:PostDrawOpaqueRenderables()
     end
 end
 
+function GM:PostDrawOpaqueRenderables()
+    if LocalPlayer():IsZM() then
+        if zm_rightclicked or zm_placedrally or zm_placedpoweritem then
+            local size = Either(zm_placedpoweritem, 1 * ((CurTime() - click_delta) * 350), 64 * (1 - (CurTime() - click_delta) * 4))
+            render.SuppressEngineLighting(true)
+            render.OverrideDepthEnable(true, true)
+            if zm_rightclicked or zm_placedpoweritem then
+                render.SetMaterial(selectringMaterial)
+            elseif zm_placedrally then
+                render.SetMaterial(rallyringMaterial)
+            end
+            
+            render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
+                
+            if (zm_placedpoweritem and size >= 128) or (not zm_placedpoweritem and size <= 0) then
+                zm_rightclicked = false
+                zm_placedrally = false
+                zm_placedpoweritem = false
+                didtrace = false
+            end            
+            
+            render.OverrideDepthEnable(false, false)
+            render.SuppressEngineLighting(false)
+        end
+        
+        if cvars.Number("zm_vision_quality", 0) >= 2 then
+            if cvars.Bool("zm_silhouette_zmvision_only") and not self.nightVision then return end
+            
+            render.ClearStencil()
+            render.SetStencilEnable(true)
+                render.SetStencilWriteMask(255)
+                render.SetStencilTestMask(255)
+                render.SetStencilReferenceValue(57)
+
+                render.SetStencilCompareFunction(STENCIL_ALWAYS)
+                render.SetStencilZFailOperation(STENCIL_REPLACE)
+                
+                for k, v in pairs(self.SilhouetteEnts) do
+                    if not v.ShouldDrawSilhouette then continue end
+                    
+                    v.DrawingSilhouette = true
+                    v:DrawModel()
+                    v.DrawingSilhouette = false
+                end
+
+                render.SetStencilCompareFunction(STENCIL_EQUAL)
+
+                cam.Start2D()
+                    surface.SetDrawColor(self.SilhouetteColor)
+                    surface.DrawRect(0, 0, ScrW(), ScrH())
+                cam.End2D()
+            render.SetStencilEnable(false)
+        end
+    end
+end
+
 local spec_overlay = Material("zm_overlay.png", "smooth unlitgeneric nocull")
 function GM:RenderScreenspaceEffects()
     if LocalPlayer():IsSpectator() then
-        render.SetMaterial(spec_overlay)
-        render.DrawScreenQuad()
-        
         if not self:GetRoundActive() and IsValid(self.PlayerLobby) then
             DrawColorModify(lobbyMenu_ColorMod)
+        else
+            render.SetMaterial(spec_overlay)
+            render.DrawScreenQuad()
         end
     elseif LocalPlayer():IsZM() then
         if self.nightVision then
@@ -1059,8 +948,7 @@ end)
 net.Receive("zm_updateclientreadytable", function(length)
     local bFullUpdate = net.ReadBool()
     if bFullUpdate then
-        playerReadyList = net.ReadTable()
-        hook.Call("RefreshReadyPanel", GAMEMODE)
+        GAMEMODE.playerReadyList = net.ReadTable()
         return
     end
     
@@ -1068,7 +956,5 @@ net.Receive("zm_updateclientreadytable", function(length)
     if not IsValid(pl) then return end
     
     local bReady = net.ReadBool()
-    playerReadyList[pl] = bReady
-    
-    hook.Call("RefreshReadyPanel", GAMEMODE)
+    GAMEMODE.playerReadyList[pl] = bReady
 end)

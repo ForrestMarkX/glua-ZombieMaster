@@ -40,7 +40,7 @@ function GM:DrawZMTargetID()
         end,
         start = LocalPlayer():GetShootPos(),
         endpos = LocalPlayer():GetShootPos() + (mousepos * 56756),
-        mins = Vector(-18, -18, 0), maxs = Vector(18, 18, 72)
+        mins = Vector(-18, -18, 0), maxs = Vector(18, 18, 0)
     })
     
     if not tr.Hit or not tr.HitNonWorld then 
@@ -73,8 +73,12 @@ function GM:DrawZMTargetID()
             end
         end
         
-        self.ToolLab_Center_Tip:SetText(translate.Format("targetid_tooltip_"..string.lower(name), name))
-        self.ToolLab_Center_Tip:SizeToContents()
+        if string.lower(name) ~= "error" then
+            self.ToolLab_Center_Tip:SetText(translate.Format("targetid_tooltip_"..string.lower(name), name))
+            self.ToolLab_Center_Tip:SizeToContents()
+        else
+            self.ToolPan_Center_Tip:SetVisible(false)
+        end
     end
     
     self.ToolPan_Center_Tip:InvalidateLayout(true)

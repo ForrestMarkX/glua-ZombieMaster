@@ -1,7 +1,7 @@
 gui.OldEnableScreenClicker = gui.OldEnableScreenClicker or gui.EnableScreenClicker
 function gui.EnableScreenClicker(b, bForce)
-    if not b and (IsValid(GAMEMODE.PlayerLobby) or (LocalPlayer():IsZM() and not bForce)) then 
-        return 
+    if not b and LocalPlayer():IsZM() and not bForce then 
+        return
     end
     
     gui.OldEnableScreenClicker(b)
@@ -9,25 +9,6 @@ end
 
 function GM:HUDPaint()
     if player_manager.RunClass(LocalPlayer(), "DrawHUD") then return end
-    
-    if not self:GetRoundActive() then
-        local h, w = ScrH(), ScrW()
-        local time = math.max(0, self:GetReadyCount() - CurTime())
-        local col = color_white
-        
-        if player.GetCount() <= 1 and not GetConVar("zm_debug_nolobby"):GetBool() then
-            time = GetConVar("zm_readytimerlength"):GetInt()
-        end
-        
-        if time < 5 then
-            local glow = math.sin(RealTime() * 8) * 200 + 255
-            col = Color(255, glow, glow)
-        else
-            col = color_white
-        end
-        
-        draw.SimpleTextOutlined(string.FormattedTime(time, "%02i:%02i"), "zm_hud_font_normal", w * 0.5, h * 0.925, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
-    end
     
     hook.Call( "HUDDrawTargetID", self )
     hook.Call( "HUDDrawPickupHistory", self )
@@ -636,21 +617,14 @@ function GM:ShowHelp()
         self.objmenu:SetVisible(not self.objmenu:IsVisible())
         self.objmenuimage:SetVisible(not self.objmenuimage:IsVisible())
         
-        if self.objmenu:IsVisible() then
-            gui.EnableScreenClicker(true)
-        else
-            gui.EnableScreenClicker(false)
-        end
-        
         return
     end
-    
-    gui.EnableScreenClicker(true)
     
     local frame = vgui.Create("DPanel")
     frame:SetWide(ScrW() * 0.75)
     frame:SetTall(math.min(ScrH() - (ScrH() * 0.1), 900))
     frame:Center()
+    frame:MakePopup()
     
     frame.Paint = function(self, w, h)
         draw.RoundedBoxEx(8, 0, 64, w, h - 64, Color(5, 5, 5, 180), false, false, true, true)
@@ -697,9 +671,6 @@ function GM:ShowHelp()
     but:AlignBottom(frame:GetTall() * 0.012)
     but:AlignRight(frame:GetWide() * 0.062)
     but.DoClick = function()
-        if not LocalPlayer():IsZM() then
-            gui.EnableScreenClicker(false)
-        end
         frame:SetVisible(false)
         sprite:SetVisible(false)
     end
@@ -729,13 +700,9 @@ function GM:MakePreferredMenu()
     frame:AlignLeft(20)
     frame.btnMinim:SetVisible(false)
     frame.btnMaxim:SetVisible(false)
+    frame:MakePopup()
     
-    frame.Close = function(self)
-        if not LocalPlayer():IsZM() then
-            gui.EnableScreenClicker(false)
-        end
-        self:Remove()
-    end
+    frame.Close = function(self) self:Remove() end
     
     local label = vgui.Create("DLabel", frame)
     label:AlignTop(45)

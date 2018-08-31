@@ -29,30 +29,30 @@ function meta:GetClassName()
 end
 
 function meta:GetBonePositionMatrixed(index)
-	local matrix = self:GetBoneMatrix(index)
-	if matrix then
-		return matrix:GetTranslation(), matrix:GetAngles()
-	end
+    local matrix = self:GetBoneMatrix(index)
+    if matrix then
+        return matrix:GetTranslation(), matrix:GetAngles()
+    end
 
-	return self:GetPos(), self:GetAngles()
+    return self:GetPos(), self:GetAngles()
 end
 
 function meta:NearestBone(pos)
-	local count = self:GetBoneCount()
-	if count == 0 then return end
+    local count = self:GetBoneCount()
+    if count == 0 then return end
 
-	local nearest
-	local nearestdist
+    local nearest
+    local nearestdist
 
-	for boneid = 1, count - 1 do
-		local bonepos, boneang = self:GetBonePositionMatrixed(boneid)
-		local dist = bonepos:Distance(pos)
+    for boneid = 1, count - 1 do
+        local bonepos, boneang = self:GetBonePositionMatrixed(boneid)
+        local dist = bonepos:Distance(pos)
 
-		if not nearest or dist < nearestdist then
-			nearest = boneid
-			nearestdist = dist
-		end
-	end
+        if not nearest or dist < nearestdist then
+            nearest = boneid
+            nearestdist = dist
+        end
+    end
 
-	return nearest
+    return nearest
 end

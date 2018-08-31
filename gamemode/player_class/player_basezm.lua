@@ -127,6 +127,43 @@ function PLAYER:GetHandsModel()
     return player_manager.TranslatePlayerHands( cl_playermodel )
 end
 
+function PLAYER:GetNextViewablePlayer(dir)
+	local AllPlayers = {}
+	for _, pl in pairs(player.GetAll()) do
+		if not pl:IsSpectator() then
+			AllPlayers[#AllPlayers + 1] = pl
+		end
+	end
+	
+	local PlayerCount = player.GetCount()
+	local CurrentIndex = -1
+	local RealViewTarget = self.Player:GetObserverTarget()
+	if IsValid(RealViewTarget) then
+		for i, pl in pairs(AllPlayers) do
+			if RealViewTarget == pl then
+				CurrentIndex = i
+				break
+			end
+		end
+	end
+	
+	local Index = CurrentIndex+dir
+	if Index > PlayerCount then
+		CurrentIndex = 0
+	elseif Index < 0 then
+		CurrentIndex = PlayerCount-dir
+	end
+
+	for NewIndex=CurrentIndex+dir,PlayerCount do
+		local ply = AllPlayers[NewIndex]
+		if IsValid(ply) and ply:Alive() then
+			return ply
+		end
+	end
+	
+	return NULL
+end
+
 function PLAYER:OnTakeDamage(attacker, dmginfo)
 end
 

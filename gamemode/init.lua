@@ -34,6 +34,7 @@ AddCSLuaFile("vgui/dmodelselector.lua")
 AddCSLuaFile("vgui/dclickableavatar.lua")
 AddCSLuaFile("vgui/dcrosshairinfo.lua")
 AddCSLuaFile("vgui/dhintpanel.lua")
+AddCSLuaFile("vgui/dlobby.lua")
 
 include("sv_zm_options.lua")
 include("sh_players.lua")
@@ -502,7 +503,7 @@ function GM:PlayerInitialSpawn(pl)
     net.Start("zm_infostrings")
         net.WriteString(self.MapInfo)
         net.WriteString(self.HelpInfo)
-    net.Send(pl)    
+    net.Send(pl)
     
     if not GetConVar("zm_debug_nolobby"):GetBool() and not self:GetRoundActive() then
         net.Start("zm_updateclientreadytable")

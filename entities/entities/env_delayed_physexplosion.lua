@@ -38,12 +38,12 @@ function ENT:Think()
             end
             
             entity:SetPos( self:GetPos() )
-            entity:SetKeyValue( "magnitude", tostring(ZM_PHYSEXP_DAMAGE) )
-            entity:SetKeyValue( "radius", tostring(ZM_PHYSEXP_RADIUS) )
+            entity:SetKeyValue( "magnitude", ZM_PHYSEXP_DAMAGE )
+            entity:SetKeyValue( "radius", ZM_PHYSEXP_RADIUS )
             entity:Spawn()
             
             local spawnflags = bit.bor(SF_PHYSEXPLOSION_NODAMAGE, SF_PHYSEXPLOSION_DISORIENT_PLAYER)
-            entity:SetKeyValue( "spawnflags", tostring(spawnflags) )
+            entity:SetKeyValue( "spawnflags", spawnflags )
             entity:Activate()
             
             timer.Simple(0.1, function()
@@ -96,14 +96,14 @@ function ENT:CreateDelayEffects(delay)
         
         local spawnflags = bit.bor(ent:GetSpawnFlags(), SF_SPARK_START_ON, SF_SPARK_GLOW, SF_SPARK_SILENT )
 
-        ent:SetKeyValue("spawnflags", tostring(spawnflags))
-        ent:SetKeyValue("MaxDelay", tostring(0.1))
-        ent:SetKeyValue("Magnitude", tostring(2))
-        ent:SetKeyValue("TrailLength", tostring(1.5))
+        ent:SetKeyValue("spawnflags", spawnflags)
+        ent:SetKeyValue("MaxDelay", 0.1)
+        ent:SetKeyValue("Magnitude", 2)
+        ent:SetKeyValue("TrailLength", 1.5)
 
         //modify delay to account for delayed dying of sparker
         delay = delay - 2.2
-        ent:SetKeyValue("DeathTime", tostring((CurTime() + delay)))
+        ent:SetKeyValue("DeathTime", (CurTime() + delay))
 
         ent:Spawn()
         ent:SetPos(self:GetPos())

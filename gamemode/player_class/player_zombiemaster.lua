@@ -14,6 +14,7 @@ function PLAYER:Spawn()
     self.Player:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
     self.Player:DrawShadow(false)
     self.Player:GodEnable()
+    self.Player:SetNoTarget(true)
     
     self.Player:SendLua([[
         if cvars.Bool("zm_cl_enablehints") and IsValid(GAMEMODE.ZM_Center_Hints) then
@@ -95,7 +96,7 @@ function PLAYER:PreDrawOther(ply)
     if ply:IsSurvivor() and ply:Alive() then
         local plHealth, plMaxHealth = ply:Health(), ply:GetMaxHealth()
         if plHealth > 0 then 
-            local pos = ply:GetPos() + Vector(0, 0, 2)
+            local pos = ply:GetPos()
             local colour = Color(0, 0, 0, 125)
             local healthfrac = math.max(plHealth, 0) / plMaxHealth
             

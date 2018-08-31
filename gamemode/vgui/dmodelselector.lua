@@ -1,7 +1,5 @@
 local default_animations = { "idle_all_01", "menu_walk" }
 local function ModelSelectionOpen()
-    timer.Simple(0, function() gui.EnableScreenClicker(true) end)
-    
     local window = vgui.Create("DFrame")
     window:SetSize(math.min(ScrW() - 16, 960), math.min(ScrH() - 16, 700))
     window:SetTitle("Player Model")

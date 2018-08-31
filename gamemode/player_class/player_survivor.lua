@@ -20,6 +20,7 @@ function PLAYER:Spawn()
     self.Player:SetSolidFlags(0)
     self.Player:ResetHull()
     self.Player:UnSpectate()
+    self.Player:SetNoTarget(false)
     
     self.Player:DrawShadow(true)
     self.Player:GodDisable()

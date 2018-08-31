@@ -84,3 +84,5 @@ CreateConVar("zm_dragzombie_damage", "3", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVA
 CreateConVar("zm_readytimerlength", "90", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "How long in seconds the ready timer takes to count down.")
 CreateConVar("zm_debug_nolobby", "0", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Used for debug, will not show a lobby menu at start.")
 CreateConVar("zm_infiniteammo", "0", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Enable infinite ammo for survivors.")
+
+CreateConVar("zm_motd_url", "", { FCVAR_NOTIFY, FCVAR_REPLICATED, FCVAR_ARCHIVE }, "Sets what the MOTD URL is for the lobby menu.")
