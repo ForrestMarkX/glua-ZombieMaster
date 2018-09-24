@@ -75,7 +75,7 @@ local function OpenLobby()
     lobbypanel.AddChatText = function(self, tab)
         self.ChatBox:AppendMessage(tab)
     end
-    lobbypanel:ParentToHUD()
+    --lobbypanel:ParentToHUD()
     
     GAMEMODE.PlayerLobby = lobbypanel
     lobbypanel:MakePopup()
