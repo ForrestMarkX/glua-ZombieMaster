@@ -305,7 +305,7 @@ function PLAYER:DrawHUD()
     end
     
     draw.SimpleTextBlurry(health, "zm_hud_font_big", x + wid * 0.72, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, self.Player.LastHurtTime, self.Player.HurtTimer)
-    draw.SimpleTextBlurry("#Valve_Hud_HEALTH", "zm_hud_font_small", x + wid * 0.25, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleTextBlurry(language.GetPhrase("#Valve_Hud_HEALTH"), "zm_hud_font_small", x + wid * 0.25, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 function PLAYER:PreDeath(inflictor, attacker)

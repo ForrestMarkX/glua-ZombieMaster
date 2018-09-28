@@ -88,7 +88,7 @@ local function OpenLobby()
     
     local timetostart = vgui.Create("DLabel", playerbackground)
     timetostart:SetFont("zm_hud_font_normal")
-    timetostart:SetText("Waiting for Players...")
+    timetostart:SetText(translate.Get("waiting_message"))
     timetostart:SizeToContents()
     timetostart:CenterHorizontal()
     
@@ -157,7 +157,7 @@ local function OpenLobby()
         local count = player.GetCount()
         if count ~= oldcount then
             oldcount = count
-            self:SetText("Player Count: "..count.."/"..game.MaxPlayers())
+            self:SetText(translate.Format("player_count_x_y", count, game.MaxPlayers()))
             self:SizeToContents()
         end
     end
@@ -193,7 +193,7 @@ local function OpenLobby()
     saypanel:AlignBottom(2)
     saypanel.Paint = BasicOutline
     
-    local saylabel = Label("Say:", saypanel)
+    local saylabel = Label(translate.Get("say_text"), saypanel)
     saylabel:SetFont("zm_hud_font_tiny")
     saylabel:SizeToContents()
     saylabel:SetTextColor(color_white)
@@ -238,8 +238,8 @@ local function OpenLobby()
         self:AppendText("\n")
     end
     richtext.PerformLayout = function(self, w, h)
-        self:SetFontInternal( "zm_hud_font_tiny" )
-        self:SetFGColor( Color( 255, 255, 255 ) )
+        self:SetFontInternal("zm_hud_font_tiny")
+        self:SetFGColor(Color(255, 255, 255))
     end
     lobbypanel.ChatBox = richtext
     
@@ -252,7 +252,7 @@ local function OpenLobby()
     disconnectb:Dock(RIGHT)
     disconnectb:DockMargin(ScreenScale(2), ScreenScale(3), ScreenScale(2), ScreenScale(3))
     disconnectb:SetFont("zm_hud_font_tiny")
-    disconnectb:SetText("Disconnect")
+    disconnectb:SetText(translate.Get("disconnect_button"))
     disconnectb:SizeToContents()
     
     function disconnectb:DoClick()
@@ -263,7 +263,7 @@ local function OpenLobby()
     readyb:Dock(RIGHT)
     readyb:DockMargin(ScreenScale(2), ScreenScale(3), ScreenScale(2), ScreenScale(3))
     readyb:SetFont("zm_hud_font_tiny")
-    readyb:SetText(GAMEMODE.playerReadyList[LocalPlayer()] and "Un-Ready" or "Ready")
+    readyb:SetText(GAMEMODE.playerReadyList[LocalPlayer()] and translate.Get("lobby_unready") or translate.Get("lobby_ready"))
     readyb:SizeToContents()
     readyb:SetTextColor(Color(0, 255, 0))
     
@@ -280,7 +280,7 @@ local function OpenLobby()
         end
         
         self:SetTextColor(GAMEMODE.playerReadyList[MySelf] and Color(255, 0, 0) or Color(0, 255, 0))
-        self:SetText(GAMEMODE.playerReadyList[MySelf] and "Un-Ready" or "Ready")
+        self:SetText(GAMEMODE.playerReadyList[MySelf] and translate.Get("lobby_unready") or translate.Get("lobby_ready"))
         self:SizeToContents()
         
         net.Start("zm_playeready")
@@ -294,7 +294,7 @@ local function OpenLobby()
     optionsb:Dock(RIGHT)
     optionsb:DockMargin(ScreenScale(2), ScreenScale(3), ScreenScale(2), ScreenScale(3))
     optionsb:SetFont("zm_hud_font_tiny")
-    optionsb:SetText("Options")
+    optionsb:SetText(translate.Get("button_options"))
     optionsb:SizeToContents()
     
     function optionsb:DoClick()
@@ -305,7 +305,7 @@ local function OpenLobby()
     changecharacter:Dock(RIGHT)
     changecharacter:DockMargin(ScreenScale(2), ScreenScale(3), ScreenScale(2), ScreenScale(3))
     changecharacter:SetFont("zm_hud_font_tiny")
-    changecharacter:SetText("Change Character")
+    changecharacter:SetText(translate.Get("change_character_button"))
     changecharacter:SizeToContents()
     
     function changecharacter:DoClick()
@@ -344,7 +344,7 @@ function PANEL:Init()
     self.m_PlayerLabel:SetFont("zm_hud_font_tiny")
     self.m_PlayerLabel:SetTextColor(color_white)
     
-    self.m_ReadyLabel = Label("Not Ready", self)
+    self.m_ReadyLabel = Label(translate.Get("lobby_not_ready"), self)
     self.m_ReadyLabel:SetFont("zm_hud_font_smaller")
     self.m_ReadyLabel:SetTextColor(Color(255, 0, 0))
 end
@@ -363,7 +363,7 @@ function PANEL:Think()
         local bReady = GAMEMODE.playerReadyList[self.m_Player]
         if self.OldReady ~= bReady then
             self.OldReady = bReady
-            self.m_ReadyLabel:SetText(bReady and "Ready" or "Not Ready")
+            self.m_ReadyLabel:SetText(bReady and translate.Get("lobby_ready") or translate.Get("lobby_not_ready"))
             self.m_ReadyLabel:SetTextColor(bReady and Color(0, 255, 0) or Color(255, 0, 0))
             self.m_ReadyLabel:SizeToContents()
         end
@@ -394,7 +394,7 @@ function PANEL:SetPlayer(pl)
 
     if IsValid(pl) and pl:IsPlayer() then
         if pl:IsBot() then
-            self.m_ReadyLabel:SetText("Ready")
+            self.m_ReadyLabel:SetText(translate.Get("lobby_ready"))
             self.m_ReadyLabel:SetTextColor(Color(0, 255, 0))
             self.m_ReadyLabel:SizeToContents()
         end
