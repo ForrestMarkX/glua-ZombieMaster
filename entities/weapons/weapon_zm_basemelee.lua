@@ -19,6 +19,7 @@ SWEP.SlotPos                   = 4
 
 SWEP.DrawAmmo                  = false
 SWEP.DrawCrosshair             = true
+SWEP.DrawQuickInfo             = false
 
 SWEP.IsMelee                   = true
 SWEP.HoldType                  = "melee"

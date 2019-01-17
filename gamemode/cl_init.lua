@@ -21,21 +21,19 @@ include("vgui/dclickableavatar.lua")
 include("vgui/dcrosshairinfo.lua")
 include("vgui/dhintpanel.lua")
 include("vgui/dlobby.lua")
+include("vgui/dhealthhud.lua")
 
 local zombieMenu = nil
 
 GM.ItemEnts = {}
 GM.SilhouetteEnts = {}
+GM.QuadDraws = {}
 
 ZM_Vision = CreateMaterial("ZM_Vision_Material_LD", "VertexLitGeneric", {
     ["$basetexture"] = "models/debug/debugwhite",
     ["$model"] = 1,
     ["$ignorez"] = 1
 })
-
-mouseX, mouseY     = 0, 0
-oldMousePos        = Vector(0, 0, 0)
-isDragging         = false
 
 local nightVision_ColorMod = {
     ["$pp_colour_addr"]         = -1,
@@ -95,6 +93,11 @@ function GM:OnReloaded()
     hook.Call("BuildZombieDataTable", self)
     hook.Call("SetupNetworkingCallbacks", self)
     hook.Call("SetupCustomItems", self)
+    
+    if IsValid(GAMEMODE.HumanHealthHUD) then
+        GAMEMODE.HumanHealthHUD:Remove()
+        GAMEMODE.HumanHealthHUD = vgui.Create("CHudHealthInfo")
+    end
     
     self.bLUARefresh = false
 end
@@ -177,6 +180,9 @@ function GM:SetupFonts()
     surface.CreateFont("zm_game_text_small", {font = "Dead Font Walking", size = ScreenScale(9)})
     surface.CreateFont("zm_game_text", {font = "Dead Font Walking", size = ScreenScale(11)})
     
+    surface.CreateFont("ZMHudNumbers", {font = "Monofonto", size = ScreenScale(30), weight = 0})
+    surface.CreateFont("ZMHudNumbersSmall", {font = "Monofonto", size = ScreenScale(22), weight = 0})
+    
     surface.CreateFont("ZMScoreBoardTitle", {font = "Verdana RU", size = ScreenScale(11)})
     surface.CreateFont("ZMScoreBoardTitleSub", {font = "Verdana RU", size = ScreenScale(5), weight = 1000})
     surface.CreateFont("ZMScoreBoardPlayer", {font = "Verdana RU", size = ScreenScale(5)})
@@ -188,11 +194,26 @@ function GM:SetupFonts()
     
     surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = ScreenScale(40), weight = 500})
 end
+GM:SetupFonts()
 
 function GM:PreCleanupMap()
     if GAMEMODE.ParsedTextObjects then
         table.Empty(GAMEMODE.ParsedTextObjects)
     end
+end
+
+function GM:GenerateClickedQuadTable(mat, endtime, aimVector, filter)
+    aimVector = aimVector or LocalPlayer():GetAimVector()
+    endtime = endtime or 0.3
+    filter = filter or {LocalPlayer()}
+    
+    local click_delta = CurTime()
+
+    local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, filter)
+    local quadang = tr.HitNormal:Angle()
+    quadang:RotateAroundAxis(quadang:Right(), 90)
+    
+    return {Material = mat, TexW = mat:Width(), TexH = mat:Height(), Delta = CurTime(), EndTime = CurTime() + endtime, Pos = tr.HitPos + tr.HitNormal, Ang = quadang}
 end
 
 function GM:PrePlayerDraw(ply)
@@ -209,6 +230,10 @@ function GM:PostPlayerDraw(pl)
     else
         player_manager.RunClass(LocalPlayer(), "PostDrawOther", ply)
     end
+end
+
+function GM:ShouldSelectionIgnoreEnt(ent)
+    return not (ent:GetClass() == "info_zombiespawn" or ent:GetClass() == "info_manipulate")
 end
 
 local lastwarntim = -1
@@ -303,52 +328,6 @@ function GM:GetCurrentZombieGroup()
     return self.SelectedZombieGroups
 end
 
-local placingShockWave = false
-function GM:SetPlacingShockwave(b)
-    placingShockwave = b
-end
-
-local placingZombie = false
-local function SpotZombieCheck(self)
-    render.SetBlend(0.65)
-    self:DrawModel()
-    render.SetBlend(1)
-end
-function GM:SetPlacingSpotZombie(b)
-    if not IsValid(self.HiddenCSEnt) then
-        self.HiddenCSEnt = ClientsideModel("models/zombie/zm_classic.mdl")
-        
-        local tr = util.QuickTrace(LocalPlayer():GetShootPos(), gui.ScreenToVector(gui.MousePos()) * 10000, player.GetAll())
-        self.HiddenCSEnt:SetPos(tr.HitPos)
-        self.HiddenCSEnt.RenderOverride = SpotZombieCheck
-        
-        local ang = LocalPlayer():EyeAngles()
-        ang.x = 0.0
-        ang.z = 0.0
-        self.HiddenCSEnt:SetAngles(ang)
-    end
-    
-    placingZombie = b
-end
-
-local placingAmbush = false
-function GM:SetPlacingAmbush(b)
-    placingAmbush = b
-end
-
-local TriggerEnt = nil
-local placingRally = false
-function GM:SetPlacingRallyPoint(b, ent)
-    placingRally = b
-    TriggerEnt = ent
-end
-
-local placingTrap = false
-function GM:SetPlacingTrapEntity(b, ent)
-    placingTrap = b
-    TriggerEnt = ent
-end
-
 function GM:OnPlayerChat( player, strText, bTeamOnly, bPlayerIsDead )
     local tab = {}
 
@@ -371,182 +350,12 @@ function GM:OnPlayerChat( player, strText, bTeamOnly, bPlayerIsDead )
     return true
 end
 
-local selectringMaterial = CreateMaterial("CommandRingMat", "UnlitGeneric", {
-    ["$basetexture"] = "effects/zm_ring",
-    ["$ignorez"] = 1,
-    ["$additive"] = 1,
-    ["$vertexalpha"] = 1,
-    ["$vertexcolor"] = 1,
-    ["$translucent"] = 1,
-    ["$nocull"] = 1
-})
-local rallyringMaterial = CreateMaterial("RallyRingMat", "UnlitGeneric", {
-    ["$basetexture"] = "effects/zm_arrows",
-    ["$ignorez"] = 1,
-    ["$additive"] = 1,
-    ["$vertexalpha"] = 1,
-    ["$vertexcolor"] = 1,
-    ["$translucent"] = 1,
-    ["$nocull"] = 1
-})
-local click_delta = 0
-local zm_ring_pos = Vector(0, 0, 0)
-local zm_ring_ang = Angle(0, 0, 0)
-local function SelectionTrace(ent)
-    if ent:GetClass() == "info_zombiespawn" or ent:GetClass() == "info_manipulate" then return true end
-    return false
-end
-local function LocationTrace(ent)
-    if not (ent:IsPlayer() or ent:IsNPC()) then return true end
-end
 function GM:GUIMousePressed(mouseCode, aimVector)
-    if LocalPlayer():IsZM() then
-        if mouseCode == MOUSE_LEFT then
-            if not isDragging then
-                mouseX, mouseY = gui.MousePos()
-                isDragging = true
-            end
-            
-            if placingShockwave then
-                if zm_placedpoweritem then zm_placedpoweritem = false end
-                
-                net.Start("zm_place_physexplode")
-                    net.WriteVector(aimVector)
-                net.SendToServer()
-                
-                placingShockwave = false
-                zm_placedpoweritem = true
-            elseif placingZombie then
-                if zm_placedpoweritem then zm_placedpoweritem = false end
-                
-                net.Start("zm_place_zombiespot")
-                    net.WriteVector(aimVector)
-                net.SendToServer()
-                
-                if IsValid(self.HiddenCSEnt) then
-                    self.HiddenCSEnt:Remove()
-                end
-                
-                placingZombie = false
-                zm_placedpoweritem = true
-            elseif placingTrap then
-                net.Start("zm_placetrigger")
-                    net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
-                    net.WriteEntity(TriggerEnt)
-                net.SendToServer()
-
-                placingTrap = false
-            elseif placingRally then
-                if zm_placedrally then zm_placedrally = false end
-                
-                net.Start("zm_placerally")
-                    net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
-                    net.WriteEntity(TriggerEnt)
-                net.SendToServer()
-                
-                if IsValid(GAMEMODE.ZombiePanelMenu) then
-                    GAMEMODE.ZombiePanelMenu:SetVisible(true)
-                    GAMEMODE.ZombiePanelMenu = nil
-                end
-                
-                placingRally = false            
-                zm_placedrally = true            
-            elseif placingAmbush then
-                if zm_placedambush then zm_placedambush = false end
-                
-                net.Start("zm_create_ambush_point")
-                    net.WriteVector(util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
-                net.SendToServer()
-                
-                placingAmbush = false            
-                zm_placedambush = true
-            else
-                local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 56756, function(ent) if ent:IsNPC() and not ent.bIsSelected then return true end end)
-                if tr.Entity and tr.Entity:IsNPC() then
-                    isDragging = false
-                    net.Start("zm_selectnpc")
-                        net.WriteEntity(tr.Entity)
-                    net.SendToServer()
-                else
-                    if not LocalPlayer():KeyDown(IN_DUCK) then RunConsoleCommand("zm_deselect") end
-                end
-            end
-            
-            if zm_placedpoweritem or zm_placedrally or zm_placedambush then
-                click_delta = CurTime()
-
-                local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace)
-                zm_ring_pos = tr.HitPos + tr.HitNormal
-                zm_ring_ang = tr.HitNormal:Angle()
-                zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
-            end
-        end
-        
-        if mouseCode == MOUSE_LEFT and not placingShockwave and not placingZombie then
-            local trace = {}
-            
-            trace.start = LocalPlayer():GetShootPos()
-            trace.endpos = LocalPlayer():GetShootPos() + (aimVector * 10000)
-            trace.filter = SelectionTrace
-            trace.ignoreworld = true
-            
-            local ent = util.TraceLine(trace).Entity
-            if IsValid(ent) then
-                local class = ent:GetClass()
-                gamemode.Call("SpawnTrapMenu", class, ent)
-            end
-        elseif mouseCode == MOUSE_RIGHT then
-            if placingShockwave then
-                LocalPlayer():PrintTranslatedMessage(HUD_PRINTTALK, "exit_explosion_mode")
-                placingShockwave = false
-                zm_placedpoweritem = false
-                return
-            elseif placingZombie then
-                LocalPlayer():PrintTranslatedMessage(HUD_PRINTTALK, "exit_hidden_mode")
-                placingZombie = false
-                zm_placedpoweritem = true
-                return
-            elseif placingTrap then
-                placingTrap = false
-                return
-            elseif placingRally then
-                zm_placedrally = false
-                return
-            elseif placingAmbush then
-                zm_placedambush = false
-                return
-            end
-            
-            if zm_rightclicked then zm_rightclicked = false end
-            
-            click_delta = CurTime()
-
-            local tr = util.QuickTrace(LocalPlayer():GetShootPos(), aimVector * 10000, LocationTrace)
-            zm_ring_pos = tr.HitPos + tr.HitNormal
-            zm_ring_ang = tr.HitNormal:Angle()
-            zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
-            
-            zm_rightclicked = true
-            
-            if IsValid(tr.Entity) and not tr.Entity:IsWorld() then
-                net.Start("zm_npc_target_object")
-                    net.WriteVector(tr.HitPos)
-                    net.WriteEntity(tr.Entity)
-                net.SendToServer()
-            else
-                net.Start("zm_command_npcgo")
-                    net.WriteVector(tr.HitPos)
-                net.SendToServer()
-            end
-        end
-    end
+    player_manager.RunClass(LocalPlayer(), "MousePressed", mouseCode, aimVector)
 end
 
 function GM:GUIMouseReleased(mouseCode, aimVector)
-    if isDragging then
-        util.BoxSelect(gui.MousePos())
-        isDragging = false
-    end
+    player_manager.RunClass(LocalPlayer(), "MouseReleased", mouseCode, aimVector)
 end
 
 function GM:PlayerBindPress(ply, bind, pressed)
@@ -554,9 +363,6 @@ function GM:PlayerBindPress(ply, bind, pressed)
 end
 
 function GM:CreateVGUI()
-    holdTime = CurTime()
-    isDragging = false
-    
     if IsValid(self.trapPanel) then
         trapPanel:Remove()
     end
@@ -596,11 +402,6 @@ function GM:CreateVGUI()
     end)
     
     gamemode.Call("SetupZMPowers")
-end
-
-function GM:SetDragging(b)
-    isDragging = b
-    holdTime = CurTime()
 end
 
 function GM:IsMenuOpen()
@@ -730,57 +531,89 @@ function GM:PostDrawEffects()
     end
 end
 
+function GM:AddQuadDraw(tab)
+    table.insert(self.QuadDraws, tab)
+end
+
+local glowmat = Material("dev/glow_color")
 function GM:PostDrawOpaqueRenderables()
-    if LocalPlayer():IsZM() then
-        if zm_rightclicked or zm_placedrally or zm_placedpoweritem then
-            local size = Either(zm_placedpoweritem, 1 * ((CurTime() - click_delta) * 350), 64 * (1 - (CurTime() - click_delta) * 4))
-            render.SuppressEngineLighting(true)
-            render.OverrideDepthEnable(true, true)
-            if zm_rightclicked or zm_placedpoweritem then
-                render.SetMaterial(selectringMaterial)
-            elseif zm_placedrally then
-                render.SetMaterial(rallyringMaterial)
-            end
-            
-            render.DrawQuadEasy(zm_ring_pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), size, size, Color(255, 255, 255))
-                
-            if (zm_placedpoweritem and size >= 128) or (not zm_placedpoweritem and size <= 0) then
-                zm_rightclicked = false
-                zm_placedrally = false
-                zm_placedpoweritem = false
-                didtrace = false
-            end            
-            
-            render.OverrideDepthEnable(false, false)
-            render.SuppressEngineLighting(false)
+    for i, tab in ipairs(self.QuadDraws) do
+        local fraction = math.TimeFraction(tab.Delta, tab.EndTime, CurTime())
+        local w, h = 0, 0
+        if tab.bGrow then
+            w = Lerp(fraction, 0, tab.TexW)
+            h = Lerp(fraction, 0, tab.TexH)
+        else
+            w = Lerp(fraction, tab.TexW, 0)
+            h = Lerp(fraction, tab.TexH, 0)
         end
         
+        render.SuppressEngineLighting(true)
+        render.OverrideDepthEnable(true, true)
+        
+        render.SetMaterial(tab.Material)
+        render.DrawQuadEasy(tab.Pos + Vector( 0, 0, 1 ), Vector(0, 0, 1), w, h, Color(255, 255, 255))     
+        
+        render.OverrideDepthEnable(false, false)
+        render.SuppressEngineLighting(false)
+        
+        if fraction >= 1 then table.remove(self.QuadDraws, i) end
+    end
+    
+    if LocalPlayer():IsZM() then
         if cvars.Number("zm_vision_quality", 0) >= 2 then
             if cvars.Bool("zm_silhouette_zmvision_only") and not self.nightVision then return end
             
-            render.ClearStencil()
+            render.MaterialOverride(glowmat)
+            render.OverrideDepthEnable(true, false)
+
             render.SetStencilEnable(true)
-                render.SetStencilWriteMask(255)
-                render.SetStencilTestMask(255)
-                render.SetStencilReferenceValue(57)
 
-                render.SetStencilCompareFunction(STENCIL_ALWAYS)
-                render.SetStencilZFailOperation(STENCIL_REPLACE)
+            render.SetStencilReferenceValue(2)
+            render.SetStencilWriteMask(2)
+            render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+            render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+            render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+            render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
+
+            render.SetBlend(0)
+            render.OverrideAlphaWriteEnable(true, false)
+            render.OverrideColorWriteEnable(true, false)
+
+            for k, v in pairs(self.SilhouetteEnts) do
+                if not v.ShouldDrawSilhouette then continue end
                 
-                for k, v in pairs(self.SilhouetteEnts) do
-                    if not v.ShouldDrawSilhouette then continue end
-                    
-                    v.DrawingSilhouette = true
-                    v:DrawModel()
-                    v.DrawingSilhouette = false
-                end
+                v.DrawingSilhouette = true
+                v:DrawModel()
+                v.DrawingSilhouette = false
+            end
 
-                render.SetStencilCompareFunction(STENCIL_EQUAL)
+            render.OverrideAlphaWriteEnable(false, true)
+            render.OverrideColorWriteEnable(false, true)
 
-                cam.Start2D()
-                    surface.SetDrawColor(self.SilhouetteColor)
-                    surface.DrawRect(0, 0, ScrW(), ScrH())
-                cam.End2D()
+            render.OverrideDepthEnable(false, false)
+
+            render.SetStencilReferenceValue(3)
+            render.SetStencilTestMask(2)
+            render.SetStencilWriteMask(1)
+            render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_NOTEQUAL)
+            render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+            render.SetStencilZFailOperation(STENCILOPERATION_REPLACE)
+            render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+
+            render.SetBlend(1)
+            local brightness = cvars.Number("zm_cl_silhouette_strength", 1)
+            render.SetColorModulation((self.SilhouetteColor.r/255) * brightness, (self.SilhouetteColor.g/255) * brightness, (self.SilhouetteColor.b/255) * brightness)
+
+            for k, v in pairs(self.SilhouetteEnts) do
+                if not v.ShouldDrawSilhouette then continue end
+                
+                v.DrawingSilhouette = true
+                v:DrawModel()
+                v.DrawingSilhouette = false
+            end
+
+            render.MaterialOverride()
             render.SetStencilEnable(false)
         end
     end
@@ -892,6 +725,16 @@ function GM:OnScreenSizeChange(new_w, new_h)
         self.powerMenu = vgui.Create("zm_powerpanel")
         
         gamemode.Call("SetupZMPowers")
+    end
+end
+
+function GM:PlayerSwitchWeapon(ply, oldwep, newwep)
+    if IsValid(ply.QuickInfo) then
+        if newwep.DrawQuickInfo and not ply.QuickInfo:IsVisible() then
+            ply.QuickInfo:SetVisible(true)
+        elseif not newwep.DrawQuickInfo and ply.QuickInfo:IsVisible() then
+            ply.QuickInfo:SetVisible(false)
+        end
     end
 end
 

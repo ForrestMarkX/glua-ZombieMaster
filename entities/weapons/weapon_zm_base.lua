@@ -13,6 +13,7 @@ SWEP.ViewModelFlip                = false
 SWEP.CSMuzzleFlashes              = false
 SWEP.UseHands                     = true
 SWEP.DrawCrosshair                = true
+SWEP.DrawQuickInfo                = true
 
 SWEP.Author                       = "???"
 SWEP.Contact                      = ""
@@ -305,14 +306,26 @@ local function GetAmmoColor(clip, maxclip)
     end
 end
 
+local ammoBG = Material("zmr_effects/hud_bg_ammo")
 function SWEP:DrawHUD()
     local wid, hei = ScreenScale(60), ScreenScale(21)
     local x, y = ScrW() * 0.865, ScrH() * 0.91
     local clip = self.DontDrawSpare and self.Owner:GetAmmoCount(self:GetPrimaryAmmoType()) or self:Clip1()
     local spare = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
     local maxclip = self.Primary.ClipSize
+    local bZMRHUD = cvars.Number("zm_hudtype", 0) == HUD_ZMR
+    local font = bZMRHUD and "ZMHudNumbers" or "zm_hud_font_normal"
+    local bigfont = bZMRHUD and "ZMHudNumbers" or "zm_hud_font_big"
+    local smallfont = bZMRHUD and "ZMHudNumbersSmall" or "zm_hud_font_small"
     
-    draw.RoundedBox(ScreenScale(5), x + 2, y + 2, wid, hei, colBG)
+    if bZMRHUD then
+        surface.SetDrawColor(70, 0, 0, 150)
+        surface.SetMaterial(ammoBG)
+        surface.DrawTexturedRect(x - (wid * 0.25), y - (hei * 0.25), wid * 1.5, hei * 1.5)
+    else
+       draw.RoundedBox(ScreenScale(5), x + 2, y + 2, wid, hei, colBG)
+    end
+
     if self.InfiniteAmmo then
         draw.SimpleTextBlurry("∞", "zm_hud_font_bigger", x + wid * 0.5, y + hei * 0.42, colAmmo, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         return
@@ -334,11 +347,11 @@ function SWEP:DrawHUD()
 
     local displayspare = maxclip > 0 and self.Primary.DefaultClip ~= 99999
     if displayspare or not self.DontDrawSpare then
-        draw.SimpleTextBlurry(spare, spare >= 1000 and "zm_hud_font_small" or "zm_hud_font_normal", x + wid * 0.75, y + hei * 0.5, spare == 0 and colRed or spare <= maxclip and colYellow or colWhite, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, self.LastAmmoTaken, self.AmmoTimer)
+        draw.SimpleTextBlurry(spare, bZMRHUD and smallfont or (spare >= 1000 and smallfont or font), x + wid * 0.75, y + hei * 0.5, spare == 0 and colRed or spare <= maxclip and colYellow or colWhite, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, self.LastAmmoTaken, self.AmmoTimer)
     end
 
     GetAmmoColor(clip, maxclip)
-    draw.SimpleTextBlurry(clip, clip >= 100 and "zm_hud_font_normal" or "zm_hud_font_big", x + wid * (displayspare and 0.25 or 0.5), y + hei * 0.5, colAmmo, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, self.LastClipTaken, self.ClipTimer)
+    draw.SimpleTextBlurry(clip, clip >= 100 and font or bigfont, x + wid * (displayspare and 0.25 or 0.5), y + hei * 0.5, colAmmo, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, self.LastClipTaken, self.ClipTimer)
 end
 
 function SWEP:DrawWeaponSelection( x, y, wide, tall, alpha )

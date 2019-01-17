@@ -305,6 +305,12 @@ end
 function PLAYER:KeyRelease(key)
 end
 
+function PLAYER:MousePressed(code, vector)
+end
+
+function PLAYER:MouseReleased(code, vector)
+end
+
 function PLAYER:ShouldTakeDamage(attacker)
     return false
 end

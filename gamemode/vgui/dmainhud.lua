@@ -1,8 +1,15 @@
 local PANEL = {}
 
+local BackgroundImg = Material("zmr_effects/hud_bg_hp")
 local function PaintPanel(self, w, h)
-    draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, 200))
-    draw.DrawSimpleOutlined(0, 0, w, h, color_black)
+    if cvars.Number("zm_hudtype", 0) == HUD_ZMR then
+        surface.SetDrawColor(70, 0, 0, 150)
+        surface.SetMaterial(BackgroundImg)
+        surface.DrawTexturedRect(0, 0, w, h)
+    else
+        draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, 200))
+        draw.DrawSimpleOutlined(0, 0, w, h, color_black)
+    end
 end
 function PANEL:Init()
     self.PopulationPanel = vgui.Create("DPanel", self)

@@ -136,40 +136,39 @@ function PLAYER:PostDrawOther(ply)
     return BaseClass.PostDraw(self, ply)
 end
 
-if CLIENT then
-    local selection_color_outline = Color(255, 0, 0, 255)
-    local selection_color_box     = Color(120, 0, 0, 80)
-    function PLAYER:DrawHUD()
-        if isDragging then
-            local x, y = gui.MousePos()
-            if mouseX < x then
-                if mouseY < y then
-                    surface.SetDrawColor(selection_color_outline)
-                    surface.DrawOutlinedRect(mouseX, mouseY, x -mouseX, y -mouseY)
-                
-                    surface.SetDrawColor(selection_color_box)
-                    surface.DrawRect(mouseX, mouseY, x -mouseX, y -mouseY)
-                else
-                    surface.SetDrawColor(selection_color_outline)
-                    surface.DrawOutlinedRect(mouseX, y, x -mouseX, mouseY -y)
-                
-                    surface.SetDrawColor(selection_color_box)
-                    surface.DrawRect(mouseX, y, x -mouseX, mouseY -y)
-                end
+local selection_color_outline = Color(255, 0, 0, 255)
+local selection_color_box     = Color(120, 0, 0, 80)
+function PLAYER:DrawHUD()
+    if self.Player.bIsDragging then
+        local x, y = gui.MousePos()
+        local mX, mY = self.Player.DragX, self.Player.DragY
+        if mX < x then
+            if mY < y then
+                surface.SetDrawColor(selection_color_outline)
+                surface.DrawOutlinedRect(mX, mY, x - mX, y - mY)
+            
+                surface.SetDrawColor(selection_color_box)
+                surface.DrawRect(mX, mY, x - mX, y - mY)
             else
-                if mouseY > y then
-                    surface.SetDrawColor(selection_color_outline)
-                    surface.DrawOutlinedRect(x, y, mouseX -x, mouseY -y)
-                
-                    surface.SetDrawColor(selection_color_box)
-                    surface.DrawRect(x, y, mouseX -x, mouseY -y)
-                else
-                    surface.SetDrawColor(selection_color_outline)
-                    surface.DrawOutlinedRect(x, mouseY, mouseX -x, y -mouseY)
-                
-                    surface.SetDrawColor(selection_color_box)
-                    surface.DrawRect(x, mouseY, mouseX -x, y -mouseY)
-                end
+                surface.SetDrawColor(selection_color_outline)
+                surface.DrawOutlinedRect(mX, y, x - mX, mY - y)
+            
+                surface.SetDrawColor(selection_color_box)
+                surface.DrawRect(mX, y, x - mX, mY - y)
+            end
+        else
+            if mY > y then
+                surface.SetDrawColor(selection_color_outline)
+                surface.DrawOutlinedRect(x, y, mX - x, mY - y)
+            
+                surface.SetDrawColor(selection_color_box)
+                surface.DrawRect(x, y, mX - x, mY - y)
+            else
+                surface.SetDrawColor(selection_color_outline)
+                surface.DrawOutlinedRect(x, mY, mX - x, y - mY)
+            
+                surface.SetDrawColor(selection_color_box)
+                surface.DrawRect(x, mY, mX - x, y - mY)
             end
         end
     end
@@ -263,6 +262,89 @@ function PLAYER:ButtonDown(button)
     
     if button == cvars.Number("zm_killzombieskey", 0) then
         RunConsoleCommand("zm_power_killzombies")
+    end
+    
+    if button == KEY_LCONTROL or button == KEY_RCONTROL then
+        self.Player.bAddSelection = true
+    end
+end
+
+function PLAYER:ButtonUp(button)
+    if SERVER then return end
+    
+    if button == KEY_LCONTROL or button == KEY_RCONTROL then
+        self.Player.bAddSelection = false
+    end
+end
+
+function PLAYER:MousePressed(code, vector)
+    local placementtype = self.Player.PlacementType
+    if code == MOUSE_LEFT then
+        if not self.Player.bIsDragging then
+            self.Player.bIsDragging = true
+            self.Player.DragX, self.Player.DragY = gui.MousePos()
+        end
+        
+        local tr = util.QuickTrace(self.Player:GetShootPos(), vector * 56756, function(ent) return ent:IsNPC() end)
+        if tr.Entity and tr.Entity:IsNPC() then
+            self.Player.bIsDragging = false
+            
+            if not self.Player.bAddSelection then 
+                RunConsoleCommand("zm_deselect")
+            end
+            
+            timer.Simple(0, function()
+                net.Start(tr.Entity.bIsSelected and "zm_net_deselect" or "zm_selectnpc")
+                    net.WriteEntity(tr.Entity)
+                net.SendToServer()
+            end)
+            
+            return
+        else
+            if not self.Player.bAddSelection then 
+                RunConsoleCommand("zm_deselect") 
+            end
+        end
+        
+        local trace = {}
+        
+        trace.start = self.Player:GetShootPos()
+        trace.endpos = self.Player:GetShootPos() + (vector * 10000)
+        trace.filter = function(ent) return not gamemode.Call("ShouldSelectionIgnoreEnt", ent) end
+        trace.ignoreworld = true
+        
+        local ent = util.TraceLine(trace).Entity
+        if IsValid(ent) then
+            local class = ent:GetClass()
+            gamemode.Call("SpawnTrapMenu", class, ent)
+        end
+     elseif code == MOUSE_RIGHT then
+        local click_delta = CurTime()
+
+        local tr = util.QuickTrace(self.Player:GetShootPos(), vector * 10000, LocationTrace)
+        local zm_ring_pos = tr.HitPos + tr.HitNormal
+        local zm_ring_ang = tr.HitNormal:Angle()
+        zm_ring_ang:RotateAroundAxis(zm_ring_ang:Right(), 90)
+        
+        gamemode.Call("AddQuadDraw", gamemode.Call("GenerateClickedQuadTable", GAMEMODE.SelectRingMaterial, 0.3, vector, function(ent) return not (ent:IsPlayer() or ent:IsNPC()) end))
+        
+        if IsValid(tr.Entity) and not tr.Entity:IsWorld() then
+            net.Start("zm_npc_target_object")
+                net.WriteVector(tr.HitPos)
+                net.WriteEntity(tr.Entity)
+            net.SendToServer()
+        else
+            net.Start("zm_command_npcgo")
+                net.WriteVector(tr.HitPos)
+            net.SendToServer()
+        end
+    end
+end
+
+function PLAYER:MouseReleased(code, vector)
+    if self.Player.bIsDragging then
+        util.BoxSelect(gui.MousePos())
+        self.Player.bIsDragging = false
     end
 end
 

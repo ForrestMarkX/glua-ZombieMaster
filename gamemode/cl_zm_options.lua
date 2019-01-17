@@ -18,6 +18,38 @@ CreateClientConVar("zm_cl_ragdoll_fadetime", "30", true, false, "How much time i
 CreateClientConVar("zm_healthcircle_brightness", "0.5", true, false, "Healthcircle brightness between 1.0 and 0.0, where 1.0 is brightest and 0.0 is off. Clientside.")
 CreateClientConVar("zm_cl_scrollspeed", "40", true, true, "How fast the speed is for the Zombie Master when using scroll to move up and down.")
 
+CreateClientConVar("zm_cl_silhouette_strength", "1", true, false, "How bright the silhouette drawing of zombies will be.")
+
+CreateClientConVar("zm_hudtype", "0", true, false, "What HUD style humans will use.")
+cvars.AddChangeCallback("zm_hudtype", function( convar_name, value_old, value_new )
+    if not GAMEMODE then return end
+    
+    local ply = LocalPlayer()
+    if ply:Alive() and ply.IsSurvivor and ply:IsSurvivor() then
+        if tonumber(value_new) == HUD_ZMR and not IsValid(GAMEMODE.HumanHealthHUD) then
+            GAMEMODE.HumanHealthHUD = vgui.Create("CHudHealthInfo")
+        elseif tonumber(value_new) == HUD_DEFAULT and IsValid(GAMEMODE.HumanHealthHUD) then
+            GAMEMODE.HumanHealthHUD:Remove()
+        end
+    end
+end)
+
+GM.SelectRingMaterial = CreateMaterial("CommandRingMat", "UnlitGeneric", {
+    ["$basetexture"] = "effects/zm_ring",
+    ["$ignorez"] = 1,
+    ["$translucent"] = 1,
+    ["$nocull"] = 1
+})
+GM.RallyRingMaterial = CreateMaterial("RallyRingMat", "UnlitGeneric", {
+    ["$basetexture"] = "effects/zm_arrows",
+    ["$ignorez"] = 1,
+    ["$translucent"] = 1,
+    ["$nocull"] = 1
+})
+local function LocationTrace(ent)
+    return not (ent:IsPlayer() or ent:IsNPC())
+end
+
 local function ZM_Open_Preferred_Menu(ply)
     if not IsValid(ply) then return end
     GAMEMODE:MakePreferredMenu()
@@ -31,7 +63,27 @@ local function ZM_Power_PhysExplode(ply)
     
     ply:PrintTranslatedMessage(HUD_PRINTTALK, "enter_explosion_mode")
     
-    GAMEMODE:SetPlacingShockwave(true)
+    if not gamemode.Call("OverridePowerHooks", "Shockwave") then
+        hook.Add("GUIMousePressed", "GUIMousePressed.Shockwave", function(mouseCode, aimVector)
+            if mouseCode == MOUSE_LEFT then
+                net.Start("zm_place_physexplode")
+                    net.WriteVector(aimVector)
+                net.SendToServer()
+                
+                local tab = gamemode.Call("GenerateClickedQuadTable", GAMEMODE.SelectRingMaterial, 0.3, aimVector, LocationTrace)
+                tab.bGrow = true
+                
+                gamemode.Call("AddQuadDraw", tab)
+                
+                hook.Remove("GUIMousePressed", "GUIMousePressed.Shockwave")
+            elseif mouseCode == MOUSE_RIGHT then
+                ply:PrintTranslatedMessage(HUD_PRINTTALK, "exit_explosion_mode")
+                hook.Remove("GUIMousePressed", "GUIMousePressed.Shockwave")
+            end
+            
+            return true
+        end)
+    end
 end
 concommand.Add("zm_power_physexplode", ZM_Power_PhysExplode, nil, "Creates a physics explosion at a chosen location")
 
@@ -42,7 +94,52 @@ local function ZM_Power_SpotCreate(ply)
     
     ply:PrintTranslatedMessage(HUD_PRINTTALK, "enter_hidden_mode")
     
-    GAMEMODE:SetPlacingSpotZombie(true)
+    if not IsValid(GAMEMODE.HiddenCSEnt) then
+        local hiddenent = ClientsideModel("models/zombie/zm_classic.mdl")
+        local tr = util.QuickTrace(ply:GetShootPos(), gui.ScreenToVector(gui.MousePos()) * 10000, player.GetAll())
+        hiddenent:SetPos(tr.HitPos)
+        hiddenent.RenderOverride = function(self)
+            local ret = gamemode.Call("CanHiddenZombieBeCreated", ply, ply:EyePos(), gui.ScreenToVector(gui.MousePos()))
+            if ret then
+                render.SetColorModulation(0, 1, 0)
+            else
+                render.SetColorModulation(1, 0, 0)
+            end
+            render.SetBlend(0.65)
+            self:DrawModel()
+            render.SetBlend(1)
+            render.SetColorModulation(1, 1, 1)
+        end
+        
+        local ang = ply:EyeAngles()
+        ang.x = 0.0
+        ang.z = 0.0
+        hiddenent:SetAngles(ang)
+        
+        GAMEMODE.HiddenCSEnt = hiddenent
+    end
+    
+    if not gamemode.Call("OverridePowerHooks", "Hidden") then
+        hook.Add("GUIMousePressed", "GUIMousePressed.HiddenZombie", function(mouseCode, aimVector)
+            if mouseCode == MOUSE_LEFT then
+                net.Start("zm_place_zombiespot")
+                    net.WriteVector(aimVector)
+                net.SendToServer()
+                
+                if IsValid(GAMEMODE.HiddenCSEnt) then
+                    GAMEMODE.HiddenCSEnt:Remove()
+                end
+                
+                gamemode.Call("AddQuadDraw", gamemode.Call("GenerateClickedQuadTable", GAMEMODE.SelectRingMaterial, 0.3, aimVector, LocationTrace))
+                hook.Remove("GUIMousePressed", "GUIMousePressed.HiddenZombie")
+            elseif mouseCode == MOUSE_RIGHT then
+                ply:PrintTranslatedMessage(HUD_PRINTTALK, "exit_hidden_mode")
+                hook.Remove("GUIMousePressed", "GUIMousePressed.HiddenZombie")
+            end
+            
+            return true
+        end)
+    end
 end
 concommand.Add("zm_power_spotcreate", ZM_Power_SpotCreate, nil, "Creates a Shambler at target location, if it is unseen to players")
 
@@ -53,9 +150,82 @@ local function ZM_Power_AmbushCreate(ply)
     
     ply:PrintTranslatedMessage(HUD_PRINTTALK, "enter_ambush_mode")
     
-    hook.Call("SetPlacingAmbush", GAMEMODE, true)
+    if not gamemode.Call("OverridePowerHooks", "Ambush") then
+        hook.Add("GUIMousePressed", "GUIMousePressed.Ambush", function(mouseCode, aimVector)
+            if mouseCode == MOUSE_LEFT then
+                net.Start("zm_create_ambush_point")
+                    net.WriteVector(util.QuickTrace(ply:GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
+                net.SendToServer()
+                
+                local tab = gamemode.Call("GenerateClickedQuadTable", GAMEMODE.SelectRingMaterial, 0.3, aimVector, LocationTrace)
+                tab.bGrow = true
+                
+                gamemode.Call("AddQuadDraw", tab)
+                hook.Remove("GUIMousePressed", "GUIMousePressed.Ambush")
+            end
+            
+            return true
+        end)
+    end
 end
 concommand.Add("zm_power_ambushpoint", ZM_Power_AmbushCreate, nil, "Creates a ambush point for zombies")
+
+local function ZM_Power_RallyPoint(ply, cmd, args, argStr)
+    if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) or args[1] == nil then
+        return
+    end
+    
+    local TriggerEnt = Entity(args[1])
+    if not gamemode.Call("OverridePowerHooks", "Rally", TriggerEnt) then
+        hook.Add("GUIMousePressed", "GUIMousePressed.Rally", function(mouseCode, aimVector)
+            if mouseCode == MOUSE_LEFT then
+                net.Start("zm_placerally")
+                    net.WriteVector(util.QuickTrace(ply:GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
+                    net.WriteEntity(TriggerEnt)
+                net.SendToServer()
+                
+                if IsValid(GAMEMODE.ZombiePanelMenu) then
+                    GAMEMODE.ZombiePanelMenu:SetVisible(true)
+                    GAMEMODE.ZombiePanelMenu = nil
+                end
+                
+                gamemode.Call("AddQuadDraw", gamemode.Call("GenerateClickedQuadTable", GAMEMODE.RallyRingMaterial, 0.3, aimVector, LocationTrace))
+                hook.Remove("GUIMousePressed", "GUIMousePressed.Rally")
+            end
+            
+            return true
+        end)
+    end
+end
+concommand.Add("zm_power_rallypoint", ZM_Power_RallyPoint, nil, "Creates a rally point for zombies")
+
+local function ZM_Power_Trap(ply, cmd, args, argStr)
+    if (not IsValid(ply)) or (IsValid(ply) and not ply:IsZM()) or args[1] == nil then
+        return
+    end
+    
+    local TriggerEnt = Entity(args[1])
+    if not gamemode.Call("OverridePowerHooks", "Trap", TriggerEnt) then
+        hook.Add("GUIMousePressed", "GUIMousePressed.Trap", function(mouseCode, aimVector)
+            if mouseCode == MOUSE_LEFT then
+                net.Start("zm_placetrigger")
+                    net.WriteVector(util.QuickTrace(ply:GetShootPos(), aimVector * 10000, LocationTrace).HitPos)
+                    net.WriteEntity(TriggerEnt)
+                net.SendToServer()
+                
+                if IsValid(GAMEMODE.ZombiePanelMenu) then
+                    GAMEMODE.ZombiePanelMenu:SetVisible(true)
+                    GAMEMODE.ZombiePanelMenu = nil
+                end
+                
+                hook.Remove("GUIMousePressed", "GUIMousePressed.Trap")
+            end
+            
+            return true
+        end)
+    end
+end
+concommand.Add("zm_power_trap", ZM_Power_Trap, nil, "Creates a trap a the clicked location.")
 
 local LightingModeChanged = false
 local function StartOfLightingMod()

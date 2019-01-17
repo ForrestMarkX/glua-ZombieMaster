@@ -143,7 +143,7 @@ function PANEL:Init()
     self.placeRally.Paint = PaintButton
     self.placeRally.DoClick = function()
         if LocalPlayer():IsZM() then
-            hook.Call("SetPlacingRallyPoint", GAMEMODE, true, self:GetCurrent())
+            RunConsoleCommand("zm_power_rallypoint", self:GetCurrent():EntIndex())
             self:SetVisible(false)
             
             GAMEMODE.ZombiePanelMenu = self
@@ -297,7 +297,7 @@ end
 
 function PANEL:Think()
     if self:IsVisible() then
-        GAMEMODE:SetDragging(false)
+        LocalPlayer().bIsDragging = false
     end
 end
 

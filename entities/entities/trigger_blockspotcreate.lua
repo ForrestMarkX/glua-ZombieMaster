@@ -4,6 +4,7 @@ ENT.Type = "brush"
 
 function ENT:Initialize()
     self.m_bActive = self.m_bActive or false
+    self:AddEFlags(EFL_FORCE_CHECK_TRANSMIT)
 end
 
 function ENT:KeyValue( key, value )
@@ -40,5 +41,5 @@ function ENT:InputEnable()
 end
 
 function ENT:UpdateTransmitState()
-    return TRANSMIT_NEVER
+    return TRANSMIT_ALWAYS
 end

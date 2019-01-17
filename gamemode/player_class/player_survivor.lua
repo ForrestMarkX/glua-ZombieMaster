@@ -44,6 +44,10 @@ function PLAYER:Spawn()
             ply.QuickInfo = vgui.Create("CHudQuickInfo")
             ply.QuickInfo:Center()
         end  
+        
+        if cvars.Number("zm_hudtype", 0) == HUD_ZMR and not IsValid(GAMEMODE.HumanHealthHUD) then
+            GAMEMODE.HumanHealthHUD = vgui.Create("CHudHealthInfo")
+        end
 
         if cvars.Bool("zm_cl_enablehints") and IsValid(GAMEMODE.ZM_Center_Hints) then
             GAMEMODE.ZM_Center_Hints:SetHint(translate.Get("zm_hint_intro_s"))
@@ -125,6 +129,10 @@ function PLAYER:Think()
             end
             
             self.Player.Drowning = nil
+        end
+    else
+        if cvars.Number("zm_hudtype", 0) == HUD_ZMR and not IsValid(GAMEMODE.HumanHealthHUD) then
+            GAMEMODE.HumanHealthHUD = vgui.Create("CHudHealthInfo")
         end
     end
 end
@@ -284,7 +292,10 @@ function PLAYER:ButtonDown(button)
     end
 end
 
+local healthBG = Material("zmr_effects/hud_bg_hp")
 function PLAYER:DrawHUD()
+    if cvars.Number("zm_hudtype", 0) == HUD_ZMR then return end
+    
     local wid, hei = ScreenScale(75), ScreenScale(24)
     local x, y = ScrW() * 0.035, ScrH() * 0.9
     
@@ -294,8 +305,8 @@ function PLAYER:DrawHUD()
     if self.Player.CurrentHP ~= health then
         self.Player.CurrentHP = health
         
-        LocalPlayer().LastHurtTime = CurTime()
-        LocalPlayer().HurtTimer = CurTime() + 5
+        self.Player.LastHurtTime = CurTime()
+        self.Player.HurtTimer = CurTime() + 5
     end
     
     local healthCol = health <= 10 and Color(185, 0, 0, 255) or health <= 30 and Color(150, 50, 0) or health <= 60 and Color(255, 200, 0) or color_white
@@ -305,7 +316,7 @@ function PLAYER:DrawHUD()
     end
     
     draw.SimpleTextBlurry(health, "zm_hud_font_big", x + wid * 0.72, y + hei * 0.5, healthCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, self.Player.LastHurtTime, self.Player.HurtTimer)
-    draw.SimpleTextBlurry(language.GetPhrase("#Valve_Hud_HEALTH"), "zm_hud_font_small", x + wid * 0.25, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleTextBlurry(language.GetPhrase("Valve_Hud_HEALTH"), "zm_hud_font_small", x + wid * 0.25, y + hei * 0.7, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 function PLAYER:PreDeath(inflictor, attacker)
@@ -314,6 +325,10 @@ function PLAYER:PreDeath(inflictor, attacker)
     self.Player:SendLua([[
         if IsValid(LocalPlayer().QuickInfo) then
             LocalPlayer().QuickInfo:Remove()
+        end        
+        
+        if IsValid(GAMEMODE.HumanHealthHUD) then
+            GAMEMODE.HumanHealthHUD:Remove()
         end
     ]])
     

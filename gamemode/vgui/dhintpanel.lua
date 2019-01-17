@@ -4,7 +4,7 @@ function PANEL:Init()
     local hinticon = vgui.Create("DImage", self)
     hinticon:SetSize(ScreenScale(11), ScreenScale(11))
     hinticon:SetImage("vgui/tt_icon_light.png")
-    hinticon:SetImageColor(Color(255, 0, 0))
+    hinticon:SetImageColor(Color(255, 255, 255))
     hinticon:AlignLeft(2)
     
     self.HintIcon = hinticon
@@ -40,6 +40,7 @@ function PANEL:SetActive(b, time)
         self.CurHoldTime = RealTime() + (time or 0)
         self:InvalidateLayout(true)
         self:AlphaTo(255, 1, 0)
+        surface.PlaySound("buttons/blip1.wav")
     else
         self:SetAlpha(0)
     end
@@ -49,16 +50,10 @@ end
 
 function PANEL:Think()
     if self.bActive then
-        --if self.GlowTime < RealTime() then
-            --self.GlowTime = RealTime() + 1.62
-            --LocalPlayer():EmitSound("buttons/blip1.wav", 75, 100, 0.25)
-        --end
-        
-        local glow = math.Clamp(math.sin(RealTime() * 4) * 200 + 255, 0, 255)
+        local glow = math.Clamp(math.sin(RealTime() * 2) * 200 + 255, 0, 255)
         local col = Color(255, glow, glow)
         
         self.HintLabel:SetTextColor(col)
-        self.HintIcon:SetImageColor(col)
         
         if self.CurHoldTime ~= 0 and self.CurHoldTime < RealTime() then
             self.CurHoldTime = 0

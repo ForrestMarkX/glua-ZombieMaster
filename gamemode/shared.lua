@@ -191,3 +191,62 @@ end
 function GM:PlayerPostThink(pl)
     player_manager.RunClass(pl, "PostThink")
 end
+
+function GM:CanHiddenZombieBeCreated(ply, pos, mousepos)
+    if not IsValid(ply) then return end
+
+    local tr = util.TraceLine({start = pos, endpos = pos + mousepos * (75 ^ 2), filter = player.GetAll(), mask = MASK_SOLID})
+    local location = tr.HitPos
+
+    local tr_floor = util.TraceHull({start = location + Vector(0, 0, 25), endpos = location - Vector(0, 0, 25), filter = player.GetAll(), mins = Vector(-13, -13, 0), maxs = Vector(13, 13, 72), mask = MASK_NPCSOLID})
+    if tr_floor.Fraction < 0.5 then
+        return false, "zombie_does_not_fit"
+    end
+
+    location = tr_floor.HitPos
+
+    if not ply:CanAfford(GetConVar("zm_spotcreate_cost"):GetInt()) then
+        return false, "not_enough_resources"
+    end
+    
+    local vecHeadTarget = location
+    vecHeadTarget.z = vecHeadTarget.z + 64
+    
+    for k, v in pairs(ents.FindByClass("trigger_blockspotcreate")) do
+        if v.m_bActive then
+            if v:IsPointInBounds(location) then
+                return false, "zombie_cant_be_created"
+            end
+        end
+    end
+    
+    for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
+        local tr = util.TraceLine({
+            start = location,
+            endpos = pl:GetPos(),
+            filter = pl,
+            mask = MASK_OPAQUE
+        })
+
+        local visible = false
+        if tr.Fraction == 1 then
+            visible = true
+        end
+
+        local tr = util.TraceLine({
+            start = vecHeadTarget,
+            endpos = pl:EyePos(),
+            filter = pl,
+            mask = MASK_OPAQUE
+        })
+        if tr.Fraction == 1 then
+            visible = true
+        end
+
+        if visible then
+            return false, "human_can_see_location"
+        end
+    end
+    
+    return true, nil, tr
+end

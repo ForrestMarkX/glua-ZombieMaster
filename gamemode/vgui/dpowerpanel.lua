@@ -1,4 +1,5 @@
 local PANEL = {}
+local BackgroundMat = Material("zmr_effects/hud_bg_hp")
 
 AccessorFunc(PANEL, "m_Tooltip", "Tip")
 
@@ -31,8 +32,14 @@ vgui.Register("zm_powerbutton", PANEL, "DImageButton")
 local PANEL = {}
 
 function PANEL:Paint(w, h)
-    draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, self:IsActive() and 255 or 100))
-    draw.DrawSimpleOutlined(0, 0, w, h - 1, color_black)
+    if cvars.Number("zm_hudtype", 0) == HUD_ZMR then
+        surface.SetDrawColor(Color(60, 0, 0, self:IsActive() and 255 or 100))
+        surface.SetMaterial(BackgroundMat)
+        surface.DrawTexturedRect(0, 0, w, h)
+    else
+        draw.DrawSimpleRect(0, 0, w, h, Color(60, 0, 0, self:IsActive() and 255 or 100))
+        draw.DrawSimpleOutlined(0, 0, w, h - 1, color_black)
+    end
 end
 
 function PANEL:PerformLayout()
@@ -137,8 +144,14 @@ function PANEL:AddSheet(label, panel, material, NoStretchX, NoStretchY, Tooltip 
 end
 
 function PANEL:Paint(w, h)
-    draw.DrawSimpleRect(0, self.tabScroller:GetTall(), w, h - self.tabScroller:GetTall(), Color(60, 0, 0, 200))
-    draw.DrawSimpleOutlined(0, self.tabScroller:GetTall(), w, h - self.tabScroller:GetTall(), color_black)
+    if cvars.Number("zm_hudtype", 0) == HUD_ZMR then
+        surface.SetDrawColor(Color(60, 0, 0, 200))
+        surface.SetMaterial(BackgroundMat)
+        surface.DrawTexturedRect(0, 0, w, h)
+    else
+        draw.DrawSimpleRect(0, self.tabScroller:GetTall(), w, h - self.tabScroller:GetTall(), Color(60, 0, 0, 200))
+        draw.DrawSimpleOutlined(0, self.tabScroller:GetTall(), w, h - self.tabScroller:GetTall(), color_black)
+    end
 end 
 
 function PANEL:PerformLayout()

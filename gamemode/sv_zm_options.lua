@@ -125,64 +125,10 @@ end
 net.Receive("zm_net_power_killzombies", ZM_Power_KillZombies)
 
 local function ZM_Power_SpotCreate_SV(len, ply)
-    if not IsValid(ply) or not ply:IsZM() then return end
-
-    local mousepos = net.ReadVector()
-    local tr = util.TraceLine({start = ply:EyePos(), endpos = ply:EyePos() + mousepos * (75 ^ 2), filter = player.GetAll(), mask = MASK_SOLID})
-    local location = tr.HitPos
-
-    local tr_floor = util.TraceHull({start = location + Vector(0, 0, 25), endpos = location - Vector(0, 0, 25), filter = player.GetAll(), mins = Vector(-13, -13, 0), maxs = Vector(13, 13, 72), mask = MASK_NPCSOLID})
-    if tr_floor.Fraction == 1.0 then
-        ply:PrintTranslatedMessage(HUD_PRINTCENTER, "zombie_does_not_fit")
+    local ret, message, tr = gamemode.Call("CanHiddenZombieBeCreated", ply, ply:EyePos(), net.ReadVector())
+    if not ret then
+        ply:PrintTranslatedMessage(HUD_PRINTTALK, message)
         return
-    end
-
-    location = tr_floor.HitPos
-
-    if not ply:CanAfford(GetConVar("zm_spotcreate_cost"):GetInt()) then
-        ply:PrintTranslatedMessage(HUD_PRINTTALK, "not_enough_resources")
-        return
-    end
-    
-    local vecHeadTarget = location
-    vecHeadTarget.z = vecHeadTarget.z + 64
-    
-    for k, v in pairs(ents.FindByClass("trigger_blockspotcreate")) do
-        if v.m_bActive then
-            if v:IsPointInBounds(location) then
-                ply:PrintTranslatedMessage( HUD_PRINTTALK, "zombie_cant_be_created" )
-                return
-            end
-        end
-    end
-    
-    for _, pl in pairs(team.GetPlayers(TEAM_SURVIVOR)) do
-        local tr = util.TraceLine({
-            start = location,
-            endpos = pl:GetPos(),
-            filter = pl,
-            mask = MASK_OPAQUE
-        })
-
-        local visible = false
-        if tr.Fraction == 1 then
-            visible = true
-        end
-
-        local tr = util.TraceLine({
-            start = vecHeadTarget,
-            endpos = pl:EyePos(),
-            filter = pl,
-            mask = MASK_OPAQUE
-        })
-        if tr.Fraction == 1 then
-            visible = true
-        end
-
-        if visible then
-            ply:PrintTranslatedMessage(HUD_PRINTCENTER, "human_can_see_location" )
-            return
-        end
     end
     
     local pZombie = gamemode.Call("SpawnZombie", ply, "npc_zombie", tr.HitPos, ply:EyeAngles(), GetConVar("zm_spotcreate_cost"):GetInt(), true)
@@ -263,7 +209,7 @@ net.Receive("zm_net_dropweapon", ZM_Drop_Weapon)
 
 local function ZM_BoxSelect(len, ply)
     if ply:IsZM() then
-        if not ply:KeyDown(IN_DUCK) then
+        if not net.ReadBool() then
             for _, npc in pairs(ents.FindByClass("npc_*")) do
                 if npc.bIsSelected then
                     npc:SetNW2Bool("selected", false)
@@ -281,16 +227,7 @@ net.Receive("zm_boxselect", ZM_BoxSelect)
 local function ZM_Select(len, ply)
     if ply:IsZM() then
         local entity = net.ReadEntity()
-        local ignore = net.ReadBool()
         if not IsValid(entity) then return end
-        
-        if not ply:KeyDown(IN_DUCK) and not ignore then
-            for _, npc in pairs(ents.FindByClass("npc_*")) do
-                if npc.bIsSelected then
-                    npc:SetNW2Bool("selected", false)
-                end
-            end
-        end
     
         if entity:IsNPC() then
             entity:SetNW2Bool("selected", true)
@@ -330,8 +267,13 @@ net.Receive("zm_npc_target_object", ZM_NPC_Target_Object)
 
 local function ZM_Deselect(len, ply)
     if ply:IsZM() then
-        for _, entity in pairs(ents.FindByClass("npc_*")) do
-            entity:SetNW2Bool("selected", false)
+        local ent = net.ReadEntity()
+        if IsValid(ent) then
+            ent:SetNW2Bool("selected", false)
+        else
+            for _, entity in pairs(ents.FindByClass("npc_*")) do
+                entity:SetNW2Bool("selected", false)
+            end
         end
     end
 end

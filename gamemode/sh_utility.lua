@@ -219,26 +219,27 @@ local function ZoneSelect(x1, y1, x2, y2)
     end
     
     net.Start("zm_boxselect")
+        net.WriteBool(LocalPlayer().bAddSelection)
         net.WriteTable(SelectedZombies)
     net.SendToServer()
 end
 function util.BoxSelect(x, y)
     local topleft_x, topleft_y, botright_x, botright_y
 
-    if mouseX < x then
-        topleft_x = mouseX
+    if LocalPlayer().DragX < x then
+        topleft_x = LocalPlayer().DragX
         botright_x = x
     else
         topleft_x = x
-        botright_x = mouseX
+        botright_x = LocalPlayer().DragX
     end
 
-    if mouseY < y then
-        topleft_y = mouseY
+    if LocalPlayer().DragY < y then
+        topleft_y = LocalPlayer().DragY
         botright_y = y
     else
         topleft_y = y
-        botright_y = mouseY
+        botright_y = LocalPlayer().DragY
     end
 
     ZoneSelect(topleft_x, topleft_y, botright_x, botright_y)
