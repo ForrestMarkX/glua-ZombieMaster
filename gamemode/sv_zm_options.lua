@@ -272,6 +272,7 @@ local function ZM_Deselect(len, ply)
             ent:SetNW2Bool("selected", false)
         else
             for _, entity in pairs(ents.FindByClass("npc_*")) do
+                if not IsValid(entity) then continue end
                 entity:SetNW2Bool("selected", false)
             end
         end
@@ -293,6 +294,8 @@ end)
 net.Receive("zm_selectall_zombies", function(len, ply)
     if ply:IsZM() then
         for _, entity in pairs(ents.FindByClass("npc_*")) do
+            if not IsValid(entity) then continue end
+            
             if entity:IsNPC() then
                 entity:SetNW2Bool("selected", true)
             end
