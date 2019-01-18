@@ -194,7 +194,6 @@ function GM:SetupFonts()
     
     surface.CreateFont("ZMDeathFonts", {font = "zmweapons", extended = false, size = ScreenScale(40), weight = 500})
 end
-GM:SetupFonts()
 
 function GM:PreCleanupMap()
     if GAMEMODE.ParsedTextObjects then
