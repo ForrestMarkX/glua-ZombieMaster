@@ -632,7 +632,7 @@ function GM:ShowOptions()
     but:DockMargin(12, 24, 12, 0)
     but:DockPadding(0, 12, 0, 12)
     but:Dock(TOP)
-    but.DoClick = function() gui.EnableScreenClicker(false) menu:Remove() LocalPlayer().HadMenuOpen = false end
+    but.DoClick = function() menu:Remove() LocalPlayer().HadMenuOpen = false end
 
     menu:InvalidateLayout(true)
     menu:SizeToChildren(false, true)
@@ -720,8 +720,6 @@ function GM:ShowHelp()
 end
 
 function GM:MakePreferredMenu()
-    timer.Simple(0, function() gui.EnableScreenClicker(true) end)
-    
     local frame = vgui.Create("DFrame")
     frame:SetWide(326.4)
     frame:SetTall(345)
@@ -731,8 +729,6 @@ function GM:MakePreferredMenu()
     frame.btnMinim:SetVisible(false)
     frame.btnMaxim:SetVisible(false)
     frame:MakePopup()
-    
-    frame.Close = function(self) self:Remove() end
     
     local label = vgui.Create("DLabel", frame)
     label:AlignTop(45)

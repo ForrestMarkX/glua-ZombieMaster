@@ -15,9 +15,6 @@ function ENT:Initialize()
     
     local phys = self:GetPhysicsObject()
     if phys:IsValid() then
-        phys:SetMaterial("material")
-        phys:EnableMotion(true)
-        phys:AddGameFlag(FVPHYSICS_NO_SELF_COLLISIONS)
         phys:Wake()
     end
 end
