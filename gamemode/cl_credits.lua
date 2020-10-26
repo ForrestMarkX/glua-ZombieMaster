@@ -72,6 +72,12 @@ GM.Credits = {
         Description = "Hebrew translation"
     },
     {
+        Name = "berry", 
+        SteamID = "STEAM_0:0:99299157", 
+        Website = "", 
+        Description = "Russian translation"
+    },
+    {
         Name = "Comic King", 
         SteamID = "", 
         Website = "", 
