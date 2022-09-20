@@ -106,6 +106,18 @@ GM.Credits = {
         SteamID = "STEAM_0:1:21894293", 
         Website = "", 
         Description = "Zombie Master AI"
+    },
+    {
+        Name = "Erick Maksimets", 
+        SteamID = "STEAM_1:1:95980398", 
+        Website = "", 
+        Description = "Russian & Ukrainian translation"
+    },
+    {
+        Name = "CyberKaiser", 
+        SteamID = "STEAM_0:1:457485261",
+        Website = "", 
+        Description = "Russian & Ukrainian translation"
     }
 }
 
