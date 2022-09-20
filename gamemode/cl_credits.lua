@@ -101,6 +101,12 @@ GM.Credits = {
         Website = "", 
         Description = "Zombie Master AI"
     },
+	{
+        Name = "berry", 
+        SteamID = "STEAM_0:0:99299157", 
+        Website = "", 
+        Description = "Font extend"
+    },
     {
         Name = "Erick Maksimets", 
         SteamID = "STEAM_1:1:95980398", 
