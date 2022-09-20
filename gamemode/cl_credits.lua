@@ -72,12 +72,6 @@ GM.Credits = {
         Description = "Hebrew translation"
     },
     {
-        Name = "berry", 
-        SteamID = "STEAM_0:0:99299157", 
-        Website = "", 
-        Description = "Russian translation"
-    },
-    {
         Name = "Comic King", 
         SteamID = "", 
         Website = "", 
@@ -106,6 +100,12 @@ GM.Credits = {
         SteamID = "STEAM_0:1:21894293", 
         Website = "", 
         Description = "Zombie Master AI"
+    },
+	{
+        Name = "berry", 
+        SteamID = "STEAM_0:0:99299157", 
+        Website = "", 
+        Description = "Font extend"
     },
     {
         Name = "Erick Maksimets", 
